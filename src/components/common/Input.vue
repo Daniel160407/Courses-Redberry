@@ -11,13 +11,11 @@ interface Props {
   error?: string;
   required?: boolean;
   icon?: Component;
-  autocomplete?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: "text",
-  required: false,
-  autocomplete: "new-passsword"
+  required: false
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -68,21 +66,21 @@ const inputType = computed(() => {
         :type="inputType"
         :value="modelValue"
         :placeholder="placeholder"
-        :autocomplete="autocomplete"
-        @input="handleInput"
-        @blur="handleBlur"
+        autocomplete="new-password"
         :class="[
           'w-full rounded-lg border px-4 py-3 text-sm transition-all duration-200 outline-none',
           displayError
             ? 'border-[#EF4444] placeholder-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
             : 'border-[1.5px] border-[#D1D1D1] placeholder-[#8A8A8A] focus:border-[#ADADAD] focus:placeholder-[#D1D1D1]'
         ]"
+        @input="handleInput"
+        @blur="handleBlur"
       />
 
       <div class="absolute top-1/2 right-4 flex -translate-y-1/2 items-center">
-        <component v-if="icon && type !== 'password'" :is="icon" class="h-6 w-6" />
+        <component :is="icon" v-if="icon && type !== 'password'" class="h-6 w-6" />
 
-        <div v-if="type === 'password'" @click="togglePassword" class="cursor-pointer select-none">
+        <div v-if="type === 'password'" class="cursor-pointer select-none" @click="togglePassword">
           <EyeCloseIcon
             v-if="!showPassword"
             class="h-6 w-6"

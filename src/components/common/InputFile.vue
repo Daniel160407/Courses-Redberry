@@ -19,6 +19,16 @@ const fileSize = computed(() => {
   return `${mb.toFixed(1)}MB`;
 });
 
+
+const handleFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files?.length) {
+    emit("update:modelValue", target.files[0]);
+  }
+};
+
+const triggerFileInput = () => fileInput.value?.click();
+
 watch(
   () => props.modelValue,
   (newFile) => {
@@ -34,15 +44,6 @@ watch(
   },
   { immediate: true }
 );
-
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files?.length) {
-    emit("update:modelValue", target.files[0]);
-  }
-};
-
-const triggerFileInput = () => fileInput.value?.click();
 </script>
 
 <template>
