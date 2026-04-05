@@ -1,4 +1,4 @@
-import type { RegistrationErrors, RegistrationForm } from "../types/interfaces";
+import type { LogInErrors, LogInForm, RegistrationErrors, RegistrationForm } from "../types/interfaces";
 
 export const useValidate = () => {
   const validateRegistration = (formData: RegistrationForm) => {
@@ -26,7 +26,24 @@ export const useValidate = () => {
     return { errors, isValid };
   };
 
+  const validateLogIn = (formData: LogInForm) => {
+    const errors: LogInErrors = {
+      email: "",
+      password: ""
+    };
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(formData.email)) errors.email = "Please enter a valid email address";
+    if (formData.password.length < 3) errors.password = "Password must contain at least 3 symbols ";
+
+    const isValid = !Object.values(errors).some((error) => error !== "");
+
+    return { errors, isValid };
+  };
+
   return {
-    validateRegistration
+    validateRegistration,
+    validateLogIn
   };
 };

@@ -4,6 +4,6 @@ import MenuBar from "./components/layout/MenuBar.vue";
 <template>
   <div>
     <MenuBar />
-    <router-view></router-view>
+    <!-- <router-view></router-view> -->
   </div>
 </template>

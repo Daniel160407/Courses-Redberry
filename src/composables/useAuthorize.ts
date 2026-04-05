@@ -1,9 +1,14 @@
-import type { RegistrationForm } from "../types/interfaces";
+import type { LogInForm, RegistrationForm } from "../types/interfaces";
 import { useAxios } from "./useAxios";
 import Cookies from "js-cookie";
 
 export const useAuthorize = () => {
   const { sendRequest, data, error } = useAxios();
+
+  const isAuthenticated = (): boolean => {
+    const token = Cookies.get("token");
+    return !!token;
+  };
 
   const register = async (formData: RegistrationForm) => {
     try {
@@ -26,8 +31,8 @@ export const useAuthorize = () => {
         }
       });
 
-      if (data.value?.token) {
-        Cookies.set("token", data.value.token, { expires: 365 });
+      if (data.value?.data?.token) {
+        Cookies.set("token", data.value.data.token, { expires: 365 });
       }
 
       return { success: true };
@@ -37,5 +42,25 @@ export const useAuthorize = () => {
     }
   };
 
-  return { register };
+  const logIn = async (formData: LogInForm) => {
+    try {
+      await sendRequest({
+        method: "POST",
+        url: "/login",
+        data: formData
+      });
+
+      if (data.value?.data?.token) {
+        Cookies.set("token", data.value.data.token, { expires: 365 });
+        return { success: true };
+      }
+
+      return { success: true };
+    } catch (err) {
+      console.error("Login Error:", err);
+      return { success: false, serverErrors: error.value };
+    }
+  };
+
+  return { isAuthenticated, register, logIn };
 };

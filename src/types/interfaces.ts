@@ -17,12 +17,22 @@ export interface RegistrationForm {
   avatar: File | null;
 }
 
+export interface LogInForm {
+  email: string;
+  password: string;
+}
+
 export interface RegistrationErrors {
   email: string;
   password: string;
   confirmPassword: string;
   username: string;
   avatar: string;
+}
+
+export interface LogInErrors {
+  email: string;
+  password: string;
 }
 
 export interface ApiErrorResponse {

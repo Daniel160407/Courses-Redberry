@@ -9,6 +9,7 @@ interface Props {
   title?: string;
   subtitle?: string;
   buttonLabel?: string;
+  hasSteps?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -38,7 +39,7 @@ const changeStep = (increment: number) => {
 };
 
 const handleFinalClick = () => {
-  if (step.value === 3) {
+  if (step.value === 3 || !props.hasSteps) {
     emit("submit");
   } else {
     changeStep(1);
@@ -70,28 +71,35 @@ const handleFinalClick = () => {
           <span class="text-md">{{ props.subtitle }}</span>
         </div>
 
-        <div class="flex gap-2">
+        <div v-if="hasSteps" class="flex gap-2">
           <div class="h-2 w-29 rounded-[30px]" :class="step > 0 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
           <div class="h-2 w-29 rounded-[30px]" :class="step > 1 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
           <div class="h-2 w-29 rounded-[30px]" :class="step > 2 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
         </div>
 
-        <slot v-if="step === 1" name="step1" />
-        <slot v-else-if="step === 2" name="step2" />
-        <slot v-else-if="step === 3" name="step3" />
+        <template v-if="!hasSteps">
+          <slot name="content" />
+        </template>
+        <template v-else>
+          <slot v-if="step === 1" name="step1" />
+          <slot v-else-if="step === 2" name="step2" />
+          <slot v-else-if="step === 3" name="step3" />
+        </template>
 
         <Button
           type="submit"
-          :label="step === 3 && buttonLabel ? buttonLabel : 'Next'"
+          :label="(step === 3 || !hasSteps) && buttonLabel ? buttonLabel : 'Next'"
           class="rounded-md bg-[#4F46E5] text-[#FFFFFF]"
         />
 
-        <div v-if="$slots.end" class="flex w-full items-center gap-4">
-          <div class="flex-1 border-t border-[#EAEAEA]"></div>
-          <span class="text-sm font-medium text-[#757575]">or</span>
-          <div class="flex-1 border-t border-[#EAEAEA]"></div>
+        <div v-if="$slots.end" class="gap-2">
+          <div class="flex w-full items-center gap-4">
+            <div class="flex-1 border-t border-[#EAEAEA]"></div>
+            <span class="text-sm font-medium text-[#757575]">or</span>
+            <div class="flex-1 border-t border-[#EAEAEA]"></div>
+          </div>
+          <slot name="end" />
         </div>
-        <slot name="end" />
       </form>
     </div>
   </div>
