@@ -10,10 +10,11 @@ interface Props {
   subtitle?: string;
   buttonLabel?: string;
   hasSteps?: boolean;
+  confirmClosing?: boolean;
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(["update:visible", "submit"]);
+const emit = defineEmits(["update:visible", "submit", "close"]);
 
 const step = ref<number>(1);
 
@@ -28,7 +29,8 @@ defineExpose({ openStep });
 
 const close = () => {
   step.value = 1;
-  emit("update:visible", false);
+  if (!props.confirmClosing) emit("update:visible", false);
+  emit("close");
 };
 
 const changeStep = (increment: number) => {
@@ -52,6 +54,7 @@ const handleFinalClick = () => {
     <div class="relative flex w-115 flex-col gap-3 rounded-xl bg-white">
       <div class="flex justify-between px-4 py-6">
         <Button
+          v-if="!hasSteps"
           :icon="ArrowLeftIcon"
           type="button"
           class="cursor-pointer p-0! transition-opacity hover:opacity-70"
@@ -70,6 +73,8 @@ const handleFinalClick = () => {
           <span class="text-3xl">{{ props.title }}</span>
           <span class="text-md">{{ props.subtitle }}</span>
         </div>
+
+        <slot v-if="$slots.start" name="start" />
 
         <div v-if="hasSteps" class="flex gap-2">
           <div class="h-2 w-29 rounded-[30px]" :class="step > 0 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>

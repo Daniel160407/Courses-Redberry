@@ -19,7 +19,6 @@ const fileSize = computed(() => {
   return `${mb.toFixed(1)}MB`;
 });
 
-
 const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files?.length) {
@@ -67,8 +66,8 @@ watch(
         <span class="text-sm text-[#8A8A8A]">Size - {{ fileSize }}</span>
         <button
           type="button"
-          @click="triggerFileInput"
           class="crusor-pointer mt-1 text-left text-sm font-medium text-[#281ED2] underline underline-offset-4 hover:opacity-80"
+          @click="triggerFileInput"
         >
           Change
         </button>
@@ -77,8 +76,8 @@ watch(
 
     <div
       v-else
-      @click="triggerFileInput"
       class="flex h-48 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-[1.5px] border-[#D1D1D1] transition-all"
+      @click="triggerFileInput"
     >
       <UploadIcon class="h-10 w-10 text-[#8A8A8A]" />
       <div class="text-center">

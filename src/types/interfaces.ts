@@ -39,3 +39,16 @@ export interface ApiErrorResponse {
   message: string;
   errors?: Record<string, string[]>;
 }
+
+export interface ProfileForm {
+  full_name: string;
+  mobile_number: string;
+  age: number;
+  avatar: File | null;
+}
+
+export interface ProfileErrors {
+  full_name: string;
+  mobile_number: string;
+  age: string;
+}

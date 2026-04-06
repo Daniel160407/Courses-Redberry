@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { useValidate } from "../../composables/useValidate";
-import type { LogInErrors, LogInForm, RegistrationErrors, RegistrationForm, User } from "../../types/interfaces";
+import {
+  type ProfileForm,
+  type LogInErrors,
+  type LogInForm,
+  type RegistrationErrors,
+  type RegistrationForm,
+  type ProfileErrors
+} from "@/types/interfaces";
+import { useValidate } from "@/composables/useValidate";
 import Button from "../common/Button.vue";
 import Dialog from "../common/Dialog.vue";
 import Input from "../common/Input.vue";
@@ -8,15 +15,27 @@ import InputFile from "../common/InputFile.vue";
 import BookIcon from "../icons/BookIcon.vue";
 import LogoIcon from "../icons/LogoIcon.vue";
 import StarsIcon from "../icons/StarsIcon.vue";
-import UserIcon from "../icons/UserIcon.vue";
-import { ref } from "vue";
-import { useAuthorize } from "../../composables/useAuthorize";
+import { ref, watch } from "vue";
+import { useAuthorize } from "@/composables/useAuthorize";
+import { storeToRefs } from "pinia";
+import { useGlobalStore } from "@/stores/GlobalStore";
+import Avatar from "../common/Avatar.vue";
+import { COMPLETE_STATUS, INCOMPLETE_STATUS } from "@/composables/constants";
+import PencilIcon from "../icons/PencilIcon.vue";
+import MarkIcon from "../icons/MarkIcon.vue";
+import Select from "../common/Select.vue";
+import ArrowDownIcon from "../icons/ArrowDownIcon.vue";
+import Modal from "../common/Modal.vue";
+import WarningIcon from "../icons/WarningIcon.vue";
 
-const { validateRegistration, validateLogIn } = useValidate();
-const { isAuthenticated, register, logIn } = useAuthorize();
+const { user } = storeToRefs(useGlobalStore());
+const { validateRegistration, validateLogIn, validateProfileDetails } = useValidate();
+const { isAuthenticated, register, logIn, updateProfile } = useAuthorize();
 
 const showSignUpModal = ref(false);
 const showLogInModal = ref(false);
+const showProfileModal = ref(true);
+const showCloseConfirm = ref(false);
 const registrationFormData = ref<RegistrationForm>({
   email: "",
   password: "",
@@ -38,6 +57,17 @@ const registrationFormErrors = ref<RegistrationErrors>({
 const logInFormErrors = ref<LogInErrors>({
   email: "",
   password: ""
+});
+const profileFormData = ref<ProfileForm>({
+  full_name: user.value?.fullName ?? "",
+  mobile_number: user.value?.mobileNumber ?? "",
+  age: user.value?.age ?? 0,
+  avatar: null
+});
+const profileFormErrors = ref<ProfileErrors>({
+  full_name: "",
+  mobile_number: "",
+  age: ""
 });
 
 const handleRegister = async () => {
@@ -77,10 +107,77 @@ const handleLogIn = async () => {
   }
 };
 
+const handleUpdateProfile = async () => {
+  const { errors, isValid } = validateProfileDetails(profileFormData.value);
+  profileFormErrors.value = errors;
+  console.log(errors);
+
+  if (!isValid) return;
+
+  const result = await updateProfile(profileFormData.value);
+  if (result.success) {
+    showProfileModal.value = false;
+  } else {
+    const serverErr = result?.serverErrors;
+
+    if (typeof serverErr === "object" && serverErr?.errors) {
+      for (const key in serverErr.errors) {
+        if (key in profileFormErrors.value) {
+          (profileFormErrors.value as any)[key] = serverErr.errors[key][0];
+        }
+      }
+    }
+  }
+};
+
 const switchAuthorizationModal = () => {
   showLogInModal.value = !showLogInModal.value;
   showSignUpModal.value = !showSignUpModal.value;
 };
+
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    complete: "#1DC31D",
+    incomplete: "#F4A316"
+  };
+
+  return colors[status];
+};
+
+const getAgeOptions = () => {
+  return Array.from({ length: 105 }, (_, i) => {
+    const age = i + 16;
+    return { label: age.toString(), value: age };
+  });
+};
+
+const handleCloseProfile = () => {
+  showCloseConfirm.value = true;
+};
+
+const handleClickCancelProfileConfirm = () => {
+  showCloseConfirm.value = false;
+};
+
+const handleClickContinueProfileConfirm = () => {
+  showCloseConfirm.value = false;
+  showProfileModal.value = false;
+};
+
+watch(
+  user,
+  (newUser) => {
+    if (newUser) {
+      profileFormData.value = {
+        full_name: newUser.fullName ?? "",
+        mobile_number: newUser.mobileNumber ?? "",
+        age: newUser.age ?? 0,
+        avatar: null
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 <template>
   <div class="border-b border-b-[#D1D1D1] px-44 py-6">
@@ -91,9 +188,7 @@ const switchAuthorizationModal = () => {
           <Button label="Browse Courses" :icon="StarsIcon" />
           <Button label="Enrolled Courses" :icon="BookIcon" />
         </div>
-        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-[#EEEDFC]">
-          <UserIcon />
-        </div>
+        <Avatar :src="user?.avatar" />
       </div>
 
       <div v-else class="flex gap-9">
@@ -114,7 +209,6 @@ const switchAuthorizationModal = () => {
       </div>
 
       <Dialog
-        ref="signUpDialog"
         v-model:visible="showSignUpModal"
         title="Create Account"
         subtitle="Join and start learning today"
@@ -214,6 +308,70 @@ const switchAuthorizationModal = () => {
           </div>
         </template>
       </Dialog>
+
+      <Dialog
+        v-model:visible="showProfileModal"
+        title="Profile"
+        button-label="Update Profile"
+        :has-steps="false"
+        confirm-closing
+        @close="handleCloseProfile"
+        @submit="handleUpdateProfile"
+      >
+        <template #start>
+          <div class="flex gap-2">
+            <Avatar :src="user?.avatar" :status="user?.profileComplete ? COMPLETE_STATUS : INCOMPLETE_STATUS" />
+            <div class="flex flex-col gap-1">
+              <span class="text-xl text-[#0A0A0A]">{{ user?.fullName ?? "Username" }}</span>
+              <span
+                class="pl-0.5 text-[10px]"
+                :style="{ color: getStatusColor(user?.profileComplete ? COMPLETE_STATUS : INCOMPLETE_STATUS) }"
+                >{{ user?.profileComplete ? "Profile is Complete" : "Incomplete Profile" }}</span
+              >
+            </div>
+          </div>
+        </template>
+        <template #content>
+          <Input
+            v-model="profileFormData.full_name"
+            :error="profileFormErrors.full_name"
+            label="Full Name"
+            placeholder="Username"
+            :icon="PencilIcon"
+          />
+          <Input :model-value="user?.email ?? ''" label="Email" :icon="MarkIcon" disabled />
+          <div class="flex gap-2">
+            <Input
+              v-model="profileFormData.mobile_number"
+              :error="profileFormErrors.mobile_number"
+              label="Mobile Number"
+              type="tel"
+              placeholder="599209820"
+              :icon="MarkIcon"
+              class="flex-3"
+            />
+            <Select
+              v-model="profileFormData.age"
+              :error="profileFormErrors.age"
+              :options="getAgeOptions()"
+              label="Age"
+              :icon="ArrowDownIcon"
+              class="flex-1"
+            />
+          </div>
+          <InputFile v-model="profileFormData.avatar" label="Upload Avatar" />
+        </template>
+      </Dialog>
+
+      <Modal
+        :visible="showCloseConfirm"
+        title="Your profile is incomplete."
+        content="You won't be able to enroll in courses until you complete it. Close anyway?"
+        button-label="Continue"
+        :icon="WarningIcon"
+        @continue="handleClickContinueProfileConfirm"
+        @cancel="handleClickCancelProfileConfirm"
+      />
     </div>
   </div>
 </template>

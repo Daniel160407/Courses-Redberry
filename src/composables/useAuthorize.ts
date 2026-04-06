@@ -1,4 +1,4 @@
-import type { LogInForm, RegistrationForm } from "../types/interfaces";
+import type { LogInForm, ProfileForm, RegistrationForm } from "../types/interfaces";
 import { useAxios } from "./useAxios";
 import Cookies from "js-cookie";
 
@@ -8,6 +8,24 @@ export const useAuthorize = () => {
   const isAuthenticated = (): boolean => {
     const token = Cookies.get("token");
     return !!token;
+  };
+
+  const fetchUserInfo = async () => {
+    try {
+      await sendRequest({
+        method: "GET",
+        url: "/me",
+        useToken: true
+      });
+
+      if (data.value?.data) {
+        return data.value?.data;
+      }
+    } catch (err) {
+      console.error("Login Error:", err);
+      Cookies.remove("token");
+      return null;
+    }
   };
 
   const register = async (formData: RegistrationForm) => {
@@ -62,5 +80,21 @@ export const useAuthorize = () => {
     }
   };
 
-  return { isAuthenticated, register, logIn };
+  const updateProfile = async (formData: ProfileForm) => {
+    try {
+      await sendRequest({
+        method: "PUT",
+        url: "/profile",
+        data: formData,
+        useToken: true
+      });
+
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      return { success: false, serverErrors: error.value };
+    }
+  };
+
+  return { isAuthenticated, fetchUserInfo, register, logIn, updateProfile };
 };

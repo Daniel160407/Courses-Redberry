@@ -1,6 +1,7 @@
 import { ref, type Ref } from "vue";
 import axios, { type AxiosRequestConfig, AxiosError } from "axios";
 import type { ApiErrorResponse } from "../types/interfaces";
+import Cookies from "js-cookie";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -9,11 +10,15 @@ const apiClient = axios.create({
   }
 });
 
+interface CustomAxiosConfig extends AxiosRequestConfig {
+  useToken?: boolean;
+}
+
 interface UseAxiosReturn<T> {
   data: Ref<T | null>;
   error: Ref<ApiErrorResponse | string | null>;
   loading: Ref<boolean>;
-  sendRequest: (config: AxiosRequestConfig) => Promise<T>;
+  sendRequest: (config: CustomAxiosConfig) => Promise<T>;
 }
 
 export function useAxios<T = any>(): UseAxiosReturn<T> {
@@ -21,9 +26,19 @@ export function useAxios<T = any>(): UseAxiosReturn<T> {
   const error = ref<ApiErrorResponse | string | null>(null);
   const loading = ref<boolean>(false);
 
-  const sendRequest = async (config: AxiosRequestConfig): Promise<T> => {
+  const sendRequest = async (config: CustomAxiosConfig): Promise<T> => {
     loading.value = true;
     error.value = null;
+
+    if (config.useToken) {
+      const token = Cookies.get("token");
+      if (token) {
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`
+        };
+      }
+    }
 
     try {
       const response = await apiClient.request<T>(config);

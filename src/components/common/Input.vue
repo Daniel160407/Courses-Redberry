@@ -11,11 +11,13 @@ interface Props {
   error?: string;
   required?: boolean;
   icon?: Component;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: "text",
-  required: false
+  required: false,
+  disabled: false
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -33,6 +35,13 @@ const displayError = computed(() => {
   return null;
 });
 
+const inputType = computed(() => {
+  if (props.type === "password") {
+    return showPassword.value ? "text" : "password";
+  }
+  return props.type;
+});
+
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
@@ -46,29 +55,27 @@ const handleInput = (event: Event) => {
 const handleBlur = () => {
   isTouched.value = true;
 };
-
-const inputType = computed(() => {
-  if (props.type === "password") {
-    return showPassword.value ? "text" : "password";
-  }
-  return props.type;
-});
 </script>
 
 <template>
-  <div class="font-inter flex w-full flex-col gap-1.5">
+  <div class="font-inter flex w-full flex-col gap-2">
     <label v-if="label" class="text-sm font-medium" :class="displayError ? 'text-[#EF4444]' : 'text-[#3D3D3D]'">
       {{ label }}{{ required ? "*" : "" }}
     </label>
 
     <div class="relative">
+      <div v-if="type === 'tel'" class="absolute top-1/2 left-4 -translate-y-1/2 pr-2 text-sm text-[#D1D1D1]">+995</div>
+
       <input
         :type="inputType"
         :value="modelValue"
         :placeholder="placeholder"
+        :disabled="disabled"
         autocomplete="new-password"
         :class="[
-          'w-full rounded-lg border px-4 py-3 text-sm transition-all duration-200 outline-none',
+          'w-full rounded-lg border py-3 text-sm transition-all duration-200 outline-none',
+          type === 'tel' ? 'pr-4 pl-14' : 'px-4',
+          disabled ? 'cursor-not-allowed border-[#ADADAD] bg-[#F5F5F5] text-[#ADADAD]' : '',
           displayError
             ? 'border-[#EF4444] placeholder-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
             : 'border-[1.5px] border-[#D1D1D1] placeholder-[#8A8A8A] focus:border-[#ADADAD] focus:placeholder-[#D1D1D1]'
