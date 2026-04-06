@@ -53,13 +53,15 @@ const handleFinalClick = () => {
   <div v-if="visible" class="font-inter fixed inset-0 z-50 flex items-center justify-center bg-black/20">
     <div class="relative flex w-115 flex-col gap-3 rounded-xl bg-white">
       <div class="flex justify-between px-4 py-6">
-        <Button
-          v-if="!hasSteps"
-          :icon="ArrowLeftIcon"
-          type="button"
-          class="cursor-pointer p-0! transition-opacity hover:opacity-70"
-          @click="changeStep(-1)"
-        />
+        <div>
+          <Button
+            v-if="hasSteps && step > 1"
+            :icon="ArrowLeftIcon"
+            type="button"
+            class="cursor-pointer p-0! transition-opacity hover:opacity-70"
+            @click="changeStep(-1)"
+          />
+        </div>
         <Button
           :icon="CloseIcon"
           type="button"

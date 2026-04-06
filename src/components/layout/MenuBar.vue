@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  type ProfileForm,
-  type LogInErrors,
-  type LogInForm,
-  type RegistrationErrors,
-  type RegistrationForm,
-  type ProfileErrors
-} from "@/types/interfaces";
+import { type ProfileForm, type LogInForm, type RegistrationForm } from "@/types/interfaces";
 import { useValidate } from "@/composables/useValidate";
 import Button from "../common/Button.vue";
 import Dialog from "../common/Dialog.vue";
@@ -28,13 +21,15 @@ import ArrowDownIcon from "../icons/ArrowDownIcon.vue";
 import Modal from "../common/Modal.vue";
 import WarningIcon from "../icons/WarningIcon.vue";
 
-const { user } = storeToRefs(useGlobalStore());
-const { validateRegistration, validateLogIn, validateProfileDetails } = useValidate();
+const globalStore = useGlobalStore();
+const { user } = storeToRefs(globalStore);
+const { setUser } = globalStore;
+const { useRegistrationValidate, useLogInValidate, useProfileValidate } = useValidate();
 const { isAuthenticated, register, logIn, updateProfile } = useAuthorize();
 
 const showSignUpModal = ref(false);
 const showLogInModal = ref(false);
-const showProfileModal = ref(true);
+const showProfileModal = ref(false);
 const showCloseConfirm = ref(false);
 const registrationFormData = ref<RegistrationForm>({
   email: "",
@@ -47,45 +42,29 @@ const logInFormData = ref<LogInForm>({
   email: "",
   password: ""
 });
-const registrationFormErrors = ref<RegistrationErrors>({
-  email: "",
-  password: "",
-  confirmPassword: "",
-  username: "",
-  avatar: ""
-});
-const logInFormErrors = ref<LogInErrors>({
-  email: "",
-  password: ""
-});
 const profileFormData = ref<ProfileForm>({
   full_name: user.value?.fullName ?? "",
   mobile_number: user.value?.mobileNumber ?? "",
   age: user.value?.age ?? 0,
   avatar: null
 });
-const profileFormErrors = ref<ProfileErrors>({
-  full_name: "",
-  mobile_number: "",
-  age: ""
-});
+const registrationFormErrors = useRegistrationValidate(registrationFormData);
+const logInFormErrors = useLogInValidate(logInFormData);
+const profileFormErrors = useProfileValidate(profileFormData);
 
 const handleRegister = async () => {
-  const { errors, isValid } = validateRegistration(registrationFormData.value);
-  registrationFormErrors.value = errors;
-
-  if (!isValid) return;
-
+  if (Object.values(registrationFormErrors).some((err) => err !== "")) return;
   const result = await register(registrationFormData.value);
   if (result.success) {
     showSignUpModal.value = false;
-  } else {
+    setUser(result.user ?? null);
+  } else if (result?.serverErrors) {
     const serverErr = result?.serverErrors;
 
     if (typeof serverErr === "object" && serverErr?.errors) {
       for (const key in serverErr.errors) {
-        if (key in registrationFormErrors.value) {
-          (registrationFormErrors.value as any)[key] = serverErr.errors[key][0];
+        if (key in registrationFormErrors) {
+          (registrationFormErrors as any)[key] = serverErr.errors[key][0];
         }
       }
     }
@@ -93,41 +72,20 @@ const handleRegister = async () => {
 };
 
 const handleLogIn = async () => {
-  const { errors, isValid } = validateLogIn(logInFormData.value);
-  logInFormErrors.value = errors;
-
-  if (!isValid) return;
-
+  if (Object.values(logInFormErrors).some((err) => err !== "")) return;
   const result = await logIn(logInFormData.value);
   if (result.success) {
     showLogInModal.value = false;
+    setUser(result.user ?? null);
   } else {
-    logInFormErrors.value.email = "Invalid email or password";
-    logInFormErrors.value.password = "Invalid email or password";
+    logInFormErrors.email = "Invalid credentials";
   }
 };
 
 const handleUpdateProfile = async () => {
-  const { errors, isValid } = validateProfileDetails(profileFormData.value);
-  profileFormErrors.value = errors;
-  console.log(errors);
-
-  if (!isValid) return;
-
+  if (Object.values(profileFormErrors).some((err) => err !== "")) return;
   const result = await updateProfile(profileFormData.value);
-  if (result.success) {
-    showProfileModal.value = false;
-  } else {
-    const serverErr = result?.serverErrors;
-
-    if (typeof serverErr === "object" && serverErr?.errors) {
-      for (const key in serverErr.errors) {
-        if (key in profileFormErrors.value) {
-          (profileFormErrors.value as any)[key] = serverErr.errors[key][0];
-        }
-      }
-    }
-  }
+  if (result.success) showProfileModal.value = false;
 };
 
 const switchAuthorizationModal = () => {
@@ -188,7 +146,11 @@ watch(
           <Button label="Browse Courses" :icon="StarsIcon" />
           <Button label="Enrolled Courses" :icon="BookIcon" />
         </div>
-        <Avatar :src="user?.avatar" />
+        <Avatar
+          :src="user?.avatar"
+          :status="user?.profileComplete ? COMPLETE_STATUS : INCOMPLETE_STATUS"
+          @click="showProfileModal = true"
+        />
       </div>
 
       <div v-else class="flex gap-9">

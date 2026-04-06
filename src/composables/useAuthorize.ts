@@ -53,7 +53,7 @@ export const useAuthorize = () => {
         Cookies.set("token", data.value.data.token, { expires: 365 });
       }
 
-      return { success: true };
+      return { success: true, user: data.value?.data?.user };
     } catch (err) {
       console.error(err);
       return { success: false, serverErrors: error.value };
@@ -70,10 +70,9 @@ export const useAuthorize = () => {
 
       if (data.value?.data?.token) {
         Cookies.set("token", data.value.data.token, { expires: 365 });
-        return { success: true };
       }
 
-      return { success: true };
+      return { success: true, user: data.value?.data?.user };
     } catch (err) {
       console.error("Login Error:", err);
       return { success: false, serverErrors: error.value };
