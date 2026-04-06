@@ -20,6 +20,7 @@ import Select from "../common/Select.vue";
 import ArrowDownIcon from "../icons/ArrowDownIcon.vue";
 import Modal from "../common/Modal.vue";
 import WarningIcon from "../icons/WarningIcon.vue";
+import SuccessIcon from "../icons/SuccessIcon.vue";
 
 const globalStore = useGlobalStore();
 const { user } = storeToRefs(globalStore);
@@ -31,6 +32,7 @@ const showSignUpModal = ref(false);
 const showLogInModal = ref(false);
 const showProfileModal = ref(false);
 const showCloseConfirm = ref(false);
+const showProfileEditSuccessModal = ref(false);
 const registrationFormData = ref<RegistrationForm>({
   email: "",
   password: "",
@@ -85,7 +87,10 @@ const handleLogIn = async () => {
 const handleUpdateProfile = async () => {
   if (Object.values(profileFormErrors).some((err) => err !== "")) return;
   const result = await updateProfile(profileFormData.value);
-  if (result.success) showProfileModal.value = false;
+  if (result.success) {
+    showProfileModal.value = false;
+    showProfileEditSuccessModal.value = true;
+  }
 };
 
 const switchAuthorizationModal = () => {
@@ -333,6 +338,12 @@ watch(
         :icon="WarningIcon"
         @continue="handleClickContinueProfileConfirm"
         @cancel="handleClickCancelProfileConfirm"
+      />
+      <Modal
+        :visible="showProfileEditSuccessModal"
+        title="Profile updated successfully"
+        :icon="SuccessIcon"
+        @continue="showProfileEditSuccessModal = false"
       />
     </div>
   </div>

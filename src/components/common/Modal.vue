@@ -31,7 +31,7 @@ const emit = defineEmits(["continue", "cancel"]);
             />
             <Button label="Cancel" class="flex-1 rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="emit('cancel')" />
           </div>
-          <Button v-else label="Done" class="rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="emit('continue')" />
+          <Button v-else label="Done" class="rounded-lg w-full bg-[#4F46E5] text-[#FFFFFF]" @click="emit('continue')" />
         </div>
       </div>
     </div>
