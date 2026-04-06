@@ -31,6 +31,9 @@ const { isAuthenticated, register, logIn, updateProfile } = useAuthorize();
 const showSignUpModal = ref(false);
 const showLogInModal = ref(false);
 const showProfileModal = ref(false);
+const registrationSubmitted = ref(false);
+const logInSubmitted = ref(false);
+const profileSubmitted = ref(false);
 const showCloseConfirm = ref(false);
 const showProfileEditSuccessModal = ref(false);
 const registrationFormData = ref<RegistrationForm>({
@@ -55,7 +58,10 @@ const logInFormErrors = useLogInValidate(logInFormData);
 const profileFormErrors = useProfileValidate(profileFormData);
 
 const handleRegister = async () => {
-  if (Object.values(registrationFormErrors).some((err) => err !== "")) return;
+  if (Object.values(registrationFormErrors).some((err) => err !== "")) {
+    return;
+  }
+
   const result = await register(registrationFormData.value);
   if (result.success) {
     showSignUpModal.value = false;
@@ -71,26 +77,34 @@ const handleRegister = async () => {
       }
     }
   }
+  registrationSubmitted.value = true;
 };
 
 const handleLogIn = async () => {
-  if (Object.values(logInFormErrors).some((err) => err !== "")) return;
+  if (Object.values(logInFormErrors).some((err) => err !== "")) {
+    return;
+  }
   const result = await logIn(logInFormData.value);
   if (result.success) {
     showLogInModal.value = false;
     setUser(result.user ?? null);
   } else {
     logInFormErrors.email = "Invalid credentials";
+    logInFormErrors.password = "Invalid credentials";
   }
+  logInSubmitted.value = true;
 };
 
 const handleUpdateProfile = async () => {
-  if (Object.values(profileFormErrors).some((err) => err !== "")) return;
+  if (Object.values(profileFormErrors).some((err) => err !== "")) {
+    return;
+  }
   const result = await updateProfile(profileFormData.value);
   if (result.success) {
     showProfileModal.value = false;
     showProfileEditSuccessModal.value = true;
   }
+  profileSubmitted.value = true;
 };
 
 const switchAuthorizationModal = () => {
@@ -126,6 +140,42 @@ const handleClickContinueProfileConfirm = () => {
   showCloseConfirm.value = false;
   showProfileModal.value = false;
 };
+
+watch(
+  registrationFormData,
+  () => {
+    registrationSubmitted.value = false;
+  },
+  { deep: true }
+);
+
+watch(
+  logInFormData,
+  () => {
+    logInSubmitted.value = false;
+  },
+  { deep: true }
+);
+
+watch(
+  profileFormData,
+  () => {
+    profileSubmitted.value = false;
+  },
+  { deep: true }
+);
+
+watch(showSignUpModal, (isOpen) => {
+  if (isOpen) registrationSubmitted.value = false;
+});
+
+watch(showLogInModal, (isOpen) => {
+  if (isOpen) logInSubmitted.value = false;
+});
+
+watch(showProfileModal, (isOpen) => {
+  if (isOpen) profileSubmitted.value = false;
+});
 
 watch(
   user,
@@ -187,6 +237,7 @@ watch(
           <Input
             v-model="registrationFormData.email"
             :error="registrationFormErrors.email"
+            :success="registrationSubmitted && !registrationFormErrors.email"
             label="Email"
             placeholder="you@example.com"
             type="email"
@@ -198,6 +249,7 @@ watch(
           <Input
             v-model="registrationFormData.password"
             :error="registrationFormErrors.password"
+            :success="registrationSubmitted && !registrationFormErrors.password"
             label="Password"
             placeholder="Password"
             type="password"
@@ -206,6 +258,7 @@ watch(
           <Input
             v-model="registrationFormData.confirmPassword"
             :error="registrationFormErrors.confirmPassword"
+            :success="registrationSubmitted && !registrationFormErrors.confirmPassword"
             label="Confirm Password"
             placeholder="Password"
             type="password"
@@ -217,6 +270,7 @@ watch(
           <Input
             v-model="registrationFormData.username"
             :error="registrationFormErrors.username"
+            :success="registrationSubmitted && !registrationFormErrors.username"
             label="Username"
             placeholder="Username"
             type="text"
@@ -252,6 +306,7 @@ watch(
           <Input
             v-model="logInFormData.email"
             :error="logInFormErrors.email"
+            :success="logInSubmitted && !logInFormErrors.email"
             label="Email"
             placeholder="you@example.com"
             type="email"
@@ -259,6 +314,7 @@ watch(
           <Input
             v-model="logInFormData.password"
             :error="logInFormErrors.password"
+            :success="logInSubmitted && !logInFormErrors.password"
             label="Password"
             placeholder="Password"
             type="password"
@@ -302,6 +358,7 @@ watch(
           <Input
             v-model="profileFormData.full_name"
             :error="profileFormErrors.full_name"
+            :success="profileSubmitted && !profileFormErrors.full_name"
             label="Full Name"
             placeholder="Username"
             :icon="PencilIcon"
@@ -311,6 +368,7 @@ watch(
             <Input
               v-model="profileFormData.mobile_number"
               :error="profileFormErrors.mobile_number"
+              :success="profileSubmitted && !profileFormErrors.mobile_number"
               label="Mobile Number"
               type="tel"
               placeholder="599209820"
@@ -320,6 +378,7 @@ watch(
             <Select
               v-model="profileFormData.age"
               :error="profileFormErrors.age"
+              :success="profileSubmitted && !profileFormErrors.age"
               :options="getAgeOptions()"
               label="Age"
               :icon="ArrowDownIcon"

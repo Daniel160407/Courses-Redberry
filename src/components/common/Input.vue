@@ -12,12 +12,14 @@ interface Props {
   required?: boolean;
   icon?: Component;
   disabled?: boolean;
+  success?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: "text",
   required: false,
-  disabled: false
+  disabled: false,
+  success: false
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -59,7 +61,11 @@ const handleBlur = () => {
 
 <template>
   <div class="font-inter flex w-full flex-col gap-2">
-    <label v-if="label" class="text-sm font-medium" :class="displayError ? 'text-[#EF4444]' : 'text-[#3D3D3D]'">
+    <label
+      v-if="label"
+      class="text-sm font-medium"
+      :class="displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : 'text-[#3D3D3D]'"
+    >
       {{ label }}{{ required ? "*" : "" }}
     </label>
 
@@ -74,26 +80,37 @@ const handleBlur = () => {
         autocomplete="new-password"
         :class="[
           'w-full rounded-lg border py-3 text-sm transition-all duration-200 outline-none',
-          type === 'tel' ? 'pr-4 pl-14' : 'px-4',
+          type === 'tel' ? 'pr-4 pl-14 text-[#ADADAD]' : 'px-4',
           disabled ? 'cursor-not-allowed border-[#ADADAD] bg-[#F5F5F5] text-[#ADADAD]' : '',
           displayError
             ? 'border-[#EF4444] placeholder-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
-            : 'border-[1.5px] border-[#D1D1D1] placeholder-[#8A8A8A] focus:border-[#ADADAD] focus:placeholder-[#D1D1D1]'
+            : success
+              ? 'border-[#1DC31D] focus:ring-1 focus:ring-[#1DC31D]'
+              : 'border-[1.5px] border-[#D1D1D1] placeholder-[#8A8A8A] focus:border-[#ADADAD] focus:placeholder-[#D1D1D1]'
         ]"
         @input="handleInput"
         @blur="handleBlur"
       />
 
       <div class="absolute top-1/2 right-4 flex -translate-y-1/2 items-center">
-        <component :is="icon" v-if="icon && type !== 'password'" class="h-6 w-6" />
+        <component
+          :is="icon"
+          v-if="icon && type !== 'password'"
+          class="h-6 w-6"
+          :class="displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : ''"
+        />
 
         <div v-if="type === 'password'" class="cursor-pointer select-none" @click="togglePassword">
           <EyeCloseIcon
             v-if="!showPassword"
             class="h-6 w-6"
-            :class="displayError ? 'text-[#EF4444]' : 'text-[#8A8A8A]'"
+            :class="displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : 'text-[#8A8A8A]'"
           />
-          <EyeOpenIcon v-else class="h-6 w-6" :class="displayError ? 'text-[#EF4444]' : 'text-[#8A8A8A]'" />
+          <EyeOpenIcon
+            v-else
+            class="h-6 w-6"
+            :class="displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : 'text-[#8A8A8A]'"
+          />
         </div>
       </div>
     </div>

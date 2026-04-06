@@ -10,11 +10,13 @@ interface Props {
   disabled?: boolean;
   placeholder?: string;
   icon?: Component;
+  success?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   required: false,
   disabled: false,
+  success: false,
   placeholder: "Select an option"
 });
 
@@ -50,7 +52,7 @@ const handleBlur = () => {
     <label
       v-if="label"
       class="text-sm font-medium transition-colors"
-      :class="displayError ? 'text-[#EF4444]' : 'text-[#3D3D3D]'"
+      :class="displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : 'text-[#3D3D3D]'"
     >
       {{ label }}{{ required ? "*" : "" }}
     </label>
@@ -64,7 +66,9 @@ const handleBlur = () => {
           disabled ? 'cursor-not-allowed bg-[#F5F5F5]' : 'cursor-pointer',
           displayError
             ? 'border-[#EF4444] focus:ring-1 focus:ring-[#EF4444]'
-            : 'border-[#D1D1D1] focus:border-[#ADADAD]'
+            : success
+              ? 'border-[#1DC31D] focus:ring-1 focus:ring-[#1DC31D]'
+              : 'border-[#D1D1D1] focus:border-[#ADADAD]'
         ]"
         @change="handleChange"
         @blur="handleBlur"
@@ -77,7 +81,12 @@ const handleBlur = () => {
       </select>
 
       <div class="absolute top-1/2 right-4 flex -translate-y-1/2 items-center">
-        <component :is="icon" v-if="icon" class="h-6 w-6" />
+        <component
+          :is="icon"
+          v-if="icon"
+          class="h-6 w-6"
+          :class="displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : ''"
+        />
       </div>
     </div>
 
