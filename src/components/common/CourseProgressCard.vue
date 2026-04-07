@@ -1,0 +1,54 @@
+<script setup lang="ts">
+import Button from "./Button.vue";
+import previewImg from "@/assets/images/coursePreviewImg.png";
+import StarIcon from "../icons/StarIcon.vue";
+
+interface CourseProgressProps {
+  title: string;
+  instructorName: string;
+  avgRating: number | null;
+  progress: number;
+  blured?: boolean;
+}
+
+const props = defineProps<CourseProgressProps>();
+</script>
+
+<template>
+  <div
+    class="border-0.5 flex max-w-126.5 min-w-126.5 flex-col gap-2 rounded-xl border-[#F5F5F5] bg-[#FFFFFF] p-5"
+    :class="props.blured ? 'blur-[20px]' : ''"
+  >
+    <div class="flex">
+      <img :src="previewImg" alt="Course preview" class="max-w-35 flex-1 rounded-xl" />
+      <div class="flex flex-3 flex-col gap-2 pr-1 pl-4">
+        <div class="flex justify-between">
+          <p class="text-[#8A8A8A]">
+            Lecturer <span class="font-medium text-[#666666]">{{ props.instructorName }}</span>
+          </p>
+          <div v-if="props.avgRating" class="flex items-center gap-1">
+            <StarIcon />
+            <span>{{ props.avgRating }}</span>
+          </div>
+        </div>
+        <span class="text-[20px] font-semibold text-[#141414]">{{ props.title }}</span>
+      </div>
+    </div>
+
+    <div class="flex items-end justify-between">
+      <div class="flex w-full max-w-84 flex-col gap-1 pb-1">
+        <span class="text-sm font-medium">{{ props.progress }}% Complete</span>
+        <div class="h-3.75 w-full overflow-hidden rounded-full bg-[#4F46E5]/20">
+          <div
+            class="h-full rounded-full bg-[#4F46E5] transition-all duration-500 ease-out"
+            :style="{ width: `${props.progress}%` }"
+          />
+        </div>
+      </div>
+      <Button
+        label="View"
+        class="text-md rounded-lg border-2 border-[#958FEF] px-4 py-3 font-medium text-[#4F46E5] transition-all duration-300 ease-out hover:bg-[#4F46E5] hover:text-[#F5F5F5] active:scale-95"
+      />
+    </div>
+  </div>
+</template>

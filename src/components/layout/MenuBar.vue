@@ -21,12 +21,14 @@ import ArrowDownIcon from "../icons/ArrowDownIcon.vue";
 import Modal from "../common/Modal.vue";
 import WarningIcon from "../icons/WarningIcon.vue";
 import SuccessIcon from "../icons/SuccessIcon.vue";
+import { useCoursesCrud } from "@/composables/useCoursesCrud";
 
 const globalStore = useGlobalStore();
 const { user } = storeToRefs(globalStore);
 const { setUser } = globalStore;
 const { useRegistrationValidate, useLogInValidate, useProfileValidate } = useValidate();
 const { isAuthenticated, register, logIn, updateProfile } = useAuthorize();
+const { fetchInProgressCourses } = useCoursesCrud();
 
 const showSignUpModal = ref(false);
 const showLogInModal = ref(false);
@@ -187,6 +189,7 @@ watch(
         age: newUser.age ?? 0,
         avatar: null
       };
+      console.log(fetchInProgressCourses());
     }
   },
   { immediate: true }

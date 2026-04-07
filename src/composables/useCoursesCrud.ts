@@ -5,8 +5,8 @@ import { storeToRefs } from "pinia";
 export const useCoursesCrud = () => {
   const { sendRequest, data, error } = useAxios();
   const globalStore = useGlobalStore();
-  const { courses, featuredCourses } = storeToRefs(globalStore);
-  const { setCourses, setFeaturedCourses } = globalStore;
+  const { courses, featuredCourses, coursesInProgress } = storeToRefs(globalStore);
+  const { setCourses, setFeaturedCourses, setCoursesInProgress } = globalStore;
 
   const fetchCourses = async () => {
     if (courses.value.length > 0) return { success: true, courses: courses.value };
@@ -48,5 +48,25 @@ export const useCoursesCrud = () => {
     }
   };
 
-  return { fetchCourses, fetchFeaturedCourses };
+  const fetchInProgressCourses = async () => {
+    if (coursesInProgress.value.length > 0) return { success: true, courses: coursesInProgress.value };
+
+    try {
+      await sendRequest({
+        method: "GET",
+        url: "/courses/in-progress",
+        useToken: true
+      });
+
+      if (data.value?.data) {
+        setCoursesInProgress(data.value?.data);
+        return { success: true, courses: data.value?.data };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, serverErrors: error.value };
+    }
+  };
+
+  return { fetchCourses, fetchFeaturedCourses, fetchInProgressCourses };
 };
