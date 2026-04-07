@@ -17,6 +17,6 @@ onMounted(async () => {
 <template>
   <div>
     <MenuBar />
-    <!-- <router-view></router-view> -->
+    <router-view></router-view>
   </div>
 </template>

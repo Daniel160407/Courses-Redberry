@@ -52,3 +52,43 @@ export interface ProfileErrors {
   mobile_number: string;
   age: string;
 }
+
+export interface SliderItem {
+  title: string;
+  description: string;
+  buttonLabel: string;
+  image: string;
+}
+
+export interface Course {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  basePrice: number;
+  durationWeeks: number;
+  isFeatured: boolean;
+  avgRating: number;
+  reviewCount: number;
+  category: Category;
+  topic: Topic;
+  instructor: Instructor;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  icon: string;
+}
+
+export interface Topic {
+  id: number;
+  name: string;
+  categoryId: number;
+}
+
+export interface Instructor {
+  id: number;
+  name: string;
+  avatar: string;
+}

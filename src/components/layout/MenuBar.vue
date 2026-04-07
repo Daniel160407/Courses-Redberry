@@ -193,7 +193,7 @@ watch(
 );
 </script>
 <template>
-  <div class="border-b border-b-[#D1D1D1] px-44 py-6">
+  <div class="border-b border-b-[#D1D1D1] bg-[#F5F5F5] px-44 py-6">
     <div class="flex items-center justify-between">
       <LogoIcon />
       <div v-if="isAuthenticated()" class="flex gap-9">
