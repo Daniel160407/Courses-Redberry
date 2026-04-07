@@ -12,6 +12,7 @@ import { useGlobalStore } from "@/stores/GlobalStore";
 import Button from "@/components/common/Button.vue";
 import CourseProgressCard from "@/components/common/CourseProgressCard.vue";
 import LockIcon from "@/components/icons/LockIcon.vue";
+import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
 
 const { fetchFeaturedCourses, fetchInProgressCourses } = useCoursesCrud();
 const { featuredCourses, coursesInProgress, isAuthorized } = storeToRefs(useGlobalStore());
@@ -76,6 +77,7 @@ const dummyCourses = ref<DummyCourse[]>([
     progress: 75
   }
 ]);
+const showLogIn = ref(false);
 
 const limitedCourses = computed(() => {
   return coursesInProgress.value.slice(0, 4);
@@ -153,10 +155,11 @@ onMounted(async () => {
               </div>
               <span class="text-[16px] font-medium text-[#0A0A0A]">Sign in to track your learning progress</span>
             </div>
-            <Button label="Log In" class="w-21 rounded-lg bg-[#4F46E5] text-[#FFFFFF]" />
+            <Button label="Log In" class="w-21 rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="showLogIn = true" />
           </div>
         </div>
       </div>
+      <AuthorizationModals v-model:showLogInModal="showLogIn" />
     </div>
   </div>
 </template>
