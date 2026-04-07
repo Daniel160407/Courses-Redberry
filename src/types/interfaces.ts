@@ -104,7 +104,7 @@ export interface Enrollment {
     weeklySchedule: WeeklySchedule;
     timeSlot: TimeSlot;
     sessionType: SessionType;
-    location: string | null;
+    location: string;
   };
 }
 

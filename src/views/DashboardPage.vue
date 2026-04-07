@@ -78,6 +78,7 @@ const dummyCourses = ref<DummyCourse[]>([
   }
 ]);
 const showLogIn = ref(false);
+const showEnrolledCoursesSidebar = ref(false);
 
 const limitedCourses = computed(() => {
   return coursesInProgress.value.slice(0, 4);
@@ -89,7 +90,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="flex flex-col gap-16 bg-[#F5F5F5]">
+  <div class="flex flex-col gap-16 bg-[#F5F5F5] px-44.25 pt-13.5">
     <Slider :items="sliderItems" />
 
     <div v-if="isAuthorized && coursesInProgress" class="flex flex-col gap-8">
@@ -98,7 +99,11 @@ onMounted(async () => {
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
           <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
         </div>
-        <Button label="See all" class="p-0! text-[20px] font-medium text-[#4F46E5] underline" />
+        <Button
+          label="See All"
+          class="p-0! text-[20px] font-medium text-[#4F46E5] underline"
+          @click="showEnrolledCoursesSidebar = true"
+        />
       </div>
 
       <div class="flex justify-between">
@@ -129,7 +134,11 @@ onMounted(async () => {
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
           <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
         </div>
-        <Button label="See all" class="p-0! text-[20px] font-medium text-[#4F46E5] underline" />
+        <Button
+          label="See All"
+          class="p-0! text-[20px] font-medium text-[#4F46E5] underline"
+          @click="showEnrolledCoursesSidebar = true"
+        />
       </div>
 
       <div class="pointer-events-none grid grid-cols-1 gap-4 select-none md:grid-cols-2 lg:grid-cols-4">
@@ -160,6 +169,41 @@ onMounted(async () => {
         </div>
       </div>
       <AuthorizationModals v-model:showLogInModal="showLogIn" />
+    </div>
+
+    <div
+      v-if="showEnrolledCoursesSidebar"
+      class="fixed inset-0 z-50 bg-black/20"
+      @click="showEnrolledCoursesSidebar = false"
+    >
+      <div
+        class="fixed inset-y-0 right-0 z-100 w-198.5 max-w-198.5 overflow-y-auto border-l border-[#D1D1D1] bg-[#F5F5F5] shadow-xl"
+      >
+        <div class="flex h-21.5 items-end justify-between px-14.25">
+          <span class="text-[40px] font-semibold text-[#0A0A0A]">Enrolled Courses</span>
+          <p class="text-[16px] font-semibold text-[#0A0A0A]">
+            Total Enrollments <span>{{ coursesInProgress.length }}</span>
+          </p>
+        </div>
+        <div class="px-21"></div>
+
+        <div class="mt-9.25 flex flex-col items-center px-21">
+          <CourseProgressCard
+            v-for="enrollment in coursesInProgress"
+            :key="enrollment.id"
+            :title="enrollment.course.title"
+            :instructor-name="enrollment.course.instructor.name"
+            :avg-rating="enrollment.course.avgRating"
+            :progress="enrollment.progress"
+            :image="enrollment.course.image"
+            :days="enrollment.schedule.weeklySchedule.label"
+            :times="enrollment.schedule.timeSlot.label"
+            :session-type="enrollment.schedule.sessionType.name"
+            :location="enrollment.schedule.location"
+            extended
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
