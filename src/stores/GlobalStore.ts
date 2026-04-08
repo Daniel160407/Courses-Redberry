@@ -1,36 +1,43 @@
 import { defineStore } from "pinia";
-import { computed, ref } from "vue";
-import type { User } from "../types/interfaces";
+import { ref } from "vue";
+import type { Course, Enrollment, User } from "../types/interfaces";
+import Cookies from "js-cookie";
 
 export const useGlobalStore = defineStore("globalStore", () => {
-  const loadingCount = ref<number>(0);
   const user = ref<User | null>(null);
+  const courses = ref<Course[]>([]);
+  const featuredCourses = ref<Course[]>([]);
+  const coursesInProgress = ref<Enrollment[]>([]);
 
-  const fetching = computed(() => loadingCount.value > 0);
+  const isAuthorized = ref(!!Cookies.get("token"));
 
   const setUser = (userData: User | null) => {
     user.value = userData;
+    isAuthorized.value = !!userData;
   };
 
-  const withLoading = async <T>(fn: () => Promise<T>) => {
-    loadingCount.value++;
-    try {
-      return await fn();
-    } finally {
-      loadingCount.value--;
-    }
+  const setCourses = (newCourses: Course[]) => {
+    courses.value = newCourses;
   };
 
-  const setData = async () => {
-    await Promise.allSettled([]);
+  const setFeaturedCourses = (newFeaturedCourses: Course[]) => {
+    featuredCourses.value = newFeaturedCourses;
+  };
+
+  const setCoursesInProgress = (newCoursesInProgress: Enrollment[]) => {
+    coursesInProgress.value = newCoursesInProgress;
   };
 
   return {
-    fetching,
-
     user,
+    courses,
+    featuredCourses,
+    coursesInProgress,
+    isAuthorized,
 
-    setData,
-    setUser
+    setUser,
+    setCourses,
+    setFeaturedCourses,
+    setCoursesInProgress
   };
 });
