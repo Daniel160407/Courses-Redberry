@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from "@/components/common/Button.vue";
 import SelectButton from "@/components/common/SelectButton.vue";
+import SortingDropdown from "@/components/common/SortingDropdown.vue";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon.vue";
 import BulbIcon from "@/components/icons/BulbIcon.vue";
 import ChartIcon from "@/components/icons/ChartIcon.vue";
@@ -8,10 +9,11 @@ import CloseIcon from "@/components/icons/CloseIcon.vue";
 import CodeIcon from "@/components/icons/CodeIcon.vue";
 import PaletteIcon from "@/components/icons/PaletteIcon.vue";
 import TreeIcon from "@/components/icons/TreeIcon.vue";
+import { SORT_OPTIONS } from "@/composables/constants";
 import { useCatalogCrud } from "@/composables/useCatalogCrud";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
 import type { Course, Category, Instructor, Topic } from "@/types/interfaces";
-import { computed, onMounted, ref, type Component } from "vue";
+import { computed, onMounted, ref, watch, type Component } from "vue";
 import { useRouter } from "vue-router";
 
 const { fetchFilters, fetchTopics } = useCatalogCrud();
@@ -27,6 +29,8 @@ const courses = ref<Course[]>([]);
 const selectedCategoryIds = ref<number[]>([]);
 const selectedTopicIds = ref<number[]>([]);
 const selectedInstructorIds = ref<number[]>([]);
+
+const sort = ref<string>("");
 
 const activeFiltersQuantity = computed(() => {
   return selectedCategoryIds.value.length + selectedTopicIds.value.length + selectedInstructorIds.value.length;
@@ -45,11 +49,12 @@ const getCategoryIcon = (iconName: string) => {
 };
 
 const updateCourses = async () => {
-  const coursesResponse = await fetchCourses(
-    selectedCategoryIds.value,
-    selectedTopicIds.value,
-    selectedInstructorIds.value
-  );
+  const coursesResponse = await fetchCourses({
+    categoryIds: selectedCategoryIds.value,
+    topicIds: selectedTopicIds.value,
+    instructorIds: selectedInstructorIds.value,
+    sort: sort.value
+  });
   if (coursesResponse?.success) courses.value = coursesResponse.courses;
 };
 
@@ -87,13 +92,18 @@ const handleClearFilters = async () => {
   selectedCategoryIds.value = [];
   selectedTopicIds.value = [];
   selectedInstructorIds.value = [];
+  sort.value = "";
 
   const topicsResponse = await fetchTopics([]);
   if (topicsResponse) topics.value = topicsResponse.topics;
 
-  const coursesResponse = await fetchCourses([], [], []);
+  const coursesResponse = await fetchCourses();
   if (coursesResponse?.success) courses.value = coursesResponse.courses;
 };
+
+watch(sort, (newSort) => {
+  if (newSort) updateCourses();
+});
 
 onMounted(async () => {
   const responses = await fetchFilters();
@@ -117,7 +127,15 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="relative top-31.5 left-44.25 flex max-w-77.25 flex-col gap-8">
+    <div class="relative top-31.5 left-144 flex max-w-291.75 flex-col gap-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <p>Showing <span></span> out of <span></span></p>
+        </div>
+        <SortingDropdown v-model="sort" :options="SORT_OPTIONS" />
+      </div>
+    </div>
+    <div class="fixed top-58.5 left-44.25 flex max-w-77.25 flex-col gap-8">
       <div class="flex items-center justify-between">
         <span class="text-[40px] font-semibold text-[#000000]">Filters</span>
         <Button

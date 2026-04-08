@@ -8,14 +8,25 @@ export const useCoursesCrud = () => {
   const { featuredCourses, coursesInProgress } = storeToRefs(globalStore);
   const { setCourses, setFeaturedCourses, setCoursesInProgress } = globalStore;
 
-  const fetchCourses = async (categoryIds: number[] = [], topicIds: number[] = [], instructorIds: number[] = []) => {
+  const fetchCourses = async (
+    options: {
+      sort?: string;
+      categoryIds?: number[];
+      topicIds?: number[];
+      instructorIds?: number[];
+    } = {}
+  ) => {
+    const { sort, categoryIds = [], topicIds = [], instructorIds = [] } = options;
+
     const filters = {
       "categories[]": categoryIds,
       "topics[]": topicIds,
       "instructors[]": instructorIds
     };
 
-    const params: Record<string, number[]> = {};
+    const params: Record<string, string | number[]> = {};
+
+    if (sort) params.sort = sort;
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value.length > 0) {
