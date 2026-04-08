@@ -16,9 +16,9 @@ const props = defineProps<Course>();
           <p class="text-[#8A8A8A]">
             Lecturer <span class="font-medium text-[#666666]">{{ props.instructor.name }}</span>
           </p>
-          <div v-if="props.avgRating" class="flex items-center gap-1">
+          <div class="flex items-center gap-1">
             <StarIcon />
-            <span>{{ props.avgRating }}</span>
+            <span>{{ props.avgRating ?? 0 }}</span>
           </div>
         </div>
 

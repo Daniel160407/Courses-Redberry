@@ -30,15 +30,15 @@ const props = defineProps<CourseProgressProps>();
     :class="[props.blured ? 'blur-[20px]' : '', extended ? 'min-w-155.75' : '']"
   >
     <div class="flex">
-      <img :src="image ?? previewImg" alt="Course preview" class="max-w-35 flex-1 rounded-xl" />
+      <img :src="image ?? previewImg" alt="Course preview" class="max-w-35 flex-1 rounded-xl object-cover" />
       <div class="flex flex-3 flex-col gap-2 pr-1 pl-4">
         <div class="flex justify-between">
           <p class="text-[#8A8A8A]">
             Lecturer <span class="font-medium text-[#666666]">{{ props.instructorName }}</span>
           </p>
-          <div v-if="props.avgRating" class="flex items-center gap-1">
+          <div class="flex items-center gap-1">
             <StarIcon />
-            <span>{{ props.avgRating }}</span>
+            <span>{{ props.avgRating ?? 0 }}</span>
           </div>
         </div>
         <span class="text-[20px] font-semibold text-[#141414]">{{ props.title }}</span>
