@@ -5,17 +5,29 @@ import { storeToRefs } from "pinia";
 export const useCoursesCrud = () => {
   const { sendRequest, data, error } = useAxios();
   const globalStore = useGlobalStore();
-  const { courses, featuredCourses, coursesInProgress } = storeToRefs(globalStore);
+  const { featuredCourses, coursesInProgress } = storeToRefs(globalStore);
   const { setCourses, setFeaturedCourses, setCoursesInProgress } = globalStore;
 
-  const fetchCourses = async () => {
-    if (courses.value.length > 0) return { success: true, courses: courses.value };
+  const fetchCourses = async (categoryIds: number[] = [], topicIds: number[] = [], instructorIds: number[] = []) => {
+    const filters = {
+      "categories[]": categoryIds,
+      "topics[]": topicIds,
+      "instructors[]": instructorIds
+    };
+
+    const params: Record<string, number[]> = {};
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value.length > 0) {
+        params[key] = value;
+      }
+    });
 
     try {
       await sendRequest({
         method: "GET",
         url: "/courses",
-        useToken: true
+        params
       });
 
       if (data.value?.data) {

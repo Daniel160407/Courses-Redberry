@@ -1,5 +1,5 @@
 export const DASHBOARD_ROUTE = "/dashboard";
-export const COURSES_ROUTE = "/courses";
+export const CATALOG_ROUTE = "/catalog";
 
 //profile statuses
 export const INCOMPLETE_STATUS = "incomplete";
