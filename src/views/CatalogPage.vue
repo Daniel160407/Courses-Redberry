@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "@/components/common/Button.vue";
+import CourseCard from "@/components/common/CourseCard.vue";
 import SelectButton from "@/components/common/SelectButton.vue";
 import SortingDropdown from "@/components/common/SortingDropdown.vue";
 import ArrowRightIcon from "@/components/icons/ArrowRightIcon.vue";
@@ -116,8 +117,8 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="min-h-screen bg-[#F5F5F5] pb-40">
-    <div class="relative top-16 left-44.25 flex items-center gap-0.5">
+  <div class="min-h-screen overflow-x-hidden bg-[#F5F5F5] pb-40">
+    <div class="fixed top-43 left-44.25 flex items-center gap-0.5">
       <div class="flex gap-1 px-1 py-0.5">
         <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push('/dashboard')">Home</span>
         <ArrowRightIcon />
@@ -127,15 +128,25 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="relative top-31.5 left-144 flex max-w-291.75 flex-col gap-8">
+    <div class="relative top-31.5 left-144 flex w-291.75 max-w-291.75 flex-col gap-8">
       <div class="flex items-center justify-between">
         <div>
           <p>Showing <span></span> out of <span></span></p>
         </div>
         <SortingDropdown v-model="sort" :options="SORT_OPTIONS" />
       </div>
+
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <CourseCard
+          v-for="course in courses"
+          :key="course.id"
+          v-bind="course"
+          variant="secondary"
+          :category-icon="getCategoryIcon(course.category.icon)"
+        />
+      </div>
     </div>
-    <div class="fixed top-58.5 left-44.25 flex max-w-77.25 flex-col gap-8">
+    <div class="fixed top-58.5 bottom-10 left-44.25 flex w-77.25 max-w-77.25 flex-col gap-8 overflow-y-auto pr-4">
       <div class="flex items-center justify-between">
         <span class="text-[40px] font-semibold text-[#000000]">Filters</span>
         <Button
