@@ -6,7 +6,7 @@ import Button from "./Button.vue";
 const props = defineProps<Course>();
 </script>
 <template>
-  <div class="flex max-w-126.5 flex-col gap-6 rounded-xl bg-[#FFFFFF] p-5">
+  <div class="flex w-full max-w-126.5 flex-col gap-6 rounded-xl bg-[#FFFFFF] p-5">
     <div class="flex flex-col gap-4">
       <div class="h-65.5 w-116.5 overflow-hidden rounded-[10px]">
         <img :src="props.image" class="h-full w-full object-cover" alt="Course thumbnail" />

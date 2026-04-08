@@ -69,7 +69,7 @@ const dummyCourses = ref<DummyCourse[]>([
     progress: 75
   },
   {
-    id: 3,
+    id: 4,
     course: {
       instructor: { name: "Sarah Johnson" },
       avgRating: 5,
@@ -91,10 +91,10 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="flex flex-col gap-16 bg-[#F5F5F5] px-44.25 pt-13.5">
+  <div class="flex min-h-screen flex-col gap-16 bg-[#F5F5F5] px-44.25 pt-13.5">
     <Slider :items="sliderItems" />
 
-    <div v-if="isAuthorized && coursesInProgress" class="flex flex-col gap-8">
+    <div v-if="isAuthorized && coursesInProgress?.length" class="flex flex-col gap-8">
       <div class="flex justify-between">
         <div class="flex flex-col gap-1.5">
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
@@ -107,7 +107,7 @@ onMounted(async () => {
         />
       </div>
 
-      <div class="flex justify-between">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <CourseProgressCard
           v-for="item in limitedCourses"
           :key="item.id"
@@ -124,7 +124,7 @@ onMounted(async () => {
         <span class="text-[40px] font-semibold text-[#0A0A0A]">Start Learning Today</span>
         <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>
       </div>
-      <div v-if="featuredCourses" class="flex gap-6">
+      <div v-if="featuredCourses" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <CourseCard v-for="course in featuredCourses" :key="course.id" v-bind="course" />
       </div>
     </div>
@@ -142,7 +142,7 @@ onMounted(async () => {
         />
       </div>
 
-      <div class="pointer-events-none grid grid-cols-1 gap-4 select-none md:grid-cols-2 lg:grid-cols-4">
+      <div class="pointer-events-none grid grid-cols-1 gap-6 select-none md:grid-cols-2 lg:grid-cols-3">
         <CourseProgressCard
           v-for="item in dummyCourses"
           :key="item.id"
@@ -184,7 +184,7 @@ onMounted(async () => {
       <div class="flex h-21.5 items-end justify-between px-14.25">
         <span class="text-[40px] font-semibold text-[#0A0A0A]">Enrolled Courses</span>
         <p class="text-[16px] font-semibold text-[#0A0A0A]">
-          Total Enrollments <span>{{ coursesInProgress.length }}</span>
+          Total Enrollments <span>{{ coursesInProgress?.length ?? 0 }}</span>
         </p>
       </div>
       <div class="px-21"></div>

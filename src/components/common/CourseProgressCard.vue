@@ -26,8 +26,8 @@ const props = defineProps<CourseProgressProps>();
 
 <template>
   <div
-    class="border-0.5 flex max-w-126.5 min-w-126.5 flex-col gap-2 rounded-xl border-[#F5F5F5] bg-[#FFFFFF] p-5"
-    :class="[props.blured ? 'blur-[20px]' : '', extended ? 'min-w-155.75' : '']"
+    class="border-0.5 flex w-full min-w-126.5 flex-col gap-2 rounded-xl border-[#F5F5F5] bg-[#FFFFFF] p-5"
+    :class="[props.blured ? 'blur-[20px]' : '', extended ? 'max-w-155.75 min-w-155.75' : 'max-w-126.5']"
   >
     <div class="flex">
       <img :src="image ?? previewImg" alt="Course preview" class="max-w-35 flex-1 rounded-xl object-cover" />

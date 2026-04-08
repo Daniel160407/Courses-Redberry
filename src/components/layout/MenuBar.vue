@@ -49,12 +49,11 @@ const showProfile = ref(false);
           />
         </div>
       </div>
-
-      <AuthorizationModals
-        v-model:showSignUpModal="showSignUp"
-        v-model:showLogInModal="showLogIn"
-        v-model:showProfileModal="showProfile"
-      />
     </div>
+    <AuthorizationModals
+      v-model:showSignUpModal="showSignUp"
+      v-model:showLogInModal="showLogIn"
+      v-model:showProfileModal="showProfile"
+    />
   </div>
 </template>
