@@ -158,7 +158,7 @@ onMounted(async () => {
     </div>
 
     <div class="flex items-start gap-22.5">
-      <div class="flex flex-col gap-16">
+      <div class="flex flex-col gap-6">
         <aside
           class="scrollbar-hide sticky flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
         >

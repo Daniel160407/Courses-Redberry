@@ -23,6 +23,11 @@ const currentLabel = computed(() => {
 });
 
 const extended = ref(false);
+
+const handleOptionClick = (option: Option) => {
+  emit("update:modelValue", option.value);
+  extended.value = false;
+};
 </script>
 
 <template>
@@ -46,7 +51,7 @@ const extended = ref(false);
         :label="option.label"
         class="w-full justify-start px-5 py-2.5 text-[16px] font-medium"
         :class="currentLabel === option.label ? 'bg-[#DDDBFA] text-[#4F46E5]' : 'bg-[#FFFFFF] text-[#666666]'"
-        @click="emit('update:modelValue', option.value)"
+        @click="handleOptionClick(option)"
       />
     </div>
   </div>
