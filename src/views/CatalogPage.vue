@@ -14,7 +14,7 @@ import TreeIcon from "@/components/icons/TreeIcon.vue";
 import { SORT_OPTIONS } from "@/composables/constants";
 import { useCatalogCrud } from "@/composables/useCatalogCrud";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
-import type { Course, Category, Instructor, Topic } from "@/types/interfaces";
+import type { Course, Category, Instructor, Topic, CoursesResponse } from "@/types/interfaces";
 import { computed, onMounted, ref, watch, type Component } from "vue";
 import { useRouter } from "vue-router";
 
@@ -67,11 +67,8 @@ const updateCourses = async () => {
     sort: sort.value,
     page: currentPage.value
   });
-  if (coursesResponse?.success) {
-    courses.value = coursesResponse.courses;
-    totalCourses.value = coursesResponse.meta.total;
-    perPage.value = coursesResponse.meta.perPage;
-    lastPage.value = coursesResponse.meta.lastPage;
+  if (coursesResponse && coursesResponse.success && coursesResponse.courses && coursesResponse.meta) {
+    setPaginationData(coursesResponse as CoursesResponse);
   }
 };
 
@@ -120,7 +117,16 @@ const handleClearFilters = async () => {
   if (topicsResponse) topics.value = topicsResponse.topics;
 
   const coursesResponse = await fetchCourses();
-  if (coursesResponse?.success) courses.value = coursesResponse.courses;
+  if (coursesResponse && coursesResponse.success && coursesResponse.courses && coursesResponse.meta) {
+    setPaginationData(coursesResponse as CoursesResponse);
+  }
+};
+
+const setPaginationData = (coursesResponse: CoursesResponse) => {
+  courses.value = coursesResponse.courses;
+  totalCourses.value = coursesResponse.meta.total;
+  perPage.value = coursesResponse.meta.perPage;
+  lastPage.value = coursesResponse.meta.lastPage;
 };
 
 watch([sort, currentPage], (newSort, newPage) => {
@@ -134,11 +140,8 @@ onMounted(async () => {
   if (responses.instructorsResponse?.success) instructors.value = responses.instructorsResponse.instructors;
 
   const coursesResponse = await fetchCourses();
-  if (coursesResponse?.success) {
-    courses.value = coursesResponse.courses;
-    totalCourses.value = coursesResponse.meta.total;
-    perPage.value = coursesResponse.meta.perPage;
-    lastPage.value = coursesResponse.meta.lastPage;
+  if (coursesResponse && coursesResponse.success && coursesResponse.courses && coursesResponse.meta) {
+    setPaginationData(coursesResponse as CoursesResponse);
   }
 });
 </script>
@@ -157,7 +160,7 @@ onMounted(async () => {
     <div class="flex items-start gap-22.5">
       <div class="flex flex-col gap-16">
         <aside
-          class="scrollbar-hide sticky top-32 flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
+          class="scrollbar-hide sticky flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
         >
           <div class="flex items-center justify-between">
             <span class="text-[40px] font-semibold text-[#000000]">Filters</span>
