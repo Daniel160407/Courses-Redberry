@@ -11,12 +11,13 @@ export const useCoursesCrud = () => {
   const fetchCourses = async (
     options: {
       sort?: string;
+      page?: number;
       categoryIds?: number[];
       topicIds?: number[];
       instructorIds?: number[];
     } = {}
   ) => {
-    const { sort, categoryIds = [], topicIds = [], instructorIds = [] } = options;
+    const { sort, page = 0, categoryIds = [], topicIds = [], instructorIds = [] } = options;
 
     const filters = {
       "categories[]": categoryIds,
@@ -27,6 +28,7 @@ export const useCoursesCrud = () => {
     const params: Record<string, string | number[]> = {};
 
     if (sort) params.sort = sort;
+    if (page) params.page = page.toString();
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value.length > 0) {
@@ -43,7 +45,7 @@ export const useCoursesCrud = () => {
 
       if (data.value?.data) {
         setCourses(data.value?.data);
-        return { success: true, courses: data.value?.data };
+        return { success: true, courses: data.value?.data, meta: data.value?.meta };
       }
     } catch (err) {
       console.error(err);

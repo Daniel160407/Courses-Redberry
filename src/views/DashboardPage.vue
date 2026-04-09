@@ -91,7 +91,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="flex min-h-screen flex-col gap-16 bg-[#F5F5F5] px-44.25 pt-13.5">
+  <div class="flex min-h-screen flex-col gap-16 bg-[#F5F5F5] px-44.25 pt-43">
     <Slider :items="sliderItems" />
 
     <div v-if="isAuthorized && coursesInProgress?.length" class="flex flex-col gap-8">
