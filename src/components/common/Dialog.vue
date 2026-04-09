@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import ArrowLeftIcon from "../icons/ArrowLeftIcon.vue";
+import AngleLeftIcon from "../icons/AngleLeftIcon.vue";
 import CloseIcon from "../icons/CloseIcon.vue";
 import Button from "./Button.vue";
 
@@ -56,7 +56,7 @@ const handleFinalClick = () => {
         <div>
           <Button
             v-if="hasSteps && step > 1"
-            :icon="ArrowLeftIcon"
+            :icon="AngleLeftIcon"
             type="button"
             class="cursor-pointer p-0! transition-opacity hover:opacity-70"
             @click="changeStep(-1)"

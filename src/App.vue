@@ -3,6 +3,7 @@ import { onMounted } from "vue";
 import MenuBar from "./components/layout/MenuBar.vue";
 import { useAuthorize } from "./composables/useAuthorize";
 import { useGlobalStore } from "./stores/GlobalStore";
+import Footer from "./components/layout/Footer.vue";
 
 const { setUser } = useGlobalStore();
 const { fetchUserInfo, isAuthenticated } = useAuthorize();
@@ -17,6 +18,7 @@ onMounted(async () => {
 <template>
   <div>
     <MenuBar />
-    <router-view></router-view>
+    <router-view />
+    <Footer />
   </div>
 </template>

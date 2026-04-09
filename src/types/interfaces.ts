@@ -141,3 +141,15 @@ export interface DummyCourse {
   };
   progress: number;
 }
+
+export interface CoursesResponse {
+  success: boolean;
+  courses: Course[];
+  meta: {
+    currentPage: number;
+    lastPage: number;
+    perPage: number;
+    total: number;
+  };
+  serverErrors?: undefined;
+}

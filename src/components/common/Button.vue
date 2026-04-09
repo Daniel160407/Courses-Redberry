@@ -17,22 +17,19 @@ const props = withDefaults(defineProps<Props>(), {
 });
 </script>
 <template>
-  <button
-    :type="props.type"
-    :loading="props.loading"
-    :disabled="props.loading"
-    class="flex cursor-pointer items-center justify-center gap-2 p-4"
-  >
+  <button :type="props.type" :disabled="props.loading" class="flex cursor-pointer items-center justify-center gap-2">
     <slot v-if="props.iconPos === 'left'" name="icon">
       <component
         :is="props.icon"
         v-if="props.icon"
+        class="h-6 w-6"
         :style="iconSize ? { height: `${iconSize}rem`, width: `${iconSize}rem` } : {}"
-        :class="!iconSize ? 'h-6 w-6' : ''"
       />
     </slot>
 
-    <span v-if="props.label" class="leading-none">{{ props.label }}</span>
+    <span class="leading-none">
+      <slot>{{ props.label }}</slot>
+    </span>
 
     <slot v-if="props.iconPos === 'right'" name="icon">
       <component :is="props.icon" v-if="props.icon" class="h-6 w-6" />
