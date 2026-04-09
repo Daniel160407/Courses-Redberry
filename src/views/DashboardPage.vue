@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Slider from "@/components/common/Slider.vue";
-import type { DummyCourse, SliderItem } from "@/types/interfaces";
+import type { Course, DummyCourse, SliderItem } from "@/types/interfaces";
 import { computed, onMounted, ref } from "vue";
 import Slide1 from "../assets/images/slide1.png";
 import Slide2 from "../assets/images/slide2.png";
@@ -14,9 +14,11 @@ import CourseProgressCard from "@/components/common/CourseProgressCard.vue";
 import LockIcon from "@/components/icons/LockIcon.vue";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
 import BoxIcon from "@/components/icons/BoxIcon.vue";
+import { useRouter } from "vue-router";
 
 const { fetchFeaturedCourses, fetchInProgressCourses } = useCoursesCrud();
 const { featuredCourses, coursesInProgress, isAuthorized } = storeToRefs(useGlobalStore());
+const router = useRouter();
 
 const sliderItems = ref<SliderItem[]>([
   {
@@ -85,6 +87,10 @@ const limitedCourses = computed(() => {
   return coursesInProgress.value.slice(0, 4);
 });
 
+const handleOpenDetails = (course: Course) => {
+  router.push(`/dashboard/course/${course.id}`);
+};
+
 onMounted(async () => {
   await fetchFeaturedCourses();
   await fetchInProgressCourses();
@@ -125,7 +131,12 @@ onMounted(async () => {
         <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>
       </div>
       <div v-if="featuredCourses" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <CourseCard v-for="course in featuredCourses" :key="course.id" v-bind="course" />
+        <CourseCard
+          v-for="course in featuredCourses"
+          :key="course.id"
+          v-bind="course"
+          @open-details="handleOpenDetails(course)"
+        />
       </div>
     </div>
 

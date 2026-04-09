@@ -53,6 +53,23 @@ export const useCoursesCrud = () => {
     }
   };
 
+  const fetchCourseById = async (id: string) => {
+    try {
+      await sendRequest({
+        method: "GET",
+        url: `/courses/${id}`,
+        useToken: true
+      });
+
+      if (data.value?.data) {
+        return { success: true, course: data.value?.data };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, serverErrors: error.value };
+    }
+  };
+
   const fetchFeaturedCourses = async () => {
     if (featuredCourses.value.length > 0) return { success: true, courses: featuredCourses.value };
 
@@ -93,5 +110,5 @@ export const useCoursesCrud = () => {
     }
   };
 
-  return { fetchCourses, fetchFeaturedCourses, fetchInProgressCourses };
+  return { fetchCourses, fetchCourseById, fetchFeaturedCourses, fetchInProgressCourses };
 };

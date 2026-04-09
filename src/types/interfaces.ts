@@ -153,3 +153,25 @@ export interface CoursesResponse {
   };
   serverErrors?: undefined;
 }
+
+export interface ExtendedCourse {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  basePrice: string;
+  durationWeeks: number;
+  hours: number;
+  isFeatured: boolean;
+  reviews: Review[];
+  isRated: boolean;
+  category: Category;
+  topic: Topic;
+  instructor: Instructor;
+  enrollment: Enrollment | null;
+}
+
+export interface Review {
+  userId: number;
+  rating: number;
+}
