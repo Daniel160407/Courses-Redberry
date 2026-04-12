@@ -19,53 +19,33 @@ export const useCoursesCrud = () => {
   ) => {
     const { sort, page = 0, categoryIds = [], topicIds = [], instructorIds = [] } = options;
 
-    const filters = {
-      "categories[]": categoryIds,
-      "topics[]": topicIds,
-      "instructors[]": instructorIds
+    const params = {
+      ...(sort && { sort }),
+      ...(page && { page: page.toString() }),
+      ...(categoryIds.length > 0 && { "categories[]": categoryIds }),
+      ...(topicIds.length > 0 && { "topics[]": topicIds }),
+      ...(instructorIds.length > 0 && { "instructors[]": instructorIds })
     };
 
-    const params: Record<string, string | number[]> = {};
-
-    if (sort) params.sort = sort;
-    if (page) params.page = page.toString();
-
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value.length > 0) {
-        params[key] = value;
-      }
-    });
-
     try {
-      await sendRequest({
-        method: "GET",
-        url: "/courses",
-        params
-      });
+      await sendRequest({ method: "GET", url: "/courses", params });
 
       if (data.value?.data) {
         setCourses(data.value?.data);
         return { success: true, courses: data.value?.data, meta: data.value?.meta };
       }
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Courses Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
 
   const fetchCourseById = async (id: string) => {
     try {
-      await sendRequest({
-        method: "GET",
-        url: `/courses/${id}`,
-        useToken: true
-      });
-
-      if (data.value?.data) {
-        return { success: true, course: data.value?.data };
-      }
+      await sendRequest({ method: "GET", url: `/courses/${id}`, useToken: true });
+      return { success: true, course: data.value?.data };
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Course By Id Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
@@ -74,18 +54,14 @@ export const useCoursesCrud = () => {
     if (featuredCourses.value.length > 0) return { success: true, courses: featuredCourses.value };
 
     try {
-      await sendRequest({
-        method: "GET",
-        url: "/courses/featured",
-        useToken: true
-      });
+      await sendRequest({ method: "GET", url: "/courses/featured", useToken: true });
 
       if (data.value?.data) {
         setFeaturedCourses(data.value?.data);
         return { success: true, courses: data.value?.data };
       }
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Featured Courses Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
@@ -94,18 +70,14 @@ export const useCoursesCrud = () => {
     if (coursesInProgress.value.length > 0) return { success: true, courses: coursesInProgress.value };
 
     try {
-      await sendRequest({
-        method: "GET",
-        url: "/courses/in-progress",
-        useToken: true
-      });
+      await sendRequest({ method: "GET", url: "/courses/in-progress", useToken: true });
 
       if (data.value?.data) {
         setCoursesInProgress(data.value?.data);
         return { success: true, courses: data.value?.data };
       }
     } catch (err) {
-      console.error(err);
+      console.error("Fetch In Progress Courses Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };

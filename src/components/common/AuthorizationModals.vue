@@ -111,11 +111,6 @@ const switchAuthorizationModal = () => {
   showSignUpModal.value = !showSignUpModal.value;
 };
 
-const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = { complete: "#1DC31D", incomplete: "#F4A316" };
-  return colors[status];
-};
-
 const getAgeOptions = () => {
   return Array.from({ length: 105 }, (_, i) => {
     const age = i + 16;
@@ -292,14 +287,11 @@ watch(
     >
       <template #start>
         <div class="flex gap-2">
-          <Avatar :src="user?.avatar" :status="user?.profileComplete" />
+          <Avatar :src="user?.avatar" :status="isProfileComplete" />
           <div class="flex flex-col gap-1">
             <span class="text-xl text-[#0A0A0A]">{{ user?.fullName ?? "Username" }}</span>
-            <span
-              class="pl-0.5 text-[10px]"
-              :style="{ color: getStatusColor(user?.profileComplete ? COMPLETE_STATUS : INCOMPLETE_STATUS) }"
-            >
-              {{ user?.profileComplete ? "Profile is Complete" : "Incomplete Profile" }}
+            <span class="pl-0.5 text-[10px]" :class="isProfileComplete ? 'text-[#1DC31D]' : 'text-[#F4A316]'">
+              {{ isProfileComplete ? "Profile is Complete" : "Incomplete Profile" }}
             </span>
           </div>
         </div>

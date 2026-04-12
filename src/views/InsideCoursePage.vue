@@ -184,7 +184,7 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
         enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
     }
   } else {
-    const errorData = response?.serverErrors?.value;
+    const errorData = response?.serverErrors;
     if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
       const conflicts = (errorData as { conflicts: EnrollmentConflict | EnrollmentConflict[] }).conflicts;
       enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];

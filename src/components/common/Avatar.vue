@@ -20,7 +20,7 @@ const { src, alt, status } = defineProps<Props>();
     </div>
 
     <div
-      v-if="status"
+      v-if="status !== undefined"
       class="absolute right-0 bottom-0 h-4 w-4 rounded-full border-[3px] border-white transition-colors duration-200"
       :class="status ? 'bg-[#1DC31D]' : 'bg-[#F4A316]'"
     ></div>

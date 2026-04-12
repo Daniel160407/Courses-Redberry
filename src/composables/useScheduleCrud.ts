@@ -7,16 +7,10 @@ export const useScheduleCrud = () => {
     if (!courseId) return;
 
     try {
-      await sendRequest({
-        method: "GET",
-        url: `/courses/${courseId}/weekly-schedules`
-      });
-
-      if (data.value?.data) {
-        return { success: true, weeklySchedules: data.value?.data };
-      }
+      await sendRequest({ method: "GET", url: `/courses/${courseId}/weekly-schedules` });
+      return { success: true, weeklySchedules: data.value?.data };
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Weekly Schedules Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
@@ -32,12 +26,9 @@ export const useScheduleCrud = () => {
           weekly_schedule_id: weeklyScheduleId
         }
       });
-
-      if (data.value?.data) {
-        return { success: true, timeSlots: data.value?.data };
-      }
+      return { success: true, timeSlots: data.value?.data };
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Time Slots Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
@@ -54,19 +45,12 @@ export const useScheduleCrud = () => {
           time_slot_id: timeSlotId
         }
       });
-
-      if (data.value?.data) {
-        return { success: true, sessionTypes: data.value?.data };
-      }
+      return { success: true, sessionTypes: data.value?.data };
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Session Types Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
 
-  return {
-    fetchCourseWeeklySchedules,
-    fetchCourseTimeSlots,
-    fetchCourseSessionTypes
-  };
+  return { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes };
 };

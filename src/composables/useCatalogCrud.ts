@@ -4,71 +4,50 @@ export const useCatalogCrud = () => {
   const { sendRequest, data, error } = useAxios();
 
   const fetchFilters = async () => {
+    const [categoriesResponse, topicsResponse, instructorsResponse] = await Promise.all([
+      fetchCategories(),
+      fetchTopics(),
+      fetchInstructors()
+    ]);
+
     return {
-      categoriesResponse: await fetchCategories(),
-      topicsResponse: await fetchTopics(),
-      instructorsResponse: await fetchInstructors()
+      categoriesResponse,
+      topicsResponse,
+      instructorsResponse
     };
   };
 
   const fetchCategories = async () => {
     try {
-      await sendRequest({
-        method: "GET",
-        url: "/categories"
-      });
-
-      if (data.value?.data) {
-        return { success: true, categories: data.value?.data };
-      }
+      await sendRequest({ method: "GET", url: "/categories" });
+      return { success: true, categories: data.value?.data };
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Categories Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
 
   const fetchTopics = async (categoryIds: number[] = []) => {
-    const params: Record<string, number[]> = {};
-    if (categoryIds.length > 0) {
-      params["categories[]"] = categoryIds;
-    }
+    const params = categoryIds.length > 0 ? { "categories[]": categoryIds } : {};
 
     try {
-      await sendRequest({
-        method: "GET",
-        url: "/topics",
-        params
-      });
-
-      if (data.value?.data) {
-        return { success: true, topics: data.value?.data };
-      }
+      await sendRequest({ method: "GET", url: "/topics", params });
+      return { success: true, topics: data.value?.data };
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Topics Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
 
   const fetchInstructors = async () => {
     try {
-      await sendRequest({
-        method: "GET",
-        url: "/instructors"
-      });
-
-      if (data.value?.data) {
-        return { success: true, instructors: data.value?.data };
-      }
+      await sendRequest({ method: "GET", url: "/instructors" });
+      return { success: true, instructors: data.value?.data };
     } catch (err) {
-      console.error(err);
+      console.error("Fetch Instructors Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
 
-  return {
-    fetchFilters,
-    fetchCategories,
-    fetchTopics,
-    fetchInstructors
-  };
+  return { fetchFilters, fetchCategories, fetchTopics, fetchInstructors };
 };

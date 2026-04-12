@@ -2,8 +2,50 @@ import { reactive, watch, toValue } from "vue";
 import type { LogInErrors, ProfileErrors, RegistrationErrors } from "../types/interfaces";
 
 export const useValidate = () => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+  const validateEmail = (val: string, touched: boolean) => {
+    if (touched && val.length === 0) return "Email is required";
+    if (val.length > 0 && !EMAIL_REGEX.test(val)) return "Please enter a valid email address";
+    return "";
+  };
+
+  const validatePassword = (val: string, touched: boolean) => {
+    if (touched && val.length === 0) return "Password is required";
+    if (val.length > 0 && val.length < 3) return "Password must contain at least 3 symbols";
+    return "";
+  };
+
+  const validateMobile = (val: any, touched: boolean) => {
+    const rawMobile = val.toString().trim();
+    if (touched && rawMobile.length === 0) return "Mobile number is required";
+    if (rawMobile.length > 0) {
+      if (!/^\d+$/.test(rawMobile)) {
+        return "Please enter a valid Georgian mobile number (9 digits starting with 5)";
+      }
+      if (rawMobile.length !== 9) return "Mobile number must be exactly 9 digits";
+      if (!rawMobile.startsWith("5")) return "Georgian mobile numbers must start with 5";
+    }
+    return "";
+  };
+
+  const validateAge = (val: any, touched: boolean) => {
+    if (touched && (val === "" || val === null)) return "Age is required";
+    if (val !== "" && val !== null) {
+      if (isNaN(Number(val))) return "Age must be a number";
+      if (Number(val) < 16) return "You must be at least 16 years old to enroll";
+      if (Number(val) > 120) return "Please enter a valid age";
+    }
+    return "";
+  };
+
+  const validateAvatar = (file: File | null) => {
+    if (file && !ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      return "Profile image should be .jpg, .png or .webp";
+    }
+    return "";
+  };
 
   const useRegistrationValidate = (formData: any) => {
     const errors = reactive<RegistrationErrors>({
@@ -18,38 +60,20 @@ export const useValidate = () => {
     watch(
       () => toValue(formData),
       (newData) => {
-        if (newData.username !== "") touched.username = true;
-        if (newData.email !== "") touched.email = true;
-        if (newData.password !== "") touched.password = true;
-        if (newData.confirmPassword !== "") touched.confirmPassword = true;
+        Object.keys(touched).forEach((key) => {
+          if (newData[key] !== "") touched[key as keyof typeof touched] = true;
+        });
 
-        // Username
         if (touched.username && newData.username.length === 0) errors.username = "Name is required";
-        else if (newData.username.length > 0 && newData.username.length < 3)
+        else if (newData.username.length > 0 && newData.username.length < 3) {
           errors.username = "Username must contain at least 3 symbols";
-        else errors.username = "";
+        } else errors.username = "";
 
-        // Email
-        if (touched.email && newData.email.length === 0) errors.email = "Email is required";
-        else if (newData.email.length > 0 && !emailRegex.test(newData.email))
-          errors.email = "Please enter a valid email address";
-        else errors.email = "";
-
-        // Password
-        if (touched.password && newData.password.length === 0) errors.password = "Password is required";
-        else if (newData.password.length > 0 && newData.password.length < 3)
-          errors.password = "Password must contain at least 3 symbols";
-        else errors.password = "";
-
-        // Confirm Password
-        if (touched.confirmPassword && newData.confirmPassword !== newData.password)
-          errors.confirmPassword = "Passwords do not match";
-        else errors.confirmPassword = "";
-
-        // Avatar
-        if (newData.avatar && !allowedTypes.includes(newData.avatar.type))
-          errors.avatar = "Profile image should be .jpg, .png or .webp";
-        else errors.avatar = "";
+        errors.email = validateEmail(newData.email, touched.email);
+        errors.password = validatePassword(newData.password, touched.password);
+        errors.avatar = validateAvatar(newData.avatar);
+        errors.confirmPassword =
+          touched.confirmPassword && newData.confirmPassword !== newData.password ? "Passwords do not match" : "";
       },
       { deep: true, immediate: true }
     );
@@ -64,20 +88,12 @@ export const useValidate = () => {
     watch(
       () => toValue(formData),
       (newData) => {
-        if (newData.email !== "") touched.email = true;
-        if (newData.password !== "") touched.password = true;
+        Object.keys(touched).forEach((key) => {
+          if (newData[key] !== "") touched[key as keyof typeof touched] = true;
+        });
 
-        // Email
-        if (touched.email && newData.email.length === 0) errors.email = "Email is required";
-        else if (newData.email.length > 0 && !emailRegex.test(newData.email))
-          errors.email = "Please enter a valid email address";
-        else errors.email = "";
-
-        // Password
-        if (touched.password && newData.password.length === 0) errors.password = "Password is required";
-        else if (newData.password.length > 0 && newData.password.length < 3)
-          errors.password = "Password must contain at least 3 symbols";
-        else errors.password = "";
+        errors.email = validateEmail(newData.email, touched.email);
+        errors.password = validatePassword(newData.password, touched.password);
       },
       { deep: true, immediate: true }
     );
@@ -96,33 +112,15 @@ export const useValidate = () => {
         if (newData.mobile_number !== "") touched.mobile_number = true;
         if (newData.age !== 0 && newData.age !== "") touched.age = true;
 
-        // Full Name
         if (touched.full_name && newData.full_name.length === 0) errors.full_name = "Name is required";
-        else if (newData.full_name.length > 0 && newData.full_name.length < 3)
+        else if (newData.full_name.length > 0 && newData.full_name.length < 3) {
           errors.full_name = "Name must be at least 3 characters";
-        else if (newData.full_name.length > 50) errors.full_name = "Name must not exceed 50 characters";
-        else errors.full_name = "";
+        } else if (newData.full_name.length > 50) {
+          errors.full_name = "Name must not exceed 50 characters";
+        } else errors.full_name = "";
 
-        // Mobile
-        const rawMobile = newData.mobile_number.toString().trim();
-        if (touched.mobile_number && rawMobile.length === 0) errors.mobile_number = "Mobile number is required";
-        else if (rawMobile.length > 0) {
-          if (!/^\d+$/.test(rawMobile))
-            errors.mobile_number = "Please enter a valid Georgian mobile number (9 digits starting with 5)";
-          else if (rawMobile.length !== 9) errors.mobile_number = "Mobile number must be exactly 9 digits";
-          else if (!rawMobile.startsWith("5")) errors.mobile_number = "Georgian mobile numbers must start with 5";
-          else errors.mobile_number = "";
-        } else errors.mobile_number = "";
-
-        // Age
-        const ageValue = newData.age;
-        if (touched.age && (ageValue === "" || ageValue === null)) errors.age = "Age is required";
-        else if (ageValue !== "" && ageValue !== null) {
-          if (isNaN(Number(ageValue))) errors.age = "Age must be a number";
-          else if (Number(ageValue) < 16) errors.age = "You must be at least 16 years old to enroll";
-          else if (Number(ageValue) > 120) errors.age = "Please enter a valid age";
-          else errors.age = "";
-        } else errors.age = "";
+        errors.mobile_number = validateMobile(newData.mobile_number, touched.mobile_number);
+        errors.age = validateAge(newData.age, touched.age);
       },
       { deep: true, immediate: true }
     );

@@ -1,4 +1,4 @@
-import type { LogInForm, ProfileForm, RegistrationForm, User } from "../types/interfaces";
+import type { LogInForm, ProfileForm, RegistrationForm } from "../types/interfaces";
 import { useAxios } from "./useAxios";
 import Cookies from "js-cookie";
 import { useGlobalStore } from "@/stores/GlobalStore";
@@ -6,8 +6,13 @@ import { storeToRefs } from "pinia";
 
 export const useAuthorize = () => {
   const { sendRequest, data, error } = useAxios();
-  const globalStore = useGlobalStore();
-  const { user, isAuthorized, isProfileComplete } = storeToRefs(globalStore);
+  const { user, isAuthorized, isProfileComplete } = storeToRefs(useGlobalStore());
+
+  const saveAuthToken = (token?: string) => {
+    if (token) {
+      Cookies.set("token", token, { expires: 365 });
+    }
+  };
 
   const fetchUserInfo = async () => {
     if (!isAuthorized.value) return;
@@ -19,11 +24,9 @@ export const useAuthorize = () => {
         useToken: true
       });
 
-      if (data.value?.data) {
-        return data.value.data;
-      }
+      return data.value?.data;
     } catch (err) {
-      console.error("Login Error:", err);
+      console.error("Fetch User Info Error:", err);
       Cookies.remove("token");
       return null;
     }
@@ -50,13 +53,10 @@ export const useAuthorize = () => {
         }
       });
 
-      if (data.value?.data?.token) {
-        Cookies.set("token", data.value.data.token, { expires: 365 });
-      }
-
+      saveAuthToken(data.value?.data?.token);
       return { success: true, user: data.value?.data?.user };
     } catch (err) {
-      console.error(err);
+      console.error("Registration Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
@@ -69,10 +69,7 @@ export const useAuthorize = () => {
         data: formData
       });
 
-      if (data.value?.data?.token) {
-        Cookies.set("token", data.value.data.token, { expires: 365 });
-      }
-
+      saveAuthToken(data.value?.data?.token);
       return { success: true, user: data.value?.data?.user };
     } catch (err) {
       console.error("Login Error:", err);
@@ -96,10 +93,18 @@ export const useAuthorize = () => {
         return { success: true, user: data.value?.data };
       }
     } catch (err) {
-      console.error(err);
+      console.error("Profile Update Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };
 
-  return { isAuthenticated: isAuthorized, isProfileComplete, user, fetchUserInfo, register, logIn, updateProfile };
+  return {
+    isAuthenticated: isAuthorized,
+    isProfileComplete,
+    user,
+    fetchUserInfo,
+    register,
+    logIn,
+    updateProfile
+  };
 };
