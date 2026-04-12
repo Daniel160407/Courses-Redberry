@@ -12,6 +12,7 @@ interface Props extends Course {
 const props = withDefaults(defineProps<Props>(), {
   variant: "primary"
 });
+const emit = defineEmits(["openDetails"]);
 </script>
 <template>
   <div
@@ -46,7 +47,11 @@ const props = withDefaults(defineProps<Props>(), {
       <p class="flex items-center gap-2 text-[#8A8A8A]">
         Starting From <span class="text-[32px] font-semibold text-[#141414]">${{ props.basePrice }}</span>
       </p>
-      <Button label="Details" class="h-14.5 w-29 rounded-md bg-[#4F46E5] px-6 py-4 text-[20px] text-[#F5F5F5]" />
+      <Button
+        label="Details"
+        class="h-14.5 w-29 rounded-md bg-[#4F46E5] px-6 py-4 text-[20px] text-[#F5F5F5]"
+        @click="emit('openDetails')"
+      />
     </div>
   </div>
 
@@ -88,6 +93,7 @@ const props = withDefaults(defineProps<Props>(), {
         <Button
           label="Details"
           class="h-12 w-25.75 rounded-md bg-[#4F46E5] px-6.25 py-4.25 text-[16px] text-[#F5F5F5]"
+          @click="emit('openDetails')"
         />
       </div>
     </div>

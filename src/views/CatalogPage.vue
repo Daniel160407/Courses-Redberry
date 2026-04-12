@@ -11,7 +11,7 @@ import CloseIcon from "@/components/icons/CloseIcon.vue";
 import CodeIcon from "@/components/icons/CodeIcon.vue";
 import PaletteIcon from "@/components/icons/PaletteIcon.vue";
 import TreeIcon from "@/components/icons/TreeIcon.vue";
-import { SORT_OPTIONS } from "@/composables/constants";
+import { DASHBOARD_ROUTE, SORT_OPTIONS } from "@/composables/constants";
 import { useCatalogCrud } from "@/composables/useCatalogCrud";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
 import type { Course, Category, Instructor, Topic, CoursesResponse } from "@/types/interfaces";
@@ -122,6 +122,10 @@ const handleClearFilters = async () => {
   }
 };
 
+const handleOpenDetails = (course: Course) => {
+  router.push(`/catalog/course/${course.id}`);
+};
+
 const setPaginationData = (coursesResponse: CoursesResponse) => {
   courses.value = coursesResponse.courses;
   totalCourses.value = coursesResponse.meta.total;
@@ -147,9 +151,9 @@ onMounted(async () => {
 </script>
 <template>
   <div class="min-h-screen overflow-x-hidden bg-[#F5F5F5] px-44.25 pt-43 pb-40">
-    <div class="mb-12 flex items-center gap-0.5">
-      <div class="flex gap-1 px-1 py-0.5">
-        <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push('/dashboard')">Home</span>
+    <div class="mb-12 flex items-center gap-0.5 text-[18px]">
+      <div class="flex items-center gap-1 px-1 py-0.5">
+        <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push(DASHBOARD_ROUTE)">Home</span>
         <AngleRightIcon />
       </div>
       <div class="px-1 py-0.5">
@@ -240,6 +244,7 @@ onMounted(async () => {
             v-bind="course"
             variant="secondary"
             :category-icon="getCategoryIcon(course.category.icon)"
+            @open-details="handleOpenDetails(course)"
           />
         </div>
         <div class="flex justify-center">

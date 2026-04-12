@@ -14,7 +14,7 @@ export interface RegistrationForm {
   password: string;
   confirmPassword: string;
   username: string;
-  avatar: File | null;
+  avatar: File | string | null;
 }
 
 export interface LogInForm {
@@ -44,7 +44,7 @@ export interface ProfileForm {
   full_name: string;
   mobile_number: string;
   age: number;
-  avatar: File | null;
+  avatar: File | string | null;
 }
 
 export interface ProfileErrors {
@@ -125,7 +125,7 @@ export interface SessionType {
   id: number;
   courseScheduleId: number;
   name: string;
-  priceModifier: number;
+  priceModifier: string;
   availableSeats: number;
   location: string | null;
 }
@@ -152,4 +152,39 @@ export interface CoursesResponse {
     total: number;
   };
   serverErrors?: undefined;
+}
+
+export interface ExtendedCourse {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  basePrice: string;
+  durationWeeks: number;
+  hours: number;
+  isFeatured: boolean;
+  reviews: Review[];
+  isRated: boolean;
+  category: Category;
+  topic: Topic;
+  instructor: Instructor;
+  enrollment: Enrollment | null;
+}
+
+export interface Review {
+  userId: number;
+  rating: number;
+}
+
+export interface EnrollmentForm {
+  courseId: number;
+  courseScheduleId: number;
+  force: boolean;
+}
+
+export interface EnrollmentConflict {
+  requestedCourseId: number;
+  conflictingEnrollmentId: number;
+  conflictingCourseName: string;
+  schedule: string;
 }

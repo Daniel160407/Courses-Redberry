@@ -1,0 +1,35 @@
+<script setup lang="ts">
+import WarningIcon from "../icons/WarningIcon.vue";
+import ArrowRightIcon from "../icons/ArrowRightIcon.vue";
+import Button from "./Button.vue";
+
+interface Props {
+  title: string;
+  description: string;
+  buttonLabel: string;
+}
+
+defineProps<Props>();
+defineEmits(["action"]);
+</script>
+
+<template>
+  <div class="flex items-center justify-between rounded-xl border border-[#E5E7EB] bg-[#F8FAFC] p-5">
+    <div class="flex w-87.75 flex-col gap-2.25">
+      <div class="flex items-center gap-1.5">
+        <WarningIcon class="h-5.5 w-5.5" />
+        <span class="text-[#292929]">{{ title }}</span>
+      </div>
+      <div>
+        <span class="text-[#8A8A8A]">{{ description }}</span>
+      </div>
+    </div>
+    <Button
+      :label="buttonLabel"
+      :icon="ArrowRightIcon"
+      icon-pos="right"
+      class="h-11.5 gap-2.5 rounded-lg border border-[#B7B3F4] bg-[#EEEDFC] px-3 py-2.5 text-[14px] whitespace-nowrap text-[#281ED2] [&_svg]:h-4 [&_svg]:w-4"
+      @click="$emit('action')"
+    />
+  </div>
+</template>

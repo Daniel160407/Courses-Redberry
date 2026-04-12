@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, toRaw } from "vue";
 import UploadIcon from "../icons/UploadIcon.vue";
 
 interface Props {
-  modelValue: File | null;
+  modelValue: File | string | null;
   label?: string;
 }
 
@@ -14,7 +14,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(null);
 
 const fileSize = computed(() => {
-  if (!props.modelValue) return "";
+  if (!props.modelValue || typeof props.modelValue === "string") return "";
   const mb = props.modelValue.size / (1024 * 1024);
   return `${mb.toFixed(1)}MB`;
 });
@@ -36,7 +36,11 @@ watch(
     }
 
     if (newFile) {
-      previewUrl.value = URL.createObjectURL(newFile);
+      if (newFile instanceof File) {
+        previewUrl.value = URL.createObjectURL(toRaw(newFile));
+      } else {
+        previewUrl.value = newFile;
+      }
     } else {
       previewUrl.value = null;
     }
@@ -60,10 +64,10 @@ watch(
       </div>
 
       <div class="flex flex-col gap-0.5 text-left">
-        <span class="max-w-50 truncate text-lg font-medium text-[#4B4B4B]">
-          {{ modelValue.name }}
+        <span v-if="typeof modelValue !== 'string'" class="max-w-50 truncate text-lg font-medium text-[#4B4B4B]">
+          {{ (modelValue as File).name }}
         </span>
-        <span class="text-sm text-[#8A8A8A]">Size - {{ fileSize }}</span>
+        <span v-if="fileSize" class="text-sm text-[#8A8A8A]">Size - {{ fileSize }}</span>
         <button
           type="button"
           class="crusor-pointer mt-1 text-left text-sm font-medium text-[#281ED2] underline underline-offset-4 hover:opacity-80"
