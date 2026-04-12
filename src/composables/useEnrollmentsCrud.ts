@@ -63,6 +63,8 @@ export const useEnrollmentsCrud = () => {
         url: `/enrollments/${enrollmentId}`,
         useToken: true
       });
+
+      return { success: true };
     } catch (err) {
       console.error(err);
       return { success: false, serverErrors: error };

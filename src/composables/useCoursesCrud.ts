@@ -111,6 +111,8 @@ export const useCoursesCrud = () => {
   };
 
   const rateCourse = async (courseId: number, rating: number) => {
+    if (!rating) return;
+
     try {
       await sendRequest({
         method: "POST",

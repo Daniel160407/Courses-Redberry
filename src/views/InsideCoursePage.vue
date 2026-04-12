@@ -27,7 +27,7 @@ import type {
   EnrollmentConflict,
   Enrollment
 } from "@/types/interfaces";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useScheduleCrud } from "@/composables/useScheduleCrud";
 import StepOneIcon from "@/components/icons/StepOneIcon.vue";
@@ -51,6 +51,7 @@ import RefreshIcon from "@/components/icons/RefreshIcon.vue";
 import MarkIcon from "@/components/icons/MarkIcon.vue";
 import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
+import CloseIcon from "@/components/icons/CloseIcon.vue";
 
 const { fetchCourseById, rateCourse } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
@@ -61,7 +62,7 @@ const router = useRouter();
 const route = useRoute();
 
 const course = ref<ExtendedCourse | null>(null);
-const activeTab = ref<(string | number)[]>([]);
+const activeTab = ref<(string | number)[]>(["0"]);
 const isLoading = ref(true);
 const weeklySchedules = ref<WeeklySchedule[]>([]);
 const timeSlots = ref<TimeSlot[]>([]);
@@ -72,6 +73,7 @@ const selectedSessionType = ref<SessionType | null>(null);
 const userCourseEnrollment = ref<Enrollment | null>(null);
 
 const enrollmentConflicts = ref<EnrollmentConflict[]>([]);
+const isRatingSubmitting = ref(false);
 const errorMessage = ref<string>("");
 const rating = ref<number>(0);
 
@@ -82,6 +84,10 @@ const showEnrollmentConflictModal = ref(false);
 const showAlreadyEnrolledModal = ref(false);
 const showProfileIncompleteModal = ref(false);
 const showEnrollmentCompletionModal = ref(false);
+const isRatingDismissed = ref(false);
+const showRatingBox = computed(() => {
+  return !!userCourseEnrollment.value?.completedAt && !isRatingDismissed.value;
+});
 
 const parentPage = computed(() => route.path.split("/")[1]);
 
@@ -192,6 +198,8 @@ const handleOpenProfileModal = () => {
 };
 
 const handleCompleteEnrollment = async (enrollmentId: number) => {
+  if (!enrollmentId) return;
+
   const response = await completeEnrollment(enrollmentId);
   if (response?.success) {
     showEnrollmentCompletionModal.value = true;
@@ -202,13 +210,42 @@ const handleRetakeCourse = async () => {
   const response = await deleteEnrollment(userCourseEnrollment.value?.id ?? 0);
   if (response?.success) {
     userCourseEnrollment.value = null;
+    activeTab.value = ["0"];
+
+    selectedWeeklySchedule.value = null;
+    selectedTimeSlot.value = null;
+    selectedSessionType.value = null;
+
+    await nextTick();
+    selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
   }
 };
 
 const handleRateCourse = async () => {
-  await rateCourse(course.value?.id ?? 0, rating.value);
-  showEnrollmentCompletionModal.value = false;
+  if (isRatingSubmitting.value) return;
+
+  isRatingSubmitting.value = true;
+  try {
+    await rateCourse(course.value?.id ?? 0, rating.value);
+    showEnrollmentCompletionModal.value = false;
+    isRatingDismissed.value = true;
+
+    const enrollmentRes = await fetchUserEnrollments();
+    if (enrollmentRes?.success) {
+      userCourseEnrollment.value =
+        enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
+    }
+  } finally {
+    isRatingSubmitting.value = false;
+  }
 };
+
+watch(
+  () => userCourseEnrollment.value?.id,
+  () => {
+    isRatingDismissed.value = false;
+  }
+);
 
 watch([isAuthorized, isProfileComplete], async (authorized, profileComplete) => {
   if (authorized && profileComplete && course.value) {
@@ -451,57 +488,6 @@ onMounted(async () => {
               "
               @click="handleEnrollment(false)"
             />
-
-            <Modal
-              :visible="showEnrollmentConfirmationModal"
-              :icon="ConfirmationIcon"
-              title="Enrollment Confirmed!"
-              @continue="showEnrollmentConfirmationModal = false"
-            >
-              <p class="text-[20px] font-medium text-[#3D3D3D]">
-                You`ve successfully enrolled to the "<span class="font-semibold">{{ course?.title }}</span
-                >" Course!
-              </p>
-            </Modal>
-
-            <Modal
-              :visible="showEnrollmentConflictModal"
-              :icon="WarningIcon"
-              title="Enrollment Conflict"
-              button-label="Continue Anyway"
-              @continue="handleEnrollment(true)"
-              @cancel="showEnrollmentConflictModal = false"
-            >
-              <p class="text-[20px] font-medium text-[#3D3D3D]">
-                You are already enrolled in "<span
-                  v-for="(conflict, index) in enrollmentConflicts"
-                  :key="conflict.conflictingEnrollmentId"
-                  class="font-semibold"
-                  >{{ conflict.conflictingCourseName }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
-                >" with the same schedule:
-                <span v-for="(conflict, index) in enrollmentConflicts" :key="conflict.conflictingEnrollmentId"
-                  >{{ conflict.schedule }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
-                >
-              </p>
-            </Modal>
-
-            <Modal
-              :visible="showAlreadyEnrolledModal"
-              :icon="WarningIcon"
-              title="Enrollment Denyed!"
-              :content="errorMessage"
-              @continue="showAlreadyEnrolledModal = false"
-            />
-
-            <Modal
-              :visible="showProfileIncompleteModal"
-              :icon="UserIcon"
-              title="Complete your profile to continue"
-              content="You need to complete your profile before enrolling in this course."
-              button-label="Complete Profile"
-              @continue="handleOpenProfileModal"
-              @cancel="showProfileIncompleteModal = false"
-            />
           </div>
         </div>
 
@@ -519,13 +505,11 @@ onMounted(async () => {
           button-label="Complete"
           @action="showProfileModal = !showProfileModal"
         />
-
-        <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
       </div>
       <div v-else-if="!isLoading" class="mt-28 flex min-w-118.25 flex-col gap-12">
         <div class="flex flex-col gap-5.5">
           <div
-            v-if="userCourseEnrollment.completedAt"
+            v-if="userCourseEnrollment?.completedAt"
             class="w-fit rounded-[100px] bg-[#1DC31D1A] p-4 text-[20px] font-semibold text-[#1DC31D]"
           >
             Completed
@@ -535,26 +519,26 @@ onMounted(async () => {
           </div>
           <div class="flex items-center gap-3">
             <CalendarIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment.schedule.weeklySchedule.label }}</span>
+            <span>{{ userCourseEnrollment?.schedule.weeklySchedule.label }}</span>
           </div>
           <div class="flex items-center gap-3">
             <ClockIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment.schedule.timeSlot.label }}</span>
+            <span>{{ userCourseEnrollment?.schedule.timeSlot.label }}</span>
           </div>
           <div class="flex items-center gap-3">
             <MonitorIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment.schedule.sessionType.name }}</span>
+            <span>{{ userCourseEnrollment?.schedule.sessionType.name }}</span>
           </div>
           <div class="flex items-center gap-3">
             <PointerIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment.schedule.sessionType.location ?? "Google Meet" }}</span>
+            <span>{{ userCourseEnrollment?.schedule.sessionType.location ?? "Google Meet" }}</span>
           </div>
         </div>
 
         <div class="flex flex-col gap-10">
-          <ProgressBar :progress="userCourseEnrollment.progress" size="medium" />
+          <ProgressBar :progress="userCourseEnrollment?.progress ?? 0" size="medium" />
           <Button
-            v-if="userCourseEnrollment.completedAt"
+            v-if="userCourseEnrollment?.completedAt"
             label="Retake Course"
             :icon="RefreshIcon"
             icon-pos="right"
@@ -567,7 +551,7 @@ onMounted(async () => {
             :icon="MarkIcon"
             icon-pos="right"
             class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
-            @click="handleCompleteEnrollment(userCourseEnrollment.id)"
+            @click="handleCompleteEnrollment(userCourseEnrollment?.id ?? 0)"
           />
 
           <Modal
@@ -578,14 +562,76 @@ onMounted(async () => {
           >
             <div>
               <p class="text-[20px] font-medium text-[#3D3D3D]">
-                You`ve completed "<span class="font-semibold">{{ userCourseEnrollment.course.title }}</span
+                You`ve completed "<span class="font-semibold">{{ userCourseEnrollment?.course.title }}</span
                 >" Course!
               </p>
             </div>
-            <StarRating v-model="rating" />
+            <StarRating v-model="rating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
           </Modal>
+        </div>
+
+        <div v-if="showRatingBox" class="rounded-lg bg-[#FFFFFF]">
+          <div class="flex w-full justify-end p-2.5">
+            <Button :icon="CloseIcon" class="gap-0!" @click="isRatingDismissed = true" />
+          </div>
+          <div class="relative -top-1 px-12.5 pb-10">
+            <StarRating v-model="rating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
+          </div>
         </div>
       </div>
     </div>
+
+    <Modal
+      :visible="showEnrollmentConfirmationModal"
+      :icon="ConfirmationIcon"
+      title="Enrollment Confirmed!"
+      @continue="showEnrollmentConfirmationModal = false"
+    >
+      <p class="text-[20px] font-medium text-[#3D3D3D]">
+        You`ve successfully enrolled to the "<span class="font-semibold">{{ course?.title }}</span
+        >" Course!
+      </p>
+    </Modal>
+
+    <Modal
+      :visible="showEnrollmentConflictModal"
+      :icon="WarningIcon"
+      title="Enrollment Conflict"
+      button-label="Continue Anyway"
+      @continue="handleEnrollment(true)"
+      @cancel="showEnrollmentConflictModal = false"
+    >
+      <p class="text-[20px] font-medium text-[#3D3D3D]">
+        You are already enrolled in "<span
+          v-for="(conflict, index) in enrollmentConflicts"
+          :key="conflict.conflictingEnrollmentId"
+          class="font-semibold"
+          >{{ conflict.conflictingCourseName }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+        >" with the same schedule:
+        <span v-for="(conflict, index) in enrollmentConflicts" :key="conflict.conflictingEnrollmentId"
+          >{{ conflict.schedule }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+        >
+      </p>
+    </Modal>
+
+    <Modal
+      :visible="showAlreadyEnrolledModal"
+      :icon="WarningIcon"
+      title="Enrollment Denyed!"
+      :content="errorMessage"
+      @continue="showAlreadyEnrolledModal = false"
+    />
+
+    <Modal
+      :visible="showProfileIncompleteModal"
+      :icon="UserIcon"
+      title="Complete your profile to continue"
+      content="You need to complete your profile before enrolling in this course."
+      button-label="Complete Profile"
+      @continue="handleOpenProfileModal"
+      @cancel="showProfileIncompleteModal = false"
+    />
+
+    <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
   </div>
 </template>
