@@ -121,6 +121,7 @@ onMounted(async () => {
           :instructor-name="item.course.instructor.name"
           :avg-rating="item.course.avgRating"
           :progress="item.progress"
+          @open-details="handleOpenDetails(item.course)"
         />
       </div>
     </div>

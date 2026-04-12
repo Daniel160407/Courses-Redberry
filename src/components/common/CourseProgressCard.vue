@@ -23,6 +23,7 @@ interface CourseProgressProps {
 }
 
 const props = defineProps<CourseProgressProps>();
+const emit = defineEmits(["openDetails"]);
 </script>
 
 <template>
@@ -70,6 +71,7 @@ const props = defineProps<CourseProgressProps>();
         label="View"
         class="text-md rounded-lg border-2 border-[#958FEF] px-4 py-3 font-medium text-[#4F46E5] transition-all duration-300 ease-out hover:bg-[#4F46E5] hover:text-[#F5F5F5] active:scale-95"
         :class="extended ? 'h-12 w-29.25' : ''"
+        @click="emit('openDetails')"
       />
     </div>
   </div>

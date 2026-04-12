@@ -14,6 +14,7 @@ import type { Component } from "vue";
 export const DASHBOARD_ROUTE = "/dashboard";
 export const CATALOG_ROUTE = "/catalog";
 export const DASHBOARD_COURSE_ROUTE = "/dashboard/course/:id";
+export const CATALOG_COURSE_ROUTE = "/catalog/course/:id";
 
 export const DASHBOARD_PAGE_NAME = "dashboard";
 export const CATALOG_PAGE_NAME = "catalog";

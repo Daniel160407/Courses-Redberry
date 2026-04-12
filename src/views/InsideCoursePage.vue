@@ -10,6 +10,7 @@ import ClockIcon from "@/components/icons/ClockIcon.vue";
 import StarIcon from "@/components/icons/StarIcon.vue";
 import {
   CATALOG_PAGE_NAME,
+  CATALOG_ROUTE,
   CATEGORY_ICONS,
   DASHBOARD_ROUTE,
   SESSION_TYPE_ICONS,
@@ -84,6 +85,7 @@ const showEnrollmentConflictModal = ref(false);
 const showAlreadyEnrolledModal = ref(false);
 const showProfileIncompleteModal = ref(false);
 const showEnrollmentCompletionModal = ref(false);
+const showNoAvailableSeatsModal = ref(false);
 const isRatingDismissed = ref(false);
 const showRatingBox = computed(() => {
   return !!userCourseEnrollment.value?.completedAt && !isRatingDismissed.value;
@@ -128,6 +130,11 @@ const handleEnrollment = (force = false) => {
 
   if (!isProfileComplete.value) {
     showProfileIncompleteModal.value = true;
+    return;
+  }
+
+  if (!selectedSessionType.value?.availableSeats) {
+    showNoAvailableSeatsModal.value = true;
     return;
   }
 
@@ -320,8 +327,13 @@ onMounted(async () => {
               >
               <AngleRightIcon />
             </div>
-            <div v-if="parentPage === CATALOG_PAGE_NAME" class="px-1 py-0.5">
-              <span class="text-[#736BEA]">Browse</span>
+            <div v-if="parentPage === CATALOG_PAGE_NAME" class="flex items-center gap-1 px-1 py-0.5">
+              <span
+                class="cursor-pointer text-[18px] font-medium text-[#666666] hover:underline"
+                @click="router.push(CATALOG_ROUTE)"
+                >Browse</span
+              >
+              <AngleRightIcon />
             </div>
             <div>
               <span class="text-[18px] font-medium text-[#4F46E5]">{{ course?.category.name }}</span>
@@ -630,6 +642,14 @@ onMounted(async () => {
       button-label="Complete Profile"
       @continue="handleOpenProfileModal"
       @cancel="showProfileIncompleteModal = false"
+    />
+
+    <Modal
+      :visible="showNoAvailableSeatsModal"
+      :icon="WarningIcon"
+      title="No Seats Available"
+      content="No seats available for this session type. Please select another, or try to change weekly schedule."
+      @continue="showNoAvailableSeatsModal = false"
     />
 
     <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />

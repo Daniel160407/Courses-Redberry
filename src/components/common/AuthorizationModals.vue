@@ -150,7 +150,6 @@ watch(
 watch(
   profileFormData,
   () => {
-    console.log(profileFormData.value);
     profileSubmitted.value = false;
   },
   { deep: true }
