@@ -9,7 +9,7 @@ const { setUser } = useGlobalStore();
 const { fetchUserInfo, isAuthenticated } = useAuthorize();
 
 onMounted(async () => {
-  if (isAuthenticated()) {
+  if (isAuthenticated.value) {
     const user = await fetchUserInfo();
     setUser(user ?? null);
   }

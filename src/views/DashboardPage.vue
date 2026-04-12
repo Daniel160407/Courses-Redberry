@@ -15,9 +15,11 @@ import LockIcon from "@/components/icons/LockIcon.vue";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
 import BoxIcon from "@/components/icons/BoxIcon.vue";
 import { useRouter } from "vue-router";
+import { useAuthorize } from "@/composables/useAuthorize";
 
 const { fetchFeaturedCourses, fetchInProgressCourses } = useCoursesCrud();
-const { featuredCourses, coursesInProgress, isAuthorized } = storeToRefs(useGlobalStore());
+const { featuredCourses, coursesInProgress } = storeToRefs(useGlobalStore());
+const { isAuthenticated } = useAuthorize();
 const router = useRouter();
 
 const sliderItems = ref<SliderItem[]>([
@@ -100,7 +102,7 @@ onMounted(async () => {
   <div class="flex min-h-screen flex-col gap-16 bg-[#F5F5F5] px-44.25 pt-43">
     <Slider :items="sliderItems" />
 
-    <div v-if="isAuthorized && coursesInProgress?.length" class="flex flex-col gap-8">
+    <div v-if="isAuthenticated && coursesInProgress?.length" class="flex flex-col gap-8">
       <div class="flex justify-between">
         <div class="flex flex-col gap-1.5">
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
@@ -141,7 +143,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="!isAuthorized" class="relative flex flex-col gap-8 pb-10">
+    <div v-if="!isAuthenticated" class="relative flex flex-col gap-8 pb-10">
       <div class="flex justify-between">
         <div class="flex flex-col gap-1.5">
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>

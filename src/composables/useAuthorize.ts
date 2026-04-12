@@ -1,23 +1,17 @@
-import type { LogInForm, ProfileForm, RegistrationForm } from "../types/interfaces";
+import type { LogInForm, ProfileForm, RegistrationForm, User } from "../types/interfaces";
 import { useAxios } from "./useAxios";
 import Cookies from "js-cookie";
 import { useGlobalStore } from "@/stores/GlobalStore";
-import { computed } from "vue";
+import { storeToRefs } from "pinia";
 
 export const useAuthorize = () => {
   const { sendRequest, data, error } = useAxios();
-  const store = useGlobalStore();
-
-  const isAuthenticated = (): boolean => {
-    const token = Cookies.get("token");
-    return !!token;
-  };
-
-  const isProfileComplete = computed(() => {
-    return store.isProfileComplete;
-  });
+  const globalStore = useGlobalStore();
+  const { user, isAuthorized, isProfileComplete } = storeToRefs(globalStore);
 
   const fetchUserInfo = async () => {
+    if (!isAuthorized.value) return;
+
     try {
       await sendRequest({
         method: "GET",
@@ -26,8 +20,7 @@ export const useAuthorize = () => {
       });
 
       if (data.value?.data) {
-        store.setIsProfileComplete(data.value.data.profileComplete);
-        return data.value?.data;
+        return data.value.data;
       }
     } catch (err) {
       console.error("Login Error:", err);
@@ -88,7 +81,6 @@ export const useAuthorize = () => {
   };
 
   const updateProfile = async (formData: ProfileForm) => {
-    console.log(formData);
     try {
       await sendRequest({
         method: "PUT",
@@ -109,5 +101,5 @@ export const useAuthorize = () => {
     }
   };
 
-  return { isAuthenticated, isProfileComplete, fetchUserInfo, register, logIn, updateProfile };
+  return { isAuthenticated: isAuthorized, isProfileComplete, user, fetchUserInfo, register, logIn, updateProfile };
 };

@@ -4,19 +4,10 @@ import UserIcon from "../icons/UserIcon.vue";
 interface Props {
   src?: string;
   alt?: string;
-  status?: string;
+  status?: boolean;
 }
 
 const { src, alt, status } = defineProps<Props>();
-
-const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = {
-    complete: "#1DC31D",
-    incomplete: "#F4A316"
-  };
-
-  return colors[status];
-};
 </script>
 
 <template>
@@ -31,7 +22,7 @@ const getStatusColor = (status: string) => {
     <div
       v-if="status"
       class="absolute right-0 bottom-0 h-4 w-4 rounded-full border-[3px] border-white transition-colors duration-200"
-      :style="{ backgroundColor: getStatusColor(status) }"
+      :class="status ? 'bg-[#1DC31D]' : 'bg-[#F4A316]'"
     ></div>
   </div>
 </template>

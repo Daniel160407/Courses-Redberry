@@ -37,8 +37,6 @@ import StepThreeIcon from "@/components/icons/StepThreeIcon.vue";
 import WarningIcon from "@/components/icons/WarningIcon.vue";
 import Button from "@/components/common/Button.vue";
 import ActionBanner from "@/components/common/ActionBanner.vue";
-import { storeToRefs } from "pinia";
-import { useGlobalStore } from "@/stores/GlobalStore";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
 import { useAuthorize } from "@/composables/useAuthorize";
 import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
@@ -54,11 +52,10 @@ import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
 
+const { isAuthenticated, isProfileComplete } = useAuthorize();
 const { fetchCourseById, rateCourse } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
-const { isProfileComplete } = useAuthorize();
 const { fetchUserEnrollments, enrollCourse, completeEnrollment, deleteEnrollment } = useEnrollmentsCrud();
-const { isAuthorized } = storeToRefs(useGlobalStore());
 const router = useRouter();
 const route = useRoute();
 
@@ -123,7 +120,7 @@ const totalPrice = computed(() => {
 });
 
 const handleEnrollment = (force = false) => {
-  if (!isAuthorized.value) {
+  if (!isAuthenticated.value) {
     showLogInModal.value = true;
     return;
   }
@@ -254,7 +251,7 @@ watch(
   }
 );
 
-watch([isAuthorized, isProfileComplete], async (authorized, profileComplete) => {
+watch([isAuthenticated, isProfileComplete], async (authorized, profileComplete) => {
   if (authorized && profileComplete && course.value) {
     const enrollmentRes = await fetchUserEnrollments();
     if (enrollmentRes?.success) {
@@ -494,7 +491,7 @@ onMounted(async () => {
               label="Enroll Now"
               class="h-15.75 rounded-xl p-2.5 text-[20px]"
               :class="
-                isAuthorized && isProfileComplete
+                isAuthenticated && isProfileComplete
                   ? 'bg-[#4F46E5] font-medium text-[#FFFFFF]'
                   : 'bg-[#EEEDFC] font-semibold text-[#B7B3F4]'
               "
@@ -504,7 +501,7 @@ onMounted(async () => {
         </div>
 
         <ActionBanner
-          v-if="!isAuthorized"
+          v-if="!isAuthenticated"
           title="Authentication Required"
           description="You need sign in to your profile before enrolling in this course."
           button-label="Sign In"
