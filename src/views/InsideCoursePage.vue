@@ -210,6 +210,18 @@ const handleRateCourse = async () => {
   showEnrollmentCompletionModal.value = false;
 };
 
+watch([isAuthorized, isProfileComplete], async (authorized, profileComplete) => {
+  if (authorized && profileComplete && course.value) {
+    const enrollmentRes = await fetchUserEnrollments();
+    if (enrollmentRes?.success) {
+      userCourseEnrollment.value =
+        enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
+    }
+  } else {
+    userCourseEnrollment.value = null;
+  }
+});
+
 watch(selectedWeeklySchedule, async (newVal) => {
   if (!newVal || !course.value) return;
 
@@ -231,6 +243,8 @@ watch(selectedTimeSlot, async (newVal) => {
 });
 
 onMounted(async () => {
+  isLoading.value = true;
+
   try {
     if (!courseId.value) return;
 
@@ -261,14 +275,19 @@ onMounted(async () => {
       <div class="flex w-225.75 min-w-225.75 flex-col gap-6">
         <div>
           <div class="mb-12 flex items-center gap-0.5">
-            <div class="flex gap-1 px-1 py-0.5">
-              <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push(DASHBOARD_ROUTE)"
+            <div class="flex items-center gap-1 px-1 py-0.5">
+              <span
+                class="cursor-pointer text-[18px] font-medium text-[#666666] hover:underline"
+                @click="router.push(DASHBOARD_ROUTE)"
                 >Home</span
               >
               <AngleRightIcon />
             </div>
             <div v-if="parentPage === CATALOG_PAGE_NAME" class="px-1 py-0.5">
               <span class="text-[#736BEA]">Browse</span>
+            </div>
+            <div>
+              <span class="text-[18px] font-medium text-[#4F46E5]">{{ course?.category.name }}</span>
             </div>
           </div>
           <h1 class="text-[40px] font-semibold text-[#141414]">{{ course?.title }}</h1>
@@ -315,7 +334,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-if="!userCourseEnrollment" class="mt-28 flex max-w-132.5 flex-1 flex-col gap-3">
+      <div v-if="!userCourseEnrollment && !isLoading" class="mt-28 flex max-w-132.5 flex-1 flex-col gap-3">
         <Accordion v-model:value="activeTab">
           <AccordionPanel value="0">
             <AccordionHeader :icon="StepOneIcon">Weekly Schedule</AccordionHeader>
@@ -503,7 +522,7 @@ onMounted(async () => {
 
         <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
       </div>
-      <div v-else class="mt-28 flex min-w-118.25 flex-col gap-12">
+      <div v-else-if="!isLoading" class="mt-28 flex min-w-118.25 flex-col gap-12">
         <div class="flex flex-col gap-5.5">
           <div
             v-if="userCourseEnrollment.completedAt"

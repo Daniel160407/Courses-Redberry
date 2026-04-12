@@ -28,7 +28,7 @@ const showProfileModal = defineModel<boolean>("showProfileModal");
 
 const globalStore = useGlobalStore();
 const { user } = storeToRefs(globalStore);
-const { setUser } = globalStore;
+const { setUser, setIsProfileComplete } = globalStore;
 const { useRegistrationValidate, useLogInValidate, useProfileValidate } = useValidate();
 const { register, logIn, updateProfile } = useAuthorize();
 const { fetchInProgressCourses } = useCoursesCrud();
@@ -86,6 +86,7 @@ const handleLogIn = async () => {
   if (result.success) {
     showLogInModal.value = false;
     setUser(result.user ?? null);
+    setIsProfileComplete(result.user.profileComplete);
   } else {
     logInFormErrors.email = "Invalid credentials";
     logInFormErrors.password = "Invalid credentials";
@@ -96,9 +97,10 @@ const handleLogIn = async () => {
 const handleUpdateProfile = async () => {
   if (Object.values(profileFormErrors).some((err) => err !== "")) return;
   const result = await updateProfile(profileFormData.value);
-  if (result.success) {
+  if (result?.success) {
     showProfileModal.value = false;
     showProfileEditSuccessModal.value = true;
+    setIsProfileComplete(result?.user.profileComplete);
   }
   profileSubmitted.value = true;
 };
@@ -148,6 +150,7 @@ watch(
 watch(
   profileFormData,
   () => {
+    console.log(profileFormData.value);
     profileSubmitted.value = false;
   },
   { deep: true }
@@ -170,7 +173,7 @@ watch(
         full_name: newUser.fullName ?? "",
         mobile_number: newUser.mobileNumber ?? "",
         age: newUser.age ?? 0,
-        avatar: null
+        avatar: newUser.avatar ?? null
       };
       fetchInProgressCourses();
     }

@@ -14,7 +14,7 @@ export interface RegistrationForm {
   password: string;
   confirmPassword: string;
   username: string;
-  avatar: File | null;
+  avatar: File | string | null;
 }
 
 export interface LogInForm {
@@ -44,7 +44,7 @@ export interface ProfileForm {
   full_name: string;
   mobile_number: string;
   age: number;
-  avatar: File | null;
+  avatar: File | string | null;
 }
 
 export interface ProfileErrors {

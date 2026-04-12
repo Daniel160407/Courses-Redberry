@@ -2,7 +2,7 @@ import type { LogInForm, ProfileForm, RegistrationForm } from "../types/interfac
 import { useAxios } from "./useAxios";
 import Cookies from "js-cookie";
 import { useGlobalStore } from "@/stores/GlobalStore";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 export const useAuthorize = () => {
   const { sendRequest, data, error } = useAxios();
@@ -88,15 +88,21 @@ export const useAuthorize = () => {
   };
 
   const updateProfile = async (formData: ProfileForm) => {
+    console.log(formData);
     try {
       await sendRequest({
         method: "PUT",
         url: "/profile",
         data: formData,
-        useToken: true
+        useToken: true,
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
       });
 
-      return { success: true };
+      if (data.value?.data) {
+        return { success: true, user: data.value?.data };
+      }
     } catch (err) {
       console.error(err);
       return { success: false, serverErrors: error.value };
