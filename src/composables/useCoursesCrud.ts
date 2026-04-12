@@ -110,5 +110,25 @@ export const useCoursesCrud = () => {
     }
   };
 
-  return { fetchCourses, fetchCourseById, fetchFeaturedCourses, fetchInProgressCourses };
+  const rateCourse = async (courseId: number, rating: number) => {
+    try {
+      await sendRequest({
+        method: "POST",
+        url: `/courses/${courseId}/reviews`,
+        useToken: true,
+        params: {
+          rating
+        }
+      });
+
+      if (data.value?.data) {
+        return { success: true, ratingData: data.value?.data };
+      }
+    } catch (err) {
+      console.error(err);
+      return { success: false, serverErrors: error.value };
+    }
+  };
+
+  return { fetchCourses, fetchCourseById, fetchFeaturedCourses, fetchInProgressCourses, rateCourse };
 };

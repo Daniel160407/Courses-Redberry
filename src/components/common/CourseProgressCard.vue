@@ -6,6 +6,7 @@ import CalendarIcon from "../icons/CalendarIcon.vue";
 import ClockIcon from "../icons/ClockIcon.vue";
 import UsersIcon from "../icons/UsersIcon.vue";
 import PointerIcon from "../icons/PointerIcon.vue";
+import ProgressBar from "./ProgressBar.vue";
 
 interface CourseProgressProps {
   title: string;
@@ -64,15 +65,7 @@ const props = defineProps<CourseProgressProps>();
     </div>
 
     <div class="flex items-end justify-between gap-5">
-      <div class="flex w-full flex-col gap-1 pb-1" :class="!extended ? 'max-w-84' : ''">
-        <span class="text-sm font-medium">{{ props.progress }}% Complete</span>
-        <div class="h-3.75 w-full overflow-hidden rounded-full bg-[#4F46E5]/20">
-          <div
-            class="h-full rounded-full bg-[#4F46E5] transition-all duration-500 ease-out"
-            :style="{ width: `${props.progress}%` }"
-          />
-        </div>
-      </div>
+      <ProgressBar :progress="props.progress" class="w-full pb-1" :class="!extended ? 'max-w-84' : ''" />
       <Button
         label="View"
         class="text-md rounded-lg border-2 border-[#958FEF] px-4 py-3 font-medium text-[#4F46E5] transition-all duration-300 ease-out hover:bg-[#4F46E5] hover:text-[#F5F5F5] active:scale-95"

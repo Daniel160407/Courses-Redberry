@@ -24,7 +24,8 @@ import type {
   TimeSlot,
   SessionType,
   EnrollmentForm,
-  EnrollmentConflict
+  EnrollmentConflict,
+  Enrollment
 } from "@/types/interfaces";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -43,11 +44,18 @@ import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
 import Modal from "@/components/common/Modal.vue";
 import ConfirmationIcon from "@/components/icons/ConfirmationIcon.vue";
 import UserIcon from "@/components/icons/UserIcon.vue";
+import MonitorIcon from "@/components/icons/MonitorIcon.vue";
+import PointerIcon from "@/components/icons/PointerIcon.vue";
+import ProgressBar from "@/components/common/ProgressBar.vue";
+import RefreshIcon from "@/components/icons/RefreshIcon.vue";
+import MarkIcon from "@/components/icons/MarkIcon.vue";
+import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
+import StarRating from "@/components/common/StarRating.vue";
 
-const { fetchCourseById } = useCoursesCrud();
+const { fetchCourseById, rateCourse } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
 const { isProfileComplete } = useAuthorize();
-const { enrollCourse } = useEnrollmentsCrud();
+const { fetchUserEnrollments, enrollCourse, completeEnrollment, deleteEnrollment } = useEnrollmentsCrud();
 const { isAuthorized } = storeToRefs(useGlobalStore());
 const router = useRouter();
 const route = useRoute();
@@ -61,9 +69,11 @@ const sessionTypes = ref<SessionType[]>([]);
 const selectedWeeklySchedule = ref<WeeklySchedule | null>(null);
 const selectedTimeSlot = ref<TimeSlot | null>(null);
 const selectedSessionType = ref<SessionType | null>(null);
+const userCourseEnrollment = ref<Enrollment | null>(null);
 
 const enrollmentConflicts = ref<EnrollmentConflict[]>([]);
 const errorMessage = ref<string>("");
+const rating = ref<number>(0);
 
 const showLogInModal = ref(false);
 const showProfileModal = ref(false);
@@ -71,6 +81,7 @@ const showEnrollmentConfirmationModal = ref(false);
 const showEnrollmentConflictModal = ref(false);
 const showAlreadyEnrolledModal = ref(false);
 const showProfileIncompleteModal = ref(false);
+const showEnrollmentCompletionModal = ref(false);
 
 const parentPage = computed(() => route.path.split("/")[1]);
 
@@ -103,6 +114,22 @@ const totalPrice = computed(() => {
   return base + modifier;
 });
 
+const handleEnrollment = (force = false) => {
+  if (!isAuthorized.value) {
+    showLogInModal.value = true;
+    return;
+  }
+
+  if (!isProfileComplete.value) {
+    showProfileIncompleteModal.value = true;
+    return;
+  }
+
+  const cId = course.value?.id;
+  const sId = selectedSessionType.value?.courseScheduleId;
+  if (cId && sId) handleClickEnroll(cId, sId, force);
+};
+
 const isScheduleAvailable = (id: number) => weeklySchedules.value.some((ws) => ws.id === id);
 const isTimeSlotAvailable = (id: number) => timeSlots.value.some((ts) => ts.id === id);
 
@@ -128,11 +155,6 @@ const handleSelectSessionType = (isSelected: boolean, sessionType: SessionType) 
 };
 
 const handleClickEnroll = async (courseId: number, courseScheduleId: number, force: boolean = false) => {
-  if (!isProfileComplete.value) {
-    showProfileIncompleteModal.value = true;
-    return;
-  }
-
   enrollmentConflicts.value = [];
   showEnrollmentConflictModal.value = false;
 
@@ -143,9 +165,14 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
   };
 
   const response = await enrollCourse(formData);
-  console.log(response);
+
   if (response?.success) {
     showEnrollmentConfirmationModal.value = true;
+    const enrollmentRes = await fetchUserEnrollments();
+    if (enrollmentRes?.success && course.value) {
+      userCourseEnrollment.value =
+        enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
+    }
   } else {
     const errorData = response?.serverErrors?.value;
     if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
@@ -153,10 +180,34 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
       enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];
       showEnrollmentConflictModal.value = true;
     } else if (errorData && typeof errorData === "object") {
-      errorMessage.value = errorData.message;
+      errorMessage.value = (errorData as any).message || "An error occurred";
       showAlreadyEnrolledModal.value = true;
     }
   }
+};
+
+const handleOpenProfileModal = () => {
+  showProfileModal.value = !showProfileModal.value;
+  showProfileIncompleteModal.value = false;
+};
+
+const handleCompleteEnrollment = async (enrollmentId: number) => {
+  const response = await completeEnrollment(enrollmentId);
+  if (response?.success) {
+    showEnrollmentCompletionModal.value = true;
+  }
+};
+
+const handleRetakeCourse = async () => {
+  const response = await deleteEnrollment(userCourseEnrollment.value?.id ?? 0);
+  if (response?.success) {
+    userCourseEnrollment.value = null;
+  }
+};
+
+const handleRateCourse = async () => {
+  await rateCourse(course.value?.id ?? 0, rating.value);
+  showEnrollmentCompletionModal.value = false;
 };
 
 watch(selectedWeeklySchedule, async (newVal) => {
@@ -186,11 +237,17 @@ onMounted(async () => {
     const courseResponse = await fetchCourseById(courseId.value);
     if (courseResponse?.success) {
       course.value = courseResponse.course;
+      const cId = courseResponse.course.id;
 
-      const weeklyRes = await fetchCourseWeeklySchedules(courseResponse.course.id);
+      const [weeklyRes, enrollmentRes] = await Promise.all([fetchCourseWeeklySchedules(cId), fetchUserEnrollments()]);
+
       if (weeklyRes?.success) {
         weeklySchedules.value = weeklyRes.weeklySchedules;
         selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+      }
+
+      if (enrollmentRes?.success) {
+        userCourseEnrollment.value = enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === cId) || null;
       }
     }
   } finally {
@@ -258,7 +315,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="mt-28 flex max-w-132.5 flex-1 flex-col gap-3">
+      <div v-if="!userCourseEnrollment" class="mt-28 flex max-w-132.5 flex-1 flex-col gap-3">
         <Accordion v-model:value="activeTab">
           <AccordionPanel value="0">
             <AccordionHeader :icon="StepOneIcon">Weekly Schedule</AccordionHeader>
@@ -368,13 +425,12 @@ onMounted(async () => {
               type="submit"
               label="Enroll Now"
               class="h-15.75 rounded-xl p-2.5 text-[20px]"
-              :disabled="!(isAuthorized && isProfileComplete)"
               :class="
                 isAuthorized && isProfileComplete
                   ? 'bg-[#4F46E5] font-medium text-[#FFFFFF]'
-                  : 'cursor-not-allowed! bg-[#EEEDFC] font-semibold text-[#B7B3F4]'
+                  : 'bg-[#EEEDFC] font-semibold text-[#B7B3F4]'
               "
-              @click="handleClickEnroll(course?.id ?? 0, selectedSessionType?.courseScheduleId ?? 0)"
+              @click="handleEnrollment(false)"
             />
 
             <Modal
@@ -394,7 +450,7 @@ onMounted(async () => {
               :icon="WarningIcon"
               title="Enrollment Conflict"
               button-label="Continue Anyway"
-              @continue="handleClickEnroll(course?.id ?? 0, selectedSessionType?.courseScheduleId ?? 0, true)"
+              @continue="handleEnrollment(true)"
               @cancel="showEnrollmentConflictModal = false"
             >
               <p class="text-[20px] font-medium text-[#3D3D3D]">
@@ -424,7 +480,7 @@ onMounted(async () => {
               title="Complete your profile to continue"
               content="You need to complete your profile before enrolling in this course."
               button-label="Complete Profile"
-              @continue="showProfileModal = !showProfileModal"
+              @continue="handleOpenProfileModal"
               @cancel="showProfileIncompleteModal = false"
             />
           </div>
@@ -446,6 +502,70 @@ onMounted(async () => {
         />
 
         <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
+      </div>
+      <div v-else class="mt-28 flex min-w-118.25 flex-col gap-12">
+        <div class="flex flex-col gap-5.5">
+          <div
+            v-if="userCourseEnrollment.completedAt"
+            class="w-fit rounded-[100px] bg-[#1DC31D1A] p-4 text-[20px] font-semibold text-[#1DC31D]"
+          >
+            Completed
+          </div>
+          <div v-else class="w-fit rounded-[100px] bg-[#736BEA1A] p-4 text-[20px] font-semibold text-[#736BEA]">
+            Enrolled
+          </div>
+          <div class="flex items-center gap-3">
+            <CalendarIcon class="h-6 w-6" />
+            <span>{{ userCourseEnrollment.schedule.weeklySchedule.label }}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <ClockIcon class="h-6 w-6" />
+            <span>{{ userCourseEnrollment.schedule.timeSlot.label }}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <MonitorIcon class="h-6 w-6" />
+            <span>{{ userCourseEnrollment.schedule.sessionType.name }}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <PointerIcon class="h-6 w-6" />
+            <span>{{ userCourseEnrollment.schedule.sessionType.location ?? "Google Meet" }}</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-10">
+          <ProgressBar :progress="userCourseEnrollment.progress" size="medium" />
+          <Button
+            v-if="userCourseEnrollment.completedAt"
+            label="Retake Course"
+            :icon="RefreshIcon"
+            icon-pos="right"
+            class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
+            @click="handleRetakeCourse"
+          />
+          <Button
+            v-else
+            label="Complete Course"
+            :icon="MarkIcon"
+            icon-pos="right"
+            class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
+            @click="handleCompleteEnrollment(userCourseEnrollment.id)"
+          />
+
+          <Modal
+            :visible="showEnrollmentCompletionModal"
+            :icon="ConfettiIcon"
+            title="Congratulations!"
+            @continue="handleRateCourse"
+          >
+            <div>
+              <p class="text-[20px] font-medium text-[#3D3D3D]">
+                You`ve completed "<span class="font-semibold">{{ userCourseEnrollment.course.title }}</span
+                >" Course!
+              </p>
+            </div>
+            <StarRating v-model="rating" />
+          </Modal>
+        </div>
       </div>
     </div>
   </div>
