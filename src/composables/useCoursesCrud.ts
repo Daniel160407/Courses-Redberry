@@ -99,7 +99,7 @@ export const useCoursesCrud = () => {
         return { success: true, ratingData: data.value?.data };
       }
     } catch (err) {
-      console.error(err);
+      console.error("Rate Course Error:", err);
       return { success: false, serverErrors: error.value };
     }
   };

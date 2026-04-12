@@ -6,7 +6,6 @@ import { useValidate } from "@/composables/useValidate";
 import { useAuthorize } from "@/composables/useAuthorize";
 import { useGlobalStore } from "@/stores/GlobalStore";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
-import { COMPLETE_STATUS, INCOMPLETE_STATUS } from "@/composables/constants";
 
 import Dialog from "../common/Dialog.vue";
 import Input from "../common/Input.vue";

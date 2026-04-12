@@ -11,13 +11,10 @@ import StarIcon from "@/components/icons/StarIcon.vue";
 import {
   CATALOG_PAGE_NAME,
   CATALOG_ROUTE,
-  CATEGORY_ICONS,
   DASHBOARD_ROUTE,
-  SESSION_TYPE_ICONS,
   TIME_SLOT_CONFIG,
-  TIME_SLOT_ICONS,
   WEEKLY_SCHEDULE_CONFIG
-} from "@/composables/constants";
+} from "@/constants/constants";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
 import type {
   WeeklySchedule,
@@ -51,6 +48,7 @@ import MarkIcon from "@/components/icons/MarkIcon.vue";
 import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
+import { CATEGORY_ICONS, SESSION_TYPE_ICONS, TIME_SLOT_ICONS } from "@/constants/iconMappings";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
 const { fetchCourseById, rateCourse } = useCoursesCrud();
@@ -65,8 +63,8 @@ const isLoading = ref(true);
 const weeklySchedules = ref<WeeklySchedule[]>([]);
 const timeSlots = ref<TimeSlot[]>([]);
 const sessionTypes = ref<SessionType[]>([]);
-const selectedWeeklySchedule = ref<WeeklySchedule | null>(null);
-const selectedTimeSlot = ref<TimeSlot | null>(null);
+const selectedWeeklySchedule = ref<WeeklySchedule | (typeof WEEKLY_SCHEDULE_CONFIG)[number] | null>(null);
+const selectedTimeSlot = ref<TimeSlot | (typeof TIME_SLOT_CONFIG)[number] | null>(null);
 const selectedSessionType = ref<SessionType | null>(null);
 const userCourseEnrollment = ref<Enrollment | null>(null);
 
@@ -143,7 +141,10 @@ const handleEnrollment = (force = false) => {
 const isScheduleAvailable = (id: number) => weeklySchedules.value.some((ws) => ws.id === id);
 const isTimeSlotAvailable = (id: number) => timeSlots.value.some((ts) => ts.id === id);
 
-const handleSelectWeeklySchedule = (isSelected: boolean, weeklySchedule: WeeklySchedule) => {
+const handleSelectWeeklySchedule = (
+  isSelected: boolean,
+  weeklySchedule: WeeklySchedule | (typeof WEEKLY_SCHEDULE_CONFIG)[number]
+) => {
   if (isSelected) {
     selectedWeeklySchedule.value = weeklySchedule;
     selectedTimeSlot.value = null;
@@ -151,7 +152,7 @@ const handleSelectWeeklySchedule = (isSelected: boolean, weeklySchedule: WeeklyS
   }
 };
 
-const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot) => {
+const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot | (typeof TIME_SLOT_CONFIG)[number]) => {
   if (isSelected) {
     selectedTimeSlot.value = timeSlot;
     selectedSessionType.value = null;
