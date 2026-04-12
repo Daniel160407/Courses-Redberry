@@ -125,7 +125,7 @@ export interface SessionType {
   id: number;
   courseScheduleId: number;
   name: string;
-  priceModifier: number;
+  priceModifier: string;
   availableSeats: number;
   location: string | null;
 }
@@ -174,4 +174,17 @@ export interface ExtendedCourse {
 export interface Review {
   userId: number;
   rating: number;
+}
+
+export interface EnrollmentForm {
+  courseId: number;
+  courseScheduleId: number;
+  force: boolean;
+}
+
+export interface EnrollmentConflict {
+  requestedCourseId: number;
+  conflictingEnrollmentId: number;
+  conflictingCourseName: string;
+  schedule: string;
 }

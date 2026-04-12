@@ -1,14 +1,21 @@
 import type { LogInForm, ProfileForm, RegistrationForm } from "../types/interfaces";
 import { useAxios } from "./useAxios";
 import Cookies from "js-cookie";
+import { useGlobalStore } from "@/stores/GlobalStore";
+import { computed, ref } from "vue";
 
 export const useAuthorize = () => {
   const { sendRequest, data, error } = useAxios();
+  const store = useGlobalStore();
 
   const isAuthenticated = (): boolean => {
     const token = Cookies.get("token");
     return !!token;
   };
+
+  const isProfileComplete = computed(() => {
+    return store.isProfileComplete;
+  });
 
   const fetchUserInfo = async () => {
     try {
@@ -19,6 +26,7 @@ export const useAuthorize = () => {
       });
 
       if (data.value?.data) {
+        store.setIsProfileComplete(data.value.data.profileComplete);
         return data.value?.data;
       }
     } catch (err) {
@@ -95,5 +103,5 @@ export const useAuthorize = () => {
     }
   };
 
-  return { isAuthenticated, fetchUserInfo, register, logIn, updateProfile };
+  return { isAuthenticated, isProfileComplete, fetchUserInfo, register, logIn, updateProfile };
 };

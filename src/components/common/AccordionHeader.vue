@@ -20,7 +20,7 @@ const toggle = () => {
   <button
     type="button"
     :class="panel?.isOpen.value ? 'text-[#130E67]!' : 'text-[#8A8A8A]!'"
-    class="flex w-full items-center justify-between py-4 text-left font-medium"
+    class="flex w-full cursor-pointer items-center justify-between py-4 text-left font-medium"
     @click="toggle"
   >
     <div class="flex items-center gap-2">

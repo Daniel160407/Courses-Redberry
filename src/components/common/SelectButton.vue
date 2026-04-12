@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Component } from "vue";
+import { computed, type Component } from "vue";
 
 interface Props {
   label?: string;
@@ -7,7 +7,7 @@ interface Props {
   image?: string;
   isSelected?: boolean;
   disabled?: boolean;
-  variant?: "primary" | "text";
+  variant?: "primary" | "outline" | "text";
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -21,18 +21,33 @@ const handleClick = () => {
     emit("click", !props.isSelected);
   }
 };
+
+const buttonClasses = computed(() => {
+  if (props.disabled) {
+    return "cursor-not-allowed! border-[#D1D1D1]! bg-[#F5F5F5] text-[#CCCCCC]!";
+  }
+
+  if (props.variant === "text") {
+    return "cursor-default border-transparent bg-[#FFFFFF] text-[#666666]";
+  }
+
+  const base = "cursor-pointer transition-all duration-300 ease-out";
+  const selected = "border-[#281ED2] bg-[#EEEDFC] text-[#281ED2]";
+
+  const unselectedMap = {
+    primary: "border-[#FFFFFF] bg-[#FFFFFF]",
+    outline: "border-[#D1D1D1] bg-[#FFFFFF]"
+  };
+
+  const unselected = `${unselectedMap[props.variant as "primary" | "outline"]} text-[#525252] hover:border-[#DDDBFA] hover:bg-[#DDDBFA] hover:text-[#281ED2]`;
+
+  return `${base} ${props.isSelected ? selected : unselected}`;
+});
 </script>
 <template>
   <div
-    class="inline-flex w-fit items-center gap-2.5 rounded-xl border px-3 py-2 transition-all duration-300 ease-out"
-    :class="[
-      props.variant === 'text'
-        ? 'cursor-default border-transparent bg-[#FFFFFF] text-[#666666]'
-        : props.isSelected
-          ? 'cursor-pointer border-[#281ED2] bg-[#EEEDFC] text-[#281ED2]'
-          : 'cursor-pointer border-[#FFFFFF] bg-[#FFFFFF] text-[#666666] hover:border-[#DDDBFA] hover:bg-[#DDDBFA] hover:text-[#281ED2]',
-      props.disabled ? 'cursor-not-allowed! bg-[#F5F5F5] text-[#CCCCCC]' : ''
-    ]"
+    class="inline-flex w-fit items-center gap-2.5 rounded-xl border px-3 py-2"
+    :class="buttonClasses"
     @click="handleClick"
   >
     <template v-if="props.label">

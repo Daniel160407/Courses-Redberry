@@ -20,8 +20,10 @@ const emit = defineEmits(["continue", "cancel"]);
         <div class="flex flex-col items-center gap-10.5">
           <div class="flex flex-col items-center gap-6 text-center">
             <component :is="icon" v-if="icon" class="h-23.5 w-23.5" />
-            <span v-if="title" class="text-[32px] text-[#3D3D3D]">{{ title }}</span>
-            <span v-if="content" class="text-[20px] text-[#3D3D3D]">{{ content }}</span>
+            <span v-if="title" class="text-[32px] font-semibold text-[#3D3D3D]">{{ title }}</span>
+            <slot>
+              <span v-if="content" class="text-[20px] text-[#3D3D3D]">{{ content }}</span>
+            </slot>
           </div>
           <div v-if="buttonLabel" class="flex w-full gap-2">
             <Button
@@ -31,7 +33,7 @@ const emit = defineEmits(["continue", "cancel"]);
             />
             <Button label="Cancel" class="flex-1 rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="emit('cancel')" />
           </div>
-          <Button v-else label="Done" class="rounded-lg w-full bg-[#4F46E5] text-[#FFFFFF]" @click="emit('continue')" />
+          <Button v-else label="Done" class="w-full rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="emit('continue')" />
         </div>
       </div>
     </div>

@@ -12,26 +12,48 @@ import {
   CATALOG_PAGE_NAME,
   CATEGORY_ICONS,
   DASHBOARD_ROUTE,
+  SESSION_TYPE_ICONS,
   TIME_SLOT_CONFIG,
   TIME_SLOT_ICONS,
   WEEKLY_SCHEDULE_CONFIG
 } from "@/composables/constants";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
-import type { WeeklySchedule, ExtendedCourse, TimeSlot, SessionType } from "@/types/interfaces";
+import type {
+  WeeklySchedule,
+  ExtendedCourse,
+  TimeSlot,
+  SessionType,
+  EnrollmentForm,
+  EnrollmentConflict
+} from "@/types/interfaces";
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useScheduleCrud } from "@/composables/useScheduleCrud";
 import StepOneIcon from "@/components/icons/StepOneIcon.vue";
 import StepTwoIcon from "@/components/icons/StepTwoIcon.vue";
 import StepThreeIcon from "@/components/icons/StepThreeIcon.vue";
+import WarningIcon from "@/components/icons/WarningIcon.vue";
+import Button from "@/components/common/Button.vue";
+import ActionBanner from "@/components/common/ActionBanner.vue";
+import { storeToRefs } from "pinia";
+import { useGlobalStore } from "@/stores/GlobalStore";
+import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
+import { useAuthorize } from "@/composables/useAuthorize";
+import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
+import Modal from "@/components/common/Modal.vue";
+import ConfirmationIcon from "@/components/icons/ConfirmationIcon.vue";
+import UserIcon from "@/components/icons/UserIcon.vue";
 
 const { fetchCourseById } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
+const { isProfileComplete } = useAuthorize();
+const { enrollCourse } = useEnrollmentsCrud();
+const { isAuthorized } = storeToRefs(useGlobalStore());
 const router = useRouter();
 const route = useRoute();
 
 const course = ref<ExtendedCourse | null>(null);
-const activeTab = ref<string | number | null>(null);
+const activeTab = ref<(string | number)[]>([]);
 const isLoading = ref(true);
 const weeklySchedules = ref<WeeklySchedule[]>([]);
 const timeSlots = ref<TimeSlot[]>([]);
@@ -40,6 +62,16 @@ const selectedWeeklySchedule = ref<WeeklySchedule | null>(null);
 const selectedTimeSlot = ref<TimeSlot | null>(null);
 const selectedSessionType = ref<SessionType | null>(null);
 
+const enrollmentConflicts = ref<EnrollmentConflict[]>([]);
+const errorMessage = ref<string>("");
+
+const showLogInModal = ref(false);
+const showProfileModal = ref(false);
+const showEnrollmentConfirmationModal = ref(false);
+const showEnrollmentConflictModal = ref(false);
+const showAlreadyEnrolledModal = ref(false);
+const showProfileIncompleteModal = ref(false);
+
 const parentPage = computed(() => route.path.split("/")[1]);
 
 const courseId = computed(() => {
@@ -47,12 +79,28 @@ const courseId = computed(() => {
   return Array.isArray(id) ? id[0] : id;
 });
 
-const coursAvgRating = computed(() => {
-  const reviews = course.value?.reviews ?? [];
-  if (reviews.length === 0) return 0;
-  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+const courseAvgRating = computed(() => {
+  if (!course.value?.reviews?.length) return 0;
+  const total = course.value.reviews.reduce((sum, r) => sum + r.rating, 0);
+  const avg = total / course.value.reviews.length;
+  return Math.floor(avg * 10) / 10;
+});
 
-  return totalRating / reviews.length;
+const formattedSessionTypes = computed(() => {
+  return sessionTypes.value.map((st) => ({
+    ...st,
+    displayName: st.name.charAt(0).toUpperCase() + st.name.slice(1),
+    displayLocation: st.name === "online" ? "Google Meet" : st.location,
+    displayPrice: st.priceModifier === "0.00" ? "Included" : `+ $${st.priceModifier}`,
+    isLowSeats: st.availableSeats <= 5 && st.availableSeats > 0,
+    isFull: st.availableSeats === 0
+  }));
+});
+
+const totalPrice = computed(() => {
+  const base = Number(course.value?.basePrice) || 0;
+  const modifier = Number(selectedSessionType.value?.priceModifier) || 0;
+  return base + modifier;
 });
 
 const isScheduleAvailable = (id: number) => weeklySchedules.value.some((ws) => ws.id === id);
@@ -75,18 +123,60 @@ const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot) => {
   }
 };
 
+const handleSelectSessionType = (isSelected: boolean, sessionType: SessionType) => {
+  selectedSessionType.value = isSelected ? sessionType : null;
+};
+
+const handleClickEnroll = async (courseId: number, courseScheduleId: number, force: boolean = false) => {
+  if (!isProfileComplete.value) {
+    showProfileIncompleteModal.value = true;
+    return;
+  }
+
+  enrollmentConflicts.value = [];
+  showEnrollmentConflictModal.value = false;
+
+  const formData: EnrollmentForm = {
+    courseId,
+    courseScheduleId,
+    force
+  };
+
+  const response = await enrollCourse(formData);
+  console.log(response);
+  if (response?.success) {
+    showEnrollmentConfirmationModal.value = true;
+  } else {
+    const errorData = response?.serverErrors?.value;
+    if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
+      const conflicts = (errorData as { conflicts: EnrollmentConflict | EnrollmentConflict[] }).conflicts;
+      enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];
+      showEnrollmentConflictModal.value = true;
+    } else if (errorData && typeof errorData === "object") {
+      errorMessage.value = errorData.message;
+      showAlreadyEnrolledModal.value = true;
+    }
+  }
+};
+
 watch(selectedWeeklySchedule, async (newVal) => {
   if (!newVal || !course.value) return;
 
   const res = await fetchCourseTimeSlots(course.value.id, newVal.id);
-  if (res?.success) timeSlots.value = res.timeSlots;
+  if (res?.success) {
+    timeSlots.value = res.timeSlots;
+    selectedTimeSlot.value = timeSlots.value[0] || null;
+  }
 });
 
 watch(selectedTimeSlot, async (newVal) => {
   if (!newVal || !course.value || !selectedWeeklySchedule.value) return;
 
   const res = await fetchCourseSessionTypes(course.value.id, selectedWeeklySchedule.value.id, newVal.id);
-  if (res?.success) sessionTypes.value = res.sessionTypes;
+  if (res?.success) {
+    sessionTypes.value = res.sessionTypes;
+    if (sessionTypes.value[0].availableSeats) selectedSessionType.value = sessionTypes.value[0] || null;
+  }
 });
 
 onMounted(async () => {
@@ -129,7 +219,7 @@ onMounted(async () => {
         <div class="flex flex-col gap-4.5">
           <div class="flex flex-col gap-4">
             <img :src="course?.image" class="h-118.5 w-225.75 rounded-[10px] object-cover" />
-            <div class="flex gap-1">
+            <div class="flex gap-4">
               <div class="flex w-full items-center justify-between">
                 <div class="flex gap-3">
                   <div class="flex items-center gap-1">
@@ -147,7 +237,7 @@ onMounted(async () => {
                 </div>
                 <div class="flex items-center gap-1">
                   <StarIcon />
-                  <span>{{ coursAvgRating }}</span>
+                  <span>{{ courseAvgRating }}</span>
                 </div>
               </div>
               <SelectButton
@@ -168,8 +258,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="mt-28 flex-1">
-        <h2 class="mb-6 text-3xl font-semibold text-[#141414]">Course Content</h2>
+      <div class="mt-28 flex max-w-132.5 flex-1 flex-col gap-3">
         <Accordion v-model:value="activeTab">
           <AccordionPanel value="0">
             <AccordionHeader :icon="StepOneIcon">Weekly Schedule</AccordionHeader>
@@ -181,8 +270,8 @@ onMounted(async () => {
                   :label="weeklySchedule.shortLabel"
                   :is-selected="selectedWeeklySchedule?.id === weeklySchedule.id"
                   :disabled="!isScheduleAvailable(weeklySchedule.id)"
-                  :class="!isScheduleAvailable(weeklySchedule.id) ? 'bg-[#F5F5F5]!' : ''"
-                  class="h-22.75 w-full justify-center border-[#D1D1D1]! p-2.5!"
+                  variant="outline"
+                  class="h-22.75 w-full justify-center p-2.5"
                   @click="(isSelected) => handleSelectWeeklySchedule(isSelected, weeklySchedule)"
                 />
               </div>
@@ -191,30 +280,172 @@ onMounted(async () => {
           <AccordionPanel value="1">
             <AccordionHeader :icon="StepTwoIcon">Time Slot</AccordionHeader>
             <AccordionContent>
-              <div class="flex flex-col gap-3">
+              <div class="grid grid-cols-3 gap-1.5">
                 <SelectButton
                   v-for="timeSlot in TIME_SLOT_CONFIG"
                   :key="timeSlot.id"
-                  :label="timeSlot.label"
                   :is-selected="selectedTimeSlot?.id === timeSlot.id"
                   :disabled="!isTimeSlotAvailable(timeSlot.id)"
-                  :class="!isTimeSlotAvailable(timeSlot.id) ? 'bg-[#F5F5F5]!' : ''"
-                  :icon="TIME_SLOT_ICONS[timeSlot.id]"
-                  class="h-14 w-full border-[#D1D1D1]! p-2.5!"
+                  class="p-3.75"
                   @click="(isSelected) => handleSelectTimeSlot(isSelected, timeSlot)"
-                />
+                >
+                  <div class="flex items-center gap-3">
+                    <component :is="TIME_SLOT_ICONS[timeSlot.id]" v-if="TIME_SLOT_ICONS[timeSlot.id]" />
+                    <div class="flex flex-col gap-0.5">
+                      <span class="text-[14px] font-medium">{{ timeSlot.label }}</span>
+                      <span class="text-[10px]">{{ timeSlot.startTime }} - {{ timeSlot.endTime }}</span>
+                    </div>
+                  </div>
+                </SelectButton>
               </div>
             </AccordionContent>
           </AccordionPanel>
           <AccordionPanel value="2">
             <AccordionHeader :icon="StepThreeIcon">Session Type</AccordionHeader>
             <AccordionContent>
-              <SelectButton>
-                <div></div>
-              </SelectButton>
+              <div class="grid grid-cols-3 gap-2">
+                <div
+                  v-for="sessionType in formattedSessionTypes"
+                  :key="sessionType.id"
+                  class="flex min-h-38.75 min-w-42.75 flex-col items-center gap-2"
+                >
+                  <SelectButton
+                    :is-selected="selectedSessionType?.id === sessionType.id"
+                    :disabled="sessionType.isFull"
+                    class="min-h-38.75 min-w-42.75 px-5 py-3.75"
+                    @click="(isSelected) => handleSelectSessionType(isSelected, sessionType)"
+                  >
+                    <div class="flex w-full flex-col items-center justify-center gap-2.5 text-inherit">
+                      <component :is="SESSION_TYPE_ICONS[sessionType.id]" v-if="SESSION_TYPE_ICONS[sessionType.id]" />
+                      <div class="flex flex-col items-center gap-1.5">
+                        <span class="text-[16px] font-semibold">{{ sessionType.displayName }}</span>
+                        <span>{{ sessionType.displayLocation }}</span>
+                      </div>
+                      <span :class="sessionType.isFull ? 'text-[#CCCCCC]' : 'text-[#736BEA]'">
+                        {{ sessionType.displayPrice }}
+                      </span>
+                    </div>
+                  </SelectButton>
+                  <div>
+                    <p v-if="!sessionType.isLowSeats" class="text-[12px] font-medium text-[#3D3D3D]">
+                      <span>{{ sessionType.availableSeats }}</span>
+                      Seats Available
+                    </p>
+                    <div v-else class="flex items-center gap-1">
+                      <WarningIcon class="h-4 w-4" />
+                      <p class="text-[12px] font-medium text-[#F4A316]">
+                        Only <span>{{ sessionType.availableSeats }} Seats Remaining</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </AccordionContent>
           </AccordionPanel>
         </Accordion>
+
+        <div class="rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-10">
+          <div class="flex flex-col gap-8">
+            <div class="flex flex-col gap-8">
+              <div class="flex items-center justify-between">
+                <p class="text-[20px] font-semibold text-[#8A8A8A]">Total Price</p>
+                <span class="text-[32px] font-semibold text-[#333333]">${{ totalPrice }}</span>
+              </div>
+              <div class="flex flex-col gap-3 pr-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-[16px] font-medium text-[#8A8A8A]">Base Price</span>
+                  <span class="text-[16px] font-medium text-[#292929]">+ ${{ course?.basePrice || "0.00" }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[16px] font-medium text-[#8A8A8A]">Session Type</span>
+                  <span class="text-[16px] font-medium text-[#292929]">
+                    + ${{ selectedSessionType?.priceModifier || "0.00" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <Button
+              type="submit"
+              label="Enroll Now"
+              class="h-15.75 rounded-xl p-2.5 text-[20px]"
+              :disabled="!(isAuthorized && isProfileComplete)"
+              :class="
+                isAuthorized && isProfileComplete
+                  ? 'bg-[#4F46E5] font-medium text-[#FFFFFF]'
+                  : 'cursor-not-allowed! bg-[#EEEDFC] font-semibold text-[#B7B3F4]'
+              "
+              @click="handleClickEnroll(course?.id ?? 0, selectedSessionType?.courseScheduleId ?? 0)"
+            />
+
+            <Modal
+              :visible="showEnrollmentConfirmationModal"
+              :icon="ConfirmationIcon"
+              title="Enrollment Confirmed!"
+              @continue="showEnrollmentConfirmationModal = false"
+            >
+              <p class="text-[20px] font-medium text-[#3D3D3D]">
+                You`ve successfully enrolled to the "<span class="font-semibold">{{ course?.title }}</span
+                >" Course!
+              </p>
+            </Modal>
+
+            <Modal
+              :visible="showEnrollmentConflictModal"
+              :icon="WarningIcon"
+              title="Enrollment Conflict"
+              button-label="Continue Anyway"
+              @continue="handleClickEnroll(course?.id ?? 0, selectedSessionType?.courseScheduleId ?? 0, true)"
+              @cancel="showEnrollmentConflictModal = false"
+            >
+              <p class="text-[20px] font-medium text-[#3D3D3D]">
+                You are already enrolled in "<span
+                  v-for="(conflict, index) in enrollmentConflicts"
+                  :key="conflict.conflictingEnrollmentId"
+                  class="font-semibold"
+                  >{{ conflict.conflictingCourseName }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+                >" with the same schedule:
+                <span v-for="(conflict, index) in enrollmentConflicts" :key="conflict.conflictingEnrollmentId"
+                  >{{ conflict.schedule }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+                >
+              </p>
+            </Modal>
+
+            <Modal
+              :visible="showAlreadyEnrolledModal"
+              :icon="WarningIcon"
+              title="Enrollment Denyed!"
+              :content="errorMessage"
+              @continue="showAlreadyEnrolledModal = false"
+            />
+
+            <Modal
+              :visible="showProfileIncompleteModal"
+              :icon="UserIcon"
+              title="Complete your profile to continue"
+              content="You need to complete your profile before enrolling in this course."
+              button-label="Complete Profile"
+              @continue="showProfileModal = !showProfileModal"
+              @cancel="showProfileIncompleteModal = false"
+            />
+          </div>
+        </div>
+
+        <ActionBanner
+          v-if="!isAuthorized"
+          title="Authentication Required"
+          description="You need sign in to your profile before enrolling in this course."
+          button-label="Sign In"
+          @action="showLogInModal = !showLogInModal"
+        />
+        <ActionBanner
+          v-else-if="!isProfileComplete"
+          title="Complete Your Profile"
+          description="You need to fill in your profile details before enrolling in this course."
+          button-label="Complete"
+          @action="showProfileModal = !showProfileModal"
+        />
+
+        <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
       </div>
     </div>
   </div>
