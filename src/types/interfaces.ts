@@ -58,6 +58,7 @@ export interface SliderItem {
   title: string;
   description: string;
   buttonLabel: string;
+  action: () => void;
   image: string;
 }
 

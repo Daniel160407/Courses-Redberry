@@ -134,7 +134,10 @@ const setPaginationData = (coursesResponse: CoursesResponse) => {
 };
 
 watch([sort, currentPage], (newSort, newPage) => {
-  if (newSort || newPage) updateCourses();
+  if (newSort || newPage) {
+    updateCourses();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 });
 
 onMounted(async () => {

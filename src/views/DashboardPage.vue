@@ -21,12 +21,15 @@ const { featuredCourses, coursesInProgress } = storeToRefs(useGlobalStore());
 const { isAuthenticated } = useAuthorize();
 const router = useRouter();
 
+const startLearningSection = ref<HTMLElement | null>(null);
+
 const sliderItems = ref<SliderItem[]>([
   {
     title: "Start learning something new today",
     description:
       "Explore a wide range of expert-led courses in design, development, business, and more. Find the skills you need to grow your career and learn at your own pace.",
     buttonLabel: "Browse Courses",
+    action: () => router.push("/catalog"),
     image: Slide1
   },
   {
@@ -34,12 +37,16 @@ const sliderItems = ref<SliderItem[]>([
     description:
       "Your learning journey is already in progress. Continue your enrolled courses, track your progress, and stay on track toward completing your goals.",
     buttonLabel: "Start Learning",
+    action: () => {
+      startLearningSection.value?.scrollIntoView({ behavior: "smooth" });
+    },
     image: Slide2
   },
   {
     title: "Learn together, grow faster",
     description: "",
     buttonLabel: "Learn More",
+    action: () => {},
     image: Slide3
   }
 ]);
@@ -70,7 +77,7 @@ const dummyCourses = ref<DummyCourse[]>([
       title: "Vue 3 Composition API"
     },
     progress: 75
-  },
+  }
 ]);
 const showLogIn = ref(false);
 
@@ -83,8 +90,7 @@ const handleOpenDetails = (course: Course) => {
 };
 
 onMounted(async () => {
-  await fetchFeaturedCourses();
-  await fetchInProgressCourses();
+  await Promise.all([fetchFeaturedCourses(), fetchInProgressCourses()]);
 });
 </script>
 <template>
@@ -117,7 +123,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="flex flex-col gap-8">
+    <div ref="startLearningSection" class="flex flex-col gap-8">
       <div class="flex flex-col gap-1.5">
         <span class="text-[40px] font-semibold text-[#0A0A0A]">Start Learning Today</span>
         <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>

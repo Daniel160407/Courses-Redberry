@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAuthorize } from "@/composables/useAuthorize";
 import EnvelopeIcon from "../icons/EnvelopeIcon.vue";
 import FacebookIcon from "../icons/FacebookIcon.vue";
 import InstagramIcon from "../icons/InstagramIcon.vue";
@@ -8,6 +9,15 @@ import PhoneIcon from "../icons/PhoneIcon.vue";
 import PointerIcon from "../icons/PointerIcon.vue";
 import TwitterIcon from "../icons/TwitterIcon.vue";
 import YouTubeIcon from "../icons/YouTubeIcon.vue";
+import Button from "../common/Button.vue";
+import { useRouter } from "vue-router";
+import AuthorizationModals from "../common/AuthorizationModals.vue";
+import { ref } from "vue";
+
+const { isAuthenticated } = useAuthorize();
+const router = useRouter();
+
+const showProfileModal = ref(false);
 </script>
 <template>
   <div>
@@ -37,13 +47,22 @@ import YouTubeIcon from "../icons/YouTubeIcon.vue";
           <div class="flex flex-col gap-4">
             <span class="text-[20px] font-semibold text-[#130E67]">Explore</span>
             <div class="flex flex-col gap-2 text-[#666666]">
-              <span>Enrolled Courses</span>
-              <span>Browse Courses</span>
+              <Button
+                v-if="isAuthenticated"
+                label="Enrolled Courses"
+                class="justify-start hover:underline"
+                @click="router.push({ query: { enrolled: 'true' } })"
+              />
+              <Button label="Browse Courses" class="justify-start hover:underline" @click="router.push('/catalog')" />
             </div>
           </div>
           <div class="flex flex-col gap-4">
             <span class="text-[20px] font-semibold text-[#130E67]">Account</span>
-            <span class="text-[#666666]">My Profile</span>
+            <Button
+              label="My Profile"
+              class="justify-start hover:underline"
+              @click="showProfileModal = !showProfileModal"
+            />
           </div>
           <div class="flex flex-col gap-4">
             <span class="text-[20px] font-semibold text-[#130E67]">Contact</span>
@@ -76,5 +95,7 @@ import YouTubeIcon from "../icons/YouTubeIcon.vue";
         </div>
       </div>
     </div>
+
+    <AuthorizationModals v-model:show-profile-modal="showProfileModal" />
   </div>
 </template>
