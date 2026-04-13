@@ -54,7 +54,7 @@ const profileFormData = ref<ProfileForm>({
   full_name: user.value?.fullName ?? "",
   mobile_number: user.value?.mobileNumber ?? "",
   age: user.value?.age ?? 0,
-  avatar: null
+  avatar: user.value?.avatar ?? null
 });
 
 const registrationFormErrors = useRegistrationValidate(registrationFormData);

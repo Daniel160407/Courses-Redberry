@@ -30,9 +30,17 @@ const displayError = computed(() => {
 });
 
 const fileSize = computed(() => {
-  if (!props.modelValue || typeof props.modelValue === "string") return "";
-  const mb = props.modelValue.size / (1024 * 1024);
-  return `${mb.toFixed(1)}MB`;
+  if (props.modelValue instanceof File) {
+    const mb = props.modelValue.size / (1024 * 1024);
+    return `${mb.toFixed(1)}MB`;
+  }
+  return "";
+});
+
+const fileName = computed(() => {
+  if (props.modelValue instanceof File) return props.modelValue.name;
+  if (typeof props.modelValue === "string" && props.modelValue) return "Current Profile Image";
+  return "";
 });
 
 const handleFileChange = (event: Event) => {
@@ -48,7 +56,7 @@ const triggerFileInput = () => fileInput.value?.click();
 watch(
   () => props.modelValue,
   (newFile) => {
-    if (previewUrl.value) {
+    if (previewUrl.value?.startsWith("blob:")) {
       URL.revokeObjectURL(previewUrl.value);
     }
 
@@ -88,8 +96,8 @@ watch(
       </div>
 
       <div class="flex flex-col gap-0.5 text-left">
-        <span v-if="typeof modelValue !== 'string'" class="max-w-50 truncate text-lg font-medium text-[#4B4B4B]">
-          {{ (modelValue as File).name }}
+        <span class="max-w-50 truncate text-lg font-medium text-[#4B4B4B]">
+          {{ fileName }}
         </span>
         <span v-if="fileSize" class="text-sm text-[#8A8A8A]">Size - {{ fileSize }}</span>
         <button
