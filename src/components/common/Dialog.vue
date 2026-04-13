@@ -16,7 +16,7 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits(["update:visible", "submit", "close"]);
 
-const step = ref<number>(1);
+const step = defineModel<number>("step", { default: 1 });
 
 const openStep = (targetStep: number) => {
   if (targetStep >= 1 && targetStep <= 3) {
@@ -96,7 +96,7 @@ const handleFinalClick = () => {
         <Button
           type="submit"
           :label="(step === 3 || !hasSteps) && buttonLabel ? buttonLabel : 'Next'"
-          class="rounded-md bg-[#4F46E5] text-[#FFFFFF]"
+          class="h-11.75 rounded-md bg-[#4F46E5] text-[#FFFFFF]"
         />
 
         <div v-if="$slots.end" class="gap-2">

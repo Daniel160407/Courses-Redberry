@@ -26,8 +26,8 @@ const showLogInModal = defineModel<boolean>("showLogInModal");
 const showProfileModal = defineModel<boolean>("showProfileModal");
 
 const globalStore = useGlobalStore();
-const { user } = storeToRefs(globalStore);
-const { setUser, setIsProfileComplete } = globalStore;
+const { user, showLoginModal } = storeToRefs(globalStore);
+const { setUser, setIsProfileComplete, setShowLoginModal } = globalStore;
 const { useRegistrationValidate, useLogInValidate, useProfileValidate } = useValidate();
 const { register, logIn, updateProfile, isProfileComplete } = useAuthorize();
 const { fetchInProgressCourses } = useCoursesCrud();
@@ -36,6 +36,7 @@ const registrationSubmitted = ref(false);
 const logInSubmitted = ref(false);
 const profileSubmitted = ref(false);
 const showCloseConfirm = ref(false);
+const registrationStep = ref(1);
 const showProfileEditSuccessModal = ref(false);
 
 const registrationFormData = ref<RegistrationForm>({
@@ -61,7 +62,15 @@ const logInFormErrors = useLogInValidate(logInFormData);
 const profileFormErrors = useProfileValidate(profileFormData);
 
 const handleRegister = async () => {
-  if (Object.values(registrationFormErrors).some((err) => err !== "")) return;
+  if (Object.values(registrationFormErrors).some((err) => err !== "")) {
+    if (registrationFormErrors.email) {
+      registrationStep.value = 1;
+    } else if (registrationFormErrors.password || registrationFormErrors.confirmPassword) {
+      registrationStep.value = 2;
+    }
+    return;
+  }
+
   const result = await register(registrationFormData.value);
   if (result.success) {
     showSignUpModal.value = false;
@@ -73,6 +82,11 @@ const handleRegister = async () => {
         if (key in registrationFormErrors) {
           (registrationFormErrors as any)[key] = serverErr.errors[key][0];
         }
+      }
+      if (registrationFormErrors.email) {
+        registrationStep.value = 1;
+      } else if (registrationFormErrors.password || registrationFormErrors.confirmPassword) {
+        registrationStep.value = 2;
       }
     }
   }
@@ -154,7 +168,15 @@ watch(showSignUpModal, (isOpen) => {
   if (isOpen) registrationSubmitted.value = false;
 });
 watch(showLogInModal, (isOpen) => {
-  if (isOpen) logInSubmitted.value = false;
+  if (isOpen) {
+    logInSubmitted.value = false;
+  } else {
+    setShowLoginModal(false);
+  }
+});
+
+watch(showLoginModal, (isOpen) => {
+  if (isOpen) showLogInModal.value = true;
 });
 watch(showProfileModal, (isOpen) => {
   if (isOpen) profileSubmitted.value = false;
@@ -181,6 +203,7 @@ watch(
   <div>
     <Dialog
       v-model:visible="showSignUpModal"
+      v-model:step="registrationStep"
       title="Create Account"
       subtitle="Join and start learning today"
       button-label="Sign Up"

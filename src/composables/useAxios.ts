@@ -2,6 +2,7 @@ import { ref, type Ref } from "vue";
 import axios, { type AxiosRequestConfig, AxiosError } from "axios";
 import type { ApiErrorResponse } from "../types/interfaces";
 import Cookies from "js-cookie";
+import { useGlobalStore } from "@/stores/GlobalStore";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -46,6 +47,17 @@ export function useAxios<T = any>(): UseAxiosReturn<T> {
       return response.data;
     } catch (err) {
       const axiosError = err as AxiosError<ApiErrorResponse>;
+
+      if (axiosError.response?.status === 401 && config.useToken) {
+        Cookies.remove("token");
+        const globalStore = useGlobalStore();
+
+        const excludedUrls = ["/courses/in-progress", "/enrollments"];
+        if (!excludedUrls.includes(config.url || "")) {
+          globalStore.setShowLoginModal(true);
+        }
+      }
+
       error.value = axiosError.response?.data || axiosError.message || "An error occurred";
       throw axiosError;
     } finally {
