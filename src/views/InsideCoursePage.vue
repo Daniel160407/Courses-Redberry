@@ -69,6 +69,7 @@ const selectedSessionType = ref<SessionType | null>(null);
 const userCourseEnrollment = ref<Enrollment | null>(null);
 
 const enrollmentConflicts = ref<EnrollmentConflict[]>([]);
+const isSubmitting = ref(false);
 const isRatingSubmitting = ref(false);
 const errorMessage = ref<string>("");
 const rating = ref<number>(0);
@@ -105,7 +106,7 @@ const formattedSessionTypes = computed(() => {
     ...st,
     displayName: st.name.charAt(0).toUpperCase() + st.name.slice(1),
     displayLocation: st.name === "online" ? "Google Meet" : st.location,
-    displayPrice: st.priceModifier === "0.00" ? "Included" : `+ $${st.priceModifier}`,
+    displayPrice: st.name === "online" ? "Included" : `+ $${st.priceModifier}`,
     isLowSeats: st.availableSeats <= 5 && st.availableSeats > 0,
     isFull: st.availableSeats === 0
   }));
@@ -156,8 +157,6 @@ const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot | (typeof 
   if (isSelected) {
     selectedTimeSlot.value = timeSlot;
     selectedSessionType.value = null;
-  } else {
-    selectedTimeSlot.value = null;
   }
 };
 
@@ -169,31 +168,36 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
   enrollmentConflicts.value = [];
   showEnrollmentConflictModal.value = false;
 
-  const formData: EnrollmentForm = {
-    courseId,
-    courseScheduleId,
-    force
-  };
+  isSubmitting.value = true;
+  try {
+    const formData: EnrollmentForm = {
+      courseId,
+      courseScheduleId,
+      force
+    };
 
-  const response = await enrollCourse(formData);
+    const response = await enrollCourse(formData);
 
-  if (response?.success) {
-    showEnrollmentConfirmationModal.value = true;
-    const enrollmentRes = await fetchUserEnrollments();
-    if (enrollmentRes?.success && course.value) {
-      userCourseEnrollment.value =
-        enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
+    if (response?.success) {
+      showEnrollmentConfirmationModal.value = true;
+      const enrollmentRes = await fetchUserEnrollments();
+      if (enrollmentRes?.success && course.value) {
+        userCourseEnrollment.value =
+          enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
+      }
+    } else {
+      const errorData = response?.serverErrors;
+      if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
+        const conflicts = (errorData as { conflicts: EnrollmentConflict | EnrollmentConflict[] }).conflicts;
+        enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];
+        showEnrollmentConflictModal.value = true;
+      } else if (errorData && typeof errorData === "object") {
+        errorMessage.value = (errorData as any).message || "An error occurred";
+        showAlreadyEnrolledModal.value = true;
+      }
     }
-  } else {
-    const errorData = response?.serverErrors;
-    if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
-      const conflicts = (errorData as { conflicts: EnrollmentConflict | EnrollmentConflict[] }).conflicts;
-      enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];
-      showEnrollmentConflictModal.value = true;
-    } else if (errorData && typeof errorData === "object") {
-      errorMessage.value = (errorData as any).message || "An error occurred";
-      showAlreadyEnrolledModal.value = true;
-    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -205,24 +209,34 @@ const handleOpenProfileModal = () => {
 const handleCompleteEnrollment = async (enrollmentId: number) => {
   if (!enrollmentId) return;
 
-  const response = await completeEnrollment(enrollmentId);
-  if (response?.success) {
-    showEnrollmentCompletionModal.value = true;
+  isSubmitting.value = true;
+  try {
+    const response = await completeEnrollment(enrollmentId);
+    if (response?.success) {
+      showEnrollmentCompletionModal.value = true;
+    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
 const handleRetakeCourse = async () => {
-  const response = await deleteEnrollment(userCourseEnrollment.value?.id ?? 0);
-  if (response?.success) {
-    userCourseEnrollment.value = null;
-    activeTab.value = ["0"];
+  isSubmitting.value = true;
+  try {
+    const response = await deleteEnrollment(userCourseEnrollment.value?.id ?? 0);
+    if (response?.success) {
+      userCourseEnrollment.value = null;
+      activeTab.value = ["0"];
 
-    selectedWeeklySchedule.value = null;
-    selectedTimeSlot.value = null;
-    selectedSessionType.value = null;
+      selectedWeeklySchedule.value = null;
+      selectedTimeSlot.value = null;
+      selectedSessionType.value = null;
 
-    await nextTick();
-    selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+      await nextTick();
+      selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -482,7 +496,11 @@ onMounted(async () => {
                 <div class="flex items-center justify-between">
                   <span class="text-[16px] font-medium text-[#8A8A8A]">Session Type</span>
                   <span class="text-[16px] font-medium text-[#292929]">
-                    + ${{ selectedSessionType?.priceModifier || "0.00" }}
+                    {{
+                      selectedSessionType?.name === "online"
+                        ? "Included"
+                        : `+ $${selectedSessionType?.priceModifier || "0.00"}`
+                    }}
                   </span>
                 </div>
               </div>
@@ -490,6 +508,7 @@ onMounted(async () => {
             <Button
               type="submit"
               label="Enroll Now"
+              :loading="isSubmitting"
               class="h-15.75 rounded-xl p-2.5 text-[20px]"
               :class="
                 isAuthenticated && isProfileComplete
@@ -550,6 +569,7 @@ onMounted(async () => {
           <Button
             v-if="userCourseEnrollment?.completedAt"
             label="Retake Course"
+            :loading="isSubmitting"
             :icon="RefreshIcon"
             icon-pos="right"
             class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
@@ -558,6 +578,7 @@ onMounted(async () => {
           <Button
             v-else
             label="Complete Course"
+            :loading="isSubmitting"
             :icon="MarkIcon"
             icon-pos="right"
             class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"

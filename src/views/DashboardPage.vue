@@ -13,7 +13,6 @@ import Button from "@/components/common/Button.vue";
 import CourseProgressCard from "@/components/common/CourseProgressCard.vue";
 import LockIcon from "@/components/icons/LockIcon.vue";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
-import BoxIcon from "@/components/icons/BoxIcon.vue";
 import { useRouter } from "vue-router";
 import { useAuthorize } from "@/composables/useAuthorize";
 
@@ -72,15 +71,6 @@ const dummyCourses = ref<DummyCourse[]>([
     },
     progress: 75
   },
-  {
-    id: 4,
-    course: {
-      instructor: { name: "Sarah Johnson" },
-      avgRating: 5,
-      title: "Vue 3 Composition API"
-    },
-    progress: 75
-  }
 ]);
 const showLogIn = ref(false);
 
