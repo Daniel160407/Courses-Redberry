@@ -37,6 +37,7 @@ const logInSubmitted = ref(false);
 const profileSubmitted = ref(false);
 const showCloseConfirm = ref(false);
 const registrationStep = ref(1);
+const isSubmitting = ref(false);
 const showProfileEditSuccessModal = ref(false);
 
 const registrationFormData = ref<RegistrationForm>({
@@ -71,58 +72,77 @@ const handleRegister = async () => {
     return;
   }
 
-  const result = await register(registrationFormData.value);
-  if (result.success) {
-    showSignUpModal.value = false;
-    setUser(result.user ?? null);
-  } else if (result?.serverErrors) {
-    const serverErr = result?.serverErrors;
-    if (typeof serverErr === "object" && serverErr?.errors) {
-      for (const key in serverErr.errors) {
-        if (key in registrationFormErrors) {
-          (registrationFormErrors as any)[key] = serverErr.errors[key][0];
+  isSubmitting.value = true;
+  try {
+    const result = await register(registrationFormData.value);
+    if (result.success) {
+      showSignUpModal.value = false;
+      setUser(result.user ?? null);
+    } else if (result?.serverErrors) {
+      const serverErr = result?.serverErrors;
+      if (typeof serverErr === "object" && serverErr?.errors) {
+        for (const key in serverErr.errors) {
+          if (key in registrationFormErrors) {
+            (registrationFormErrors as any)[key] = serverErr.errors[key][0];
+          }
+        }
+        if (registrationFormErrors.email) {
+          registrationStep.value = 1;
+        } else if (registrationFormErrors.password || registrationFormErrors.confirmPassword) {
+          registrationStep.value = 2;
         }
       }
-      if (registrationFormErrors.email) {
-        registrationStep.value = 1;
-      } else if (registrationFormErrors.password || registrationFormErrors.confirmPassword) {
-        registrationStep.value = 2;
-      }
     }
+  } finally {
+    isSubmitting.value = false;
   }
   registrationSubmitted.value = true;
 };
 
 const handleLogIn = async () => {
   if (Object.values(logInFormErrors).some((err) => err !== "")) return;
-  const result = await logIn(logInFormData.value);
-  if (result.success) {
-    showLogInModal.value = false;
-    setUser(result.user ?? null);
-    setIsProfileComplete(result.user?.profileComplete ?? false);
-  } else {
-    logInFormErrors.email = "Invalid credentials";
-    logInFormErrors.password = "Invalid credentials";
+  isSubmitting.value = true;
+  try {
+    const result = await logIn(logInFormData.value);
+    if (result.success) {
+      showLogInModal.value = false;
+      setUser(result.user ?? null);
+      setIsProfileComplete(result.user?.profileComplete ?? false);
+    } else {
+      logInFormErrors.email = "Invalid credentials";
+      logInFormErrors.password = "Invalid credentials";
+    }
+  } finally {
+    isSubmitting.value = false;
   }
   logInSubmitted.value = true;
 };
 
 const handleUpdateProfile = async () => {
   if (Object.values(profileFormErrors).some((err) => err !== "")) return;
-  const result = await updateProfile(profileFormData.value);
-  if (result?.success) {
-    showProfileModal.value = false;
-    showProfileEditSuccessModal.value = true;
-    setIsProfileComplete(result?.user?.profileComplete ?? false);
-  } else if (result?.serverErrors) {
-    const serverErr = result?.serverErrors;
-    if (typeof serverErr === "object" && serverErr?.errors) {
-      for (const key in serverErr.errors) {
-        if (key in profileFormErrors) {
-          (profileFormErrors as any)[key] = serverErr.errors[key][0];
+  isSubmitting.value = true;
+  try {
+    if (typeof profileFormData.value.avatar === "string") {
+      profileFormData.value.avatar = null;
+    }
+    const result = await updateProfile(profileFormData.value);
+    if (result?.success) {
+      showProfileModal.value = false;
+      showProfileEditSuccessModal.value = true;
+      setUser(result?.user ?? null);
+      setIsProfileComplete(result?.user?.profileComplete ?? false);
+    } else if (result?.serverErrors) {
+      const serverErr = result?.serverErrors;
+      if (typeof serverErr === "object" && serverErr?.errors) {
+        for (const key in serverErr.errors) {
+          if (key in profileFormErrors) {
+            (profileFormErrors as any)[key] = serverErr.errors[key][0];
+          }
         }
       }
     }
+  } finally {
+    isSubmitting.value = false;
   }
   profileSubmitted.value = true;
 };
@@ -215,6 +235,7 @@ watch(
       title="Create Account"
       subtitle="Join and start learning today"
       button-label="Sign Up"
+      :loading="isSubmitting"
       has-steps
       @submit="handleRegister"
     >
@@ -283,6 +304,7 @@ watch(
       title="Welcome Back"
       subtitle="Log in to continue your learning"
       button-label="Log In"
+      :loading="isSubmitting"
       :has-steps="false"
       @submit="handleLogIn"
     >
@@ -320,6 +342,7 @@ watch(
       v-model:visible="showProfileModal"
       title="Profile"
       button-label="Update Profile"
+      :loading="isSubmitting"
       :has-steps="false"
       confirm-closing
       @close="handleCloseProfile"

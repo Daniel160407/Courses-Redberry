@@ -11,6 +11,7 @@ interface Props {
   buttonLabel?: string;
   hasSteps?: boolean;
   confirmClosing?: boolean;
+  loading?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -99,6 +100,7 @@ const handleFinalClick = () => {
 
         <Button
           type="submit"
+          :loading="loading"
           :label="(step === 3 || !hasSteps) && buttonLabel ? buttonLabel : 'Next'"
           class="h-11.75 rounded-md bg-[#4F46E5] text-[#FFFFFF]"
         />
