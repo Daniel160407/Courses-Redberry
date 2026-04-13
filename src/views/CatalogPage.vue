@@ -16,11 +16,22 @@ import { useCatalogCrud } from "@/composables/useCatalogCrud";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
 import type { Course, Category, Instructor, Topic, CoursesResponse } from "@/types/interfaces";
 import { computed, onMounted, ref, watch, type Component } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 const { fetchFilters, fetchTopics } = useCatalogCrud();
 const { fetchCourses } = useCoursesCrud();
 const router = useRouter();
+const route = useRoute();
+
+const parseQueryParam = (param: string | (string | null)[] | null): number[] => {
+  if (!param) return [];
+  const val = Array.isArray(param) ? param[0] : param;
+  if (!val) return [];
+  return val
+    .split(",")
+    .map(Number)
+    .filter((n) => !isNaN(n));
+};
 
 const categories = ref<Category[]>([]);
 const topics = ref<Topic[]>([]);
@@ -28,15 +39,15 @@ const instructors = ref<Instructor[]>([]);
 
 const courses = ref<Course[]>([]);
 
-const selectedCategoryIds = ref<number[]>([]);
-const selectedTopicIds = ref<number[]>([]);
-const selectedInstructorIds = ref<number[]>([]);
+const selectedCategoryIds = ref<number[]>(parseQueryParam(route.query.categories as string));
+const selectedTopicIds = ref<number[]>(parseQueryParam(route.query.topics as string));
+const selectedInstructorIds = ref<number[]>(parseQueryParam(route.query.instructors as string));
 
-const sort = ref<string>("");
+const sort = ref<string>((route.query.sort as string) || "");
 
 const totalCourses = ref<number>(0);
 const perPage = ref<number>(0);
-const currentPage = ref<number>(1);
+const currentPage = ref<number>(Number(route.query.page) || 1);
 const lastPage = ref<number>(0);
 
 const activeFiltersQuantity = computed(() => {
@@ -81,10 +92,7 @@ const handleClickCategory = async (isSelected: boolean, category: Category) => {
   topics.value = topicsResponse?.topics;
 
   selectedTopicIds.value = [];
-  selectedInstructorIds.value = [];
   currentPage.value = 1;
-
-  await updateCourses();
 };
 
 const handleClickTopic = async (isSelected: boolean, topic: Topic) => {
@@ -93,8 +101,6 @@ const handleClickTopic = async (isSelected: boolean, topic: Topic) => {
     : selectedTopicIds.value.filter((id) => id !== topic.id);
 
   currentPage.value = 1;
-
-  await updateCourses();
 };
 
 const handleClickInstructor = async (isSelected: boolean, instructor: Instructor) => {
@@ -103,8 +109,6 @@ const handleClickInstructor = async (isSelected: boolean, instructor: Instructor
     : selectedInstructorIds.value.filter((id) => id !== instructor.id);
 
   currentPage.value = 1;
-
-  await updateCourses();
 };
 
 const handleClearFilters = async () => {
@@ -112,14 +116,7 @@ const handleClearFilters = async () => {
   selectedTopicIds.value = [];
   selectedInstructorIds.value = [];
   sort.value = "";
-
-  const topicsResponse = await fetchTopics([]);
-  if (topicsResponse) topics.value = topicsResponse.topics;
-
-  const coursesResponse = await fetchCourses();
-  if (coursesResponse && coursesResponse.success && coursesResponse.courses && coursesResponse.meta) {
-    setPaginationData(coursesResponse as CoursesResponse);
-  }
+  currentPage.value = 1;
 };
 
 const handleOpenDetails = (course: Course) => {
@@ -133,9 +130,21 @@ const setPaginationData = (coursesResponse: CoursesResponse) => {
   lastPage.value = coursesResponse.meta.lastPage;
 };
 
-watch([sort, currentPage], (newSort, newPage) => {
-  if (newSort || newPage) {
-    updateCourses();
+const syncToUrl = () => {
+  const query: Record<string, any> = {};
+  if (selectedCategoryIds.value.length) query.categories = selectedCategoryIds.value.join(",");
+  if (selectedTopicIds.value.length) query.topics = selectedTopicIds.value.join(",");
+  if (selectedInstructorIds.value.length) query.instructors = selectedInstructorIds.value.join(",");
+  if (sort.value) query.sort = sort.value;
+  if (currentPage.value > 1) query.page = currentPage.value;
+
+  router.replace({ query });
+};
+
+watch([selectedCategoryIds, selectedTopicIds, selectedInstructorIds, sort, currentPage], () => {
+  syncToUrl();
+  updateCourses();
+  if (window.scrollY > 0) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 });
@@ -143,13 +152,16 @@ watch([sort, currentPage], (newSort, newPage) => {
 onMounted(async () => {
   const responses = await fetchFilters();
   if (responses.categoriesResponse?.success) categories.value = responses.categoriesResponse.categories;
-  if (responses.topicsResponse?.success) topics.value = responses.topicsResponse.topics;
   if (responses.instructorsResponse?.success) instructors.value = responses.instructorsResponse.instructors;
 
-  const coursesResponse = await fetchCourses();
-  if (coursesResponse && coursesResponse.success && coursesResponse.courses && coursesResponse.meta) {
-    setPaginationData(coursesResponse as CoursesResponse);
+  if (selectedCategoryIds.value.length > 0) {
+    const topicsRes = await fetchTopics(selectedCategoryIds.value);
+    topics.value = topicsRes?.topics;
+  } else if (responses.topicsResponse?.success) {
+    topics.value = responses.topicsResponse.topics;
   }
+
+  await updateCourses();
 });
 </script>
 <template>
@@ -232,25 +244,28 @@ onMounted(async () => {
       <main class="flex flex-1 flex-col gap-8">
         <div class="flex items-center justify-between">
           <div>
-            <p>
+            <p v-if="showingCount">
               Showing <span>{{ showingCount }}</span> out of
               <span>{{ totalCourses }}</span>
             </p>
+            <p v-else>No courses found</p>
           </div>
           <SortingDropdown v-model="sort" :options="SORT_OPTIONS" />
         </div>
 
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div v-if="showingCount" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <CourseCard
             v-for="course in courses"
             :key="course.id"
             v-bind="course"
             variant="secondary"
             :category-icon="getCategoryIcon(course.category.icon)"
+            class="cursor-pointer"
             @open-details="handleOpenDetails(course)"
+            @click="handleOpenDetails(course)"
           />
         </div>
-        <div class="flex justify-center">
+        <div v-if="showingCount" class="flex justify-center">
           <Paginator v-model="currentPage" :total="lastPage" />
         </div>
       </main>

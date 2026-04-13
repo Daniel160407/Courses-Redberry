@@ -17,6 +17,7 @@ import { ref } from "vue";
 const { isAuthenticated } = useAuthorize();
 const router = useRouter();
 
+const showLogInModal = ref(false);
 const showProfileModal = ref(false);
 </script>
 <template>
@@ -59,10 +60,12 @@ const showProfileModal = ref(false);
           <div class="flex flex-col gap-4">
             <span class="text-[20px] font-semibold text-[#130E67]">Account</span>
             <Button
+              v-if="isAuthenticated"
               label="My Profile"
               class="justify-start hover:underline"
               @click="showProfileModal = !showProfileModal"
             />
+            <Button v-else label="Log In" class="justify-start hover:underline" @click="showLogInModal = true" />
           </div>
           <div class="flex flex-col gap-4">
             <span class="text-[20px] font-semibold text-[#130E67]">Contact</span>
@@ -96,6 +99,6 @@ const showProfileModal = ref(false);
       </div>
     </div>
 
-    <AuthorizationModals v-model:show-profile-modal="showProfileModal" />
+    <AuthorizationModals v-model:show-log-in-modal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
   </div>
 </template>
