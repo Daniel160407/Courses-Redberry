@@ -6,7 +6,6 @@ import { useValidate } from "@/composables/useValidate";
 import { useAuthorize } from "@/composables/useAuthorize";
 import { useGlobalStore } from "@/stores/GlobalStore";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
-import { COMPLETE_STATUS, INCOMPLETE_STATUS } from "@/composables/constants";
 
 import Dialog from "../common/Dialog.vue";
 import Input from "../common/Input.vue";
@@ -30,7 +29,7 @@ const globalStore = useGlobalStore();
 const { user } = storeToRefs(globalStore);
 const { setUser, setIsProfileComplete } = globalStore;
 const { useRegistrationValidate, useLogInValidate, useProfileValidate } = useValidate();
-const { register, logIn, updateProfile } = useAuthorize();
+const { register, logIn, updateProfile, isProfileComplete } = useAuthorize();
 const { fetchInProgressCourses } = useCoursesCrud();
 
 const registrationSubmitted = ref(false);
@@ -85,8 +84,9 @@ const handleLogIn = async () => {
   const result = await logIn(logInFormData.value);
   if (result.success) {
     showLogInModal.value = false;
+    console.log(result.user);
     setUser(result.user ?? null);
-    setIsProfileComplete(result.user.profileComplete);
+    setIsProfileComplete(result.user?.profileComplete ?? false);
   } else {
     logInFormErrors.email = "Invalid credentials";
     logInFormErrors.password = "Invalid credentials";
@@ -100,7 +100,7 @@ const handleUpdateProfile = async () => {
   if (result?.success) {
     showProfileModal.value = false;
     showProfileEditSuccessModal.value = true;
-    setIsProfileComplete(result?.user.profileComplete);
+    setIsProfileComplete(result?.user?.profileComplete ?? false);
   }
   profileSubmitted.value = true;
 };
@@ -108,11 +108,6 @@ const handleUpdateProfile = async () => {
 const switchAuthorizationModal = () => {
   showLogInModal.value = !showLogInModal.value;
   showSignUpModal.value = !showSignUpModal.value;
-};
-
-const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = { complete: "#1DC31D", incomplete: "#F4A316" };
-  return colors[status];
 };
 
 const getAgeOptions = () => {
@@ -123,6 +118,7 @@ const getAgeOptions = () => {
 };
 
 const handleCloseProfile = () => {
+  if (isProfileComplete.value) showProfileModal.value = false;
   showCloseConfirm.value = true;
 };
 const handleClickCancelProfileConfirm = () => {
@@ -290,14 +286,11 @@ watch(
     >
       <template #start>
         <div class="flex gap-2">
-          <Avatar :src="user?.avatar" :status="user?.profileComplete ? COMPLETE_STATUS : INCOMPLETE_STATUS" />
+          <Avatar :src="user?.avatar" :status="isProfileComplete" />
           <div class="flex flex-col gap-1">
             <span class="text-xl text-[#0A0A0A]">{{ user?.fullName ?? "Username" }}</span>
-            <span
-              class="pl-0.5 text-[10px]"
-              :style="{ color: getStatusColor(user?.profileComplete ? COMPLETE_STATUS : INCOMPLETE_STATUS) }"
-            >
-              {{ user?.profileComplete ? "Profile is Complete" : "Incomplete Profile" }}
+            <span class="pl-0.5 text-[10px]" :class="isProfileComplete ? 'text-[#1DC31D]' : 'text-[#F4A316]'">
+              {{ isProfileComplete ? "Profile is Complete" : "Incomplete Profile" }}
             </span>
           </div>
         </div>
@@ -335,7 +328,7 @@ watch(
     </Dialog>
 
     <Modal
-      :visible="showCloseConfirm"
+      :visible="showCloseConfirm && !isProfileComplete"
       title="Your profile is incomplete."
       content="You won't be able to enroll in courses until you complete it. Close anyway?"
       button-label="Continue"

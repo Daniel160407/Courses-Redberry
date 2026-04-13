@@ -11,13 +11,10 @@ import StarIcon from "@/components/icons/StarIcon.vue";
 import {
   CATALOG_PAGE_NAME,
   CATALOG_ROUTE,
-  CATEGORY_ICONS,
   DASHBOARD_ROUTE,
-  SESSION_TYPE_ICONS,
   TIME_SLOT_CONFIG,
-  TIME_SLOT_ICONS,
   WEEKLY_SCHEDULE_CONFIG
-} from "@/composables/constants";
+} from "@/constants/constants";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
 import type {
   WeeklySchedule,
@@ -37,8 +34,6 @@ import StepThreeIcon from "@/components/icons/StepThreeIcon.vue";
 import WarningIcon from "@/components/icons/WarningIcon.vue";
 import Button from "@/components/common/Button.vue";
 import ActionBanner from "@/components/common/ActionBanner.vue";
-import { storeToRefs } from "pinia";
-import { useGlobalStore } from "@/stores/GlobalStore";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
 import { useAuthorize } from "@/composables/useAuthorize";
 import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
@@ -53,12 +48,12 @@ import MarkIcon from "@/components/icons/MarkIcon.vue";
 import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
+import { CATEGORY_ICONS, SESSION_TYPE_ICONS, TIME_SLOT_ICONS } from "@/constants/iconMappings";
 
+const { isAuthenticated, isProfileComplete } = useAuthorize();
 const { fetchCourseById, rateCourse } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
-const { isProfileComplete } = useAuthorize();
 const { fetchUserEnrollments, enrollCourse, completeEnrollment, deleteEnrollment } = useEnrollmentsCrud();
-const { isAuthorized } = storeToRefs(useGlobalStore());
 const router = useRouter();
 const route = useRoute();
 
@@ -68,8 +63,8 @@ const isLoading = ref(true);
 const weeklySchedules = ref<WeeklySchedule[]>([]);
 const timeSlots = ref<TimeSlot[]>([]);
 const sessionTypes = ref<SessionType[]>([]);
-const selectedWeeklySchedule = ref<WeeklySchedule | null>(null);
-const selectedTimeSlot = ref<TimeSlot | null>(null);
+const selectedWeeklySchedule = ref<WeeklySchedule | (typeof WEEKLY_SCHEDULE_CONFIG)[number] | null>(null);
+const selectedTimeSlot = ref<TimeSlot | (typeof TIME_SLOT_CONFIG)[number] | null>(null);
 const selectedSessionType = ref<SessionType | null>(null);
 const userCourseEnrollment = ref<Enrollment | null>(null);
 
@@ -123,7 +118,7 @@ const totalPrice = computed(() => {
 });
 
 const handleEnrollment = (force = false) => {
-  if (!isAuthorized.value) {
+  if (!isAuthenticated.value) {
     showLogInModal.value = true;
     return;
   }
@@ -146,7 +141,10 @@ const handleEnrollment = (force = false) => {
 const isScheduleAvailable = (id: number) => weeklySchedules.value.some((ws) => ws.id === id);
 const isTimeSlotAvailable = (id: number) => timeSlots.value.some((ts) => ts.id === id);
 
-const handleSelectWeeklySchedule = (isSelected: boolean, weeklySchedule: WeeklySchedule) => {
+const handleSelectWeeklySchedule = (
+  isSelected: boolean,
+  weeklySchedule: WeeklySchedule | (typeof WEEKLY_SCHEDULE_CONFIG)[number]
+) => {
   if (isSelected) {
     selectedWeeklySchedule.value = weeklySchedule;
     selectedTimeSlot.value = null;
@@ -154,7 +152,7 @@ const handleSelectWeeklySchedule = (isSelected: boolean, weeklySchedule: WeeklyS
   }
 };
 
-const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot) => {
+const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot | (typeof TIME_SLOT_CONFIG)[number]) => {
   if (isSelected) {
     selectedTimeSlot.value = timeSlot;
     selectedSessionType.value = null;
@@ -187,7 +185,7 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
         enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
     }
   } else {
-    const errorData = response?.serverErrors?.value;
+    const errorData = response?.serverErrors;
     if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
       const conflicts = (errorData as { conflicts: EnrollmentConflict | EnrollmentConflict[] }).conflicts;
       enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];
@@ -254,7 +252,7 @@ watch(
   }
 );
 
-watch([isAuthorized, isProfileComplete], async (authorized, profileComplete) => {
+watch([isAuthenticated, isProfileComplete], async (authorized, profileComplete) => {
   if (authorized && profileComplete && course.value) {
     const enrollmentRes = await fetchUserEnrollments();
     if (enrollmentRes?.success) {
@@ -494,7 +492,7 @@ onMounted(async () => {
               label="Enroll Now"
               class="h-15.75 rounded-xl p-2.5 text-[20px]"
               :class="
-                isAuthorized && isProfileComplete
+                isAuthenticated && isProfileComplete
                   ? 'bg-[#4F46E5] font-medium text-[#FFFFFF]'
                   : 'bg-[#EEEDFC] font-semibold text-[#B7B3F4]'
               "
@@ -504,7 +502,7 @@ onMounted(async () => {
         </div>
 
         <ActionBanner
-          v-if="!isAuthorized"
+          v-if="!isAuthenticated"
           title="Authentication Required"
           description="You need sign in to your profile before enrolling in this course."
           button-label="Sign In"

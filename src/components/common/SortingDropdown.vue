@@ -10,7 +10,7 @@ interface Option {
 
 interface Props {
   modelValue: string;
-  options: Option[];
+  options: readonly Option[];
 }
 
 const props = defineProps<Props>();

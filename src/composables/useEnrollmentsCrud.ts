@@ -6,68 +6,41 @@ export const useEnrollmentsCrud = () => {
 
   const fetchUserEnrollments = async () => {
     try {
-      await sendRequest({
-        method: "GET",
-        url: "/enrollments",
-        useToken: true
-      });
-
-      if (data.value?.data) {
-        return { success: true, enrollments: data.value?.data };
-      }
+      await sendRequest({ method: "GET", url: "/enrollments", useToken: true });
+      return { success: true, enrollments: data.value?.data };
     } catch (err) {
-      console.error(err);
-      return { success: false, serverErrors: error };
+      console.error("Fetch User Enrollments Error:", err);
+      return { success: false, serverErrors: error.value };
     }
   };
 
   const enrollCourse = async (formData: EnrollmentForm) => {
     try {
-      await sendRequest({
-        method: "POST",
-        url: "/enrollments",
-        useToken: true,
-        data: formData
-      });
-
-      if (data.value?.data) {
-        return { success: true, enrollment: data.value?.data };
-      }
+      await sendRequest({ method: "POST", url: "/enrollments", useToken: true, data: formData });
+      return { success: true, enrollment: data.value?.data };
     } catch (err) {
-      console.error(err);
-      return { success: false, serverErrors: error };
+      console.error("Enroll Course Error:", err);
+      return { success: false, serverErrors: error.value };
     }
   };
 
   const completeEnrollment = async (enrollmentId: number) => {
     try {
-      await sendRequest({
-        method: "PATCH",
-        url: `/enrollments/${enrollmentId}/complete`,
-        useToken: true
-      });
-
-      if (data.value?.data) {
-        return { success: true, enrollment: data.value?.data };
-      }
+      await sendRequest({ method: "PATCH", url: `/enrollments/${enrollmentId}/complete`, useToken: true });
+      return { success: true, enrollment: data.value?.data };
     } catch (err) {
-      console.error(err);
-      return { success: false, serverErrors: error };
+      console.error("Complete Enrollment Error:", err);
+      return { success: false, serverErrors: error.value };
     }
   };
 
   const deleteEnrollment = async (enrollmentId: number) => {
     try {
-      await sendRequest({
-        method: "DELETE",
-        url: `/enrollments/${enrollmentId}`,
-        useToken: true
-      });
-
+      await sendRequest({ method: "DELETE", url: `/enrollments/${enrollmentId}`, useToken: true });
       return { success: true };
     } catch (err) {
-      console.error(err);
-      return { success: false, serverErrors: error };
+      console.error("Delete Enrollment Error:", err);
+      return { success: false, serverErrors: error.value };
     }
   };
 

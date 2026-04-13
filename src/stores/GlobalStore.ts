@@ -15,6 +15,7 @@ export const useGlobalStore = defineStore("globalStore", () => {
   const setUser = (userData: User | null) => {
     user.value = userData;
     isAuthorized.value = !!userData;
+    isProfileComplete.value = userData?.profileComplete ?? false;
   };
 
   const setCourses = (newCourses: Course[]) => {

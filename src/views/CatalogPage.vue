@@ -11,7 +11,7 @@ import CloseIcon from "@/components/icons/CloseIcon.vue";
 import CodeIcon from "@/components/icons/CodeIcon.vue";
 import PaletteIcon from "@/components/icons/PaletteIcon.vue";
 import TreeIcon from "@/components/icons/TreeIcon.vue";
-import { DASHBOARD_ROUTE, SORT_OPTIONS } from "@/composables/constants";
+import { DASHBOARD_ROUTE, SORT_OPTIONS } from "@/constants/constants";
 import { useCatalogCrud } from "@/composables/useCatalogCrud";
 import { useCoursesCrud } from "@/composables/useCoursesCrud";
 import type { Course, Category, Instructor, Topic, CoursesResponse } from "@/types/interfaces";

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { CATALOG_COURSE_ROUTE, CATALOG_ROUTE, DASHBOARD_COURSE_ROUTE, DASHBOARD_ROUTE } from "../composables/constants";
+import { CATALOG_COURSE_ROUTE, CATALOG_ROUTE, DASHBOARD_COURSE_ROUTE, DASHBOARD_ROUTE } from "../constants/constants";
 import DashboardPage from "@/views/DashboardPage.vue";
 import CatalogPage from "@/views/CatalogPage.vue";
 import InsideCoursePage from "@/views/InsideCoursePage.vue";
