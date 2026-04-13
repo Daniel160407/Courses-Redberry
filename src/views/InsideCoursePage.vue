@@ -83,7 +83,7 @@ const showEnrollmentCompletionModal = ref(false);
 const showNoAvailableSeatsModal = ref(false);
 const isRatingDismissed = ref(false);
 const showRatingBox = computed(() => {
-  return !!userCourseEnrollment.value?.completedAt && !isRatingDismissed.value;
+  return !!userCourseEnrollment.value?.completedAt && !isRatingDismissed.value && !course.value?.isRated;
 });
 
 const parentPage = computed(() => route.path.split("/")[1]);
@@ -576,7 +576,12 @@ onMounted(async () => {
                 >" Course!
               </p>
             </div>
-            <StarRating v-model="rating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
+            <StarRating
+              v-if="showRatingBox"
+              v-model="rating"
+              :disabled="isRatingSubmitting"
+              @submit="handleRateCourse"
+            />
           </Modal>
         </div>
 
