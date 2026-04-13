@@ -51,6 +51,7 @@ export interface ProfileErrors {
   full_name: string;
   mobile_number: string;
   age: string;
+  avatar: string;
 }
 
 export interface SliderItem {

@@ -98,7 +98,6 @@ const handleLogIn = async () => {
   const result = await logIn(logInFormData.value);
   if (result.success) {
     showLogInModal.value = false;
-    console.log(result.user);
     setUser(result.user ?? null);
     setIsProfileComplete(result.user?.profileComplete ?? false);
   } else {
@@ -115,6 +114,15 @@ const handleUpdateProfile = async () => {
     showProfileModal.value = false;
     showProfileEditSuccessModal.value = true;
     setIsProfileComplete(result?.user?.profileComplete ?? false);
+  } else if (result?.serverErrors) {
+    const serverErr = result?.serverErrors;
+    if (typeof serverErr === "object" && serverErr?.errors) {
+      for (const key in serverErr.errors) {
+        if (key in profileFormErrors) {
+          (profileFormErrors as any)[key] = serverErr.errors[key][0];
+        }
+      }
+    }
   }
   profileSubmitted.value = true;
 };
@@ -225,6 +233,7 @@ watch(
         <Input
           v-model="registrationFormData.password"
           :error="registrationFormErrors.password"
+          :success="registrationSubmitted && !registrationFormErrors.password"
           label="Password"
           placeholder="Password"
           type="password"
@@ -233,6 +242,7 @@ watch(
         <Input
           v-model="registrationFormData.confirmPassword"
           :error="registrationFormErrors.confirmPassword"
+          :success="registrationSubmitted && !registrationFormErrors.confirmPassword"
           label="Confirm Password"
           placeholder="Password"
           type="password"
@@ -243,12 +253,18 @@ watch(
         <Input
           v-model="registrationFormData.username"
           :error="registrationFormErrors.username"
+          :success="registrationSubmitted && !registrationFormErrors.username"
           label="Username"
           placeholder="Username"
           type="text"
           required
         />
-        <InputFile v-model="registrationFormData.avatar" :error="registrationFormErrors.avatar" label="Upload Avatar" />
+        <InputFile
+          v-model="registrationFormData.avatar"
+          :error="registrationFormErrors.avatar"
+          :success="registrationSubmitted && !registrationFormErrors.avatar"
+          label="Upload Avatar"
+        />
       </template>
       <template #end>
         <div class="flex items-center justify-center gap-2 px-15">
@@ -274,6 +290,7 @@ watch(
         <Input
           v-model="logInFormData.email"
           :error="logInFormErrors.email"
+          :success="logInSubmitted && !logInFormErrors.email"
           label="Email"
           placeholder="you@example.com"
           type="email"
@@ -281,6 +298,7 @@ watch(
         <Input
           v-model="logInFormData.password"
           :error="logInFormErrors.password"
+          :success="logInSubmitted && !logInFormErrors.password"
           label="Password"
           placeholder="Password"
           type="password"
@@ -322,6 +340,7 @@ watch(
         <Input
           v-model="profileFormData.full_name"
           :error="profileFormErrors.full_name"
+          :success="profileSubmitted && !profileFormErrors.full_name"
           label="Full Name"
           placeholder="Username"
           :icon="PencilIcon"
@@ -331,6 +350,7 @@ watch(
           <Input
             v-model="profileFormData.mobile_number"
             :error="profileFormErrors.mobile_number"
+            :success="profileSubmitted && !profileFormErrors.mobile_number"
             label="Mobile Number"
             type="tel"
             placeholder="599209820"
@@ -340,13 +360,19 @@ watch(
           <Select
             v-model="profileFormData.age"
             :error="profileFormErrors.age"
+            :success="profileSubmitted && !profileFormErrors.age"
             :options="getAgeOptions()"
             label="Age"
             :icon="ArrowDownIcon"
             class="flex-1"
           />
         </div>
-        <InputFile v-model="profileFormData.avatar" label="Upload Avatar" />
+        <InputFile
+          v-model="profileFormData.avatar"
+          :error="profileFormErrors.avatar"
+          :success="profileSubmitted && !profileFormErrors.avatar"
+          label="Upload Avatar"
+        />
       </template>
     </Dialog>
 
