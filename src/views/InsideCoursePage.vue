@@ -353,8 +353,8 @@ watch(
 );
 </script>
 <template>
-  <div class="min-h-screen bg-[#F5F5F5] px-44.25 pt-43 pb-40">
-    <div class="flex items-start gap-16">
+  <div class="flex min-h-screen justify-center bg-[#F5F5F5] pt-43 pb-40">
+    <div class="flex min-w-391.5 items-start gap-33.25">
       <div class="flex w-225.75 min-w-225.75 flex-col gap-6">
         <div>
           <div class="mb-12 flex items-center gap-0.5">
@@ -422,7 +422,7 @@ watch(
         </div>
       </div>
 
-      <div v-if="!userCourseEnrollment && !isLoading" class="mt-28 flex max-w-132.5 flex-1 flex-col gap-3">
+      <div v-if="!userCourseEnrollment && !isLoading" class="mt-35.75 flex max-w-132.5 flex-1 flex-col gap-3">
         <Accordion v-model:value="activeTab">
           <AccordionPanel value="0">
             <AccordionHeader :icon="StepOneIcon">Weekly Schedule</AccordionHeader>
@@ -434,8 +434,7 @@ watch(
                   :label="weeklySchedule.shortLabel"
                   :is-selected="selectedWeeklySchedule?.id === weeklySchedule.id"
                   :disabled="!isScheduleAvailable(weeklySchedule.id)"
-                  variant="outline"
-                  class="h-22.75 w-full justify-center p-2.5"
+                  variant="schedule"
                   @click="(isSelected) => handleSelectWeeklySchedule(isSelected, weeklySchedule)"
                 />
               </div>
@@ -450,7 +449,7 @@ watch(
                   :key="timeSlot.id"
                   :is-selected="selectedTimeSlot?.id === timeSlot.id"
                   :disabled="!isTimeSlotAvailable(timeSlot.id)"
-                  class="p-3.75"
+                  variant="time-slot"
                   @click="(isSelected) => handleSelectTimeSlot(isSelected, timeSlot)"
                 >
                   <div class="flex items-center gap-3">
@@ -476,7 +475,7 @@ watch(
                   <SelectButton
                     :is-selected="selectedSessionType?.id === sessionType.id"
                     :disabled="sessionType.isFull"
-                    class="min-h-38.75 min-w-42.75 px-5 py-3.75"
+                    variant="session-type"
                     @click="selectedSessionType = sessionType"
                   >
                     <div class="flex w-full flex-col items-center justify-center gap-2.5 text-inherit">
