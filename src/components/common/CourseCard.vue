@@ -55,6 +55,7 @@ const emit = defineEmits(["openDetails"]);
   <div
     v-else-if="props.variant === 'secondary'"
     class="flex max-w-93.25 cursor-pointer flex-col gap-2.5 rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-5"
+    @click="emit('openDetails')"
   >
     <div class="flex h-full flex-col justify-between gap-4.5">
       <div class="flex flex-col gap-4.5">

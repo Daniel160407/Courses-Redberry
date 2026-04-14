@@ -17,8 +17,6 @@ const route = useRoute();
 const showSignUp = ref(false);
 const showLogIn = ref(false);
 const showProfile = ref(false);
-
-const activeSegment = computed(() => route.path.split("/")[1]);
 </script>
 
 <template>
@@ -31,7 +29,7 @@ const activeSegment = computed(() => route.path.split("/")[1]);
             label="Browse Courses"
             :icon="StarsIcon"
             variant="nav"
-            :class="{ 'text-[#4F46E5]': activeSegment === 'catalog' }"
+            :class="{ 'text-[#4F46E5]': route.path === CATALOG_ROUTE }"
             @click="router.push(CATALOG_ROUTE)"
           />
           <Button
@@ -54,7 +52,7 @@ const activeSegment = computed(() => route.path.split("/")[1]);
           label="Browse Courses"
           :icon="StarsIcon"
           variant="nav"
-          :class="{ 'text-[#4F46E5]': activeSegment === 'catalog' }"
+          :class="{ 'text-[#4F46E5]': route.path === CATALOG_ROUTE }"
           @click="router.push(CATALOG_ROUTE)"
         />
 

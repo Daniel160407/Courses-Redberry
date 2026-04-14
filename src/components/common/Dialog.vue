@@ -53,7 +53,7 @@ const handleFinalClick = () => {
 <template>
   <div
     v-if="visible"
-    class="font-inter fixed inset-0 z-50 flex items-center justify-center bg-black/20"
+    class="font-inter fixed inset-0 z-200 flex items-center justify-center bg-black/20"
     @click.self="close"
   >
     <div class="relative flex w-115 flex-col gap-3 rounded-xl bg-white">

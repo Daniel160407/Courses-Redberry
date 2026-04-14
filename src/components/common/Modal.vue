@@ -14,7 +14,7 @@ const { visible, title, content, icon, buttonLabel } = defineProps<Props>();
 const emit = defineEmits(["continue", "cancel"]);
 </script>
 <template>
-  <div v-if="visible" class="font-inter fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+  <div v-if="visible" class="font-inter fixed inset-0 z-200 flex items-center justify-center bg-black/20">
     <div class="rounded-4 flex max-w-119 flex-col rounded-2xl bg-[#FFFFFF] p-15">
       <div class="flex flex-col gap-[10.5]">
         <div class="flex flex-col items-center gap-10.5">
