@@ -22,8 +22,8 @@ const activeSegment = computed(() => route.path.split("/")[1]);
 </script>
 
 <template>
-  <div class="fixed top-0 left-0 z-100 w-full border-b border-b-[#D1D1D1] bg-[#F5F5F5] px-44 py-6">
-    <div class="flex items-center justify-between">
+  <div class="fixed top-0 left-0 z-100 flex w-full justify-center border-b border-b-[#D1D1D1] bg-[#F5F5F5] py-6">
+    <div class="flex min-w-391.5 items-center justify-between">
       <Button :icon="LogoIcon" class="p-0!" :iconSize="3.75" @click="router.push(DASHBOARD_ROUTE)" />
       <div v-if="isAuthenticated" class="flex gap-9">
         <div class="flex gap-2">

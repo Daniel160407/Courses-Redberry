@@ -274,9 +274,7 @@ onMounted(async () => {
             v-bind="course"
             variant="secondary"
             :category-icon="getCategoryIcon(course.category.icon)"
-            class="cursor-pointer"
             @open-details="handleOpenDetails(course)"
-            @click="handleOpenDetails(course)"
           />
         </div>
         <div v-if="showingCount" class="flex justify-center">

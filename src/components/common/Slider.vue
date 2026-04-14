@@ -92,13 +92,17 @@ onUnmounted(() => stopAutoPlay());
         <div class="flex gap-6">
           <Button
             :icon="ArrowLeftOutlinedIcon"
-            class="p-0! text-[#FFFFFF] hover:opacity-70"
+            class="p-0!"
+            :loading="showSlide === 0"
+            :class="showSlide === 0 ? 'cursor-not-allowed! text-[#C1BCBC80]' : 'text-[#FFFFFF]'"
             :icon-size="3.5"
             @click="prevSlide"
           />
           <Button
             :icon="ArrowRightOutlinedIcon"
-            class="p-0! text-[#FFFFFF] hover:opacity-70"
+            class="p-0!"
+            :loading="showSlide === 2"
+            :class="showSlide === 2 ? 'cursor-not-allowed! text-[#C1BCBC80]' : 'text-[#FFFFFF]'"
             :icon-size="3.5"
             @click="nextSlide"
           />
@@ -107,16 +111,3 @@ onUnmounted(() => stopAutoPlay());
     </div>
   </div>
 </template>
-
-<style scoped>
-.flex-shrink-0 {
-  flex-shrink: 0;
-}
-
-.pointer-events-none {
-  pointer-events: none;
-}
-.pointer-events-auto {
-  pointer-events: auto;
-}
-</style>

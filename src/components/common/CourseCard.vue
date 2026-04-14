@@ -17,7 +17,8 @@ const emit = defineEmits(["openDetails"]);
 <template>
   <div
     v-if="props.variant === 'primary'"
-    class="flex w-full max-w-126.5 flex-col justify-between gap-6 rounded-xl bg-[#FFFFFF] p-5"
+    class="flex min-h-144 w-full max-w-126.5 min-w-126.5 cursor-pointer flex-col justify-between rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-5 transition-all duration-300 ease-out hover:border-[#B7B3F4] hover:shadow-[0_0_25px_0_rgba(138,130,212,0.1)] active:border-[#958FEF]"
+    @click="emit('openDetails')"
   >
     <div class="flex flex-col gap-4">
       <div class="h-65.5 w-116.5 overflow-hidden rounded-[10px]">
@@ -57,7 +58,7 @@ const emit = defineEmits(["openDetails"]);
 
   <div
     v-else-if="props.variant === 'secondary'"
-    class="flex max-w-93.25 flex-col gap-2.5 rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-5"
+    class="flex max-w-93.25 cursor-pointer flex-col gap-2.5 rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-5"
   >
     <div class="flex h-full flex-col justify-between gap-4.5">
       <div class="flex flex-col gap-4.5">

@@ -22,8 +22,8 @@ const showProfileModal = ref(false);
 </script>
 <template>
   <div>
-    <div class="flex flex-col justify-between gap-18.5 px-44.25 pt-20 pb-5">
-      <div class="flex justify-between">
+    <div class="flex flex-col items-center gap-18.5 pt-20 pb-5">
+      <div class="flex min-w-391.5 justify-between">
         <div class="flex flex-col gap-6">
           <div class="flex flex-col gap-4">
             <div class="flex items-center gap-3">
@@ -62,10 +62,15 @@ const showProfileModal = ref(false);
             <Button
               v-if="isAuthenticated"
               label="My Profile"
-              class="justify-start hover:underline"
+              class="justify-start text-[#666666] hover:underline"
               @click="showProfileModal = !showProfileModal"
             />
-            <Button v-else label="Log In" class="justify-start hover:underline" @click="showLogInModal = true" />
+            <Button
+              v-else
+              label="Log In"
+              class="justify-start text-[#666666] hover:underline"
+              @click="showLogInModal = true"
+            />
           </div>
           <div class="flex flex-col gap-4">
             <span class="text-[20px] font-semibold text-[#130E67]">Contact</span>
@@ -86,7 +91,7 @@ const showProfileModal = ref(false);
           </div>
         </div>
       </div>
-      <div class="flex text-[18px]">
+      <div class="flex w-full max-w-391.5 justify-between text-[18px]">
         <div class="flex flex-1 justify-start">
           <span class="text-[#666666]">Copyright &copy; Redberry International</span>
         </div>

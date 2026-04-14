@@ -21,8 +21,6 @@ const { featuredCourses, coursesInProgress } = storeToRefs(useGlobalStore());
 const { isAuthenticated } = useAuthorize();
 const router = useRouter();
 
-const startLearningSection = ref<HTMLElement | null>(null);
-
 const sliderItems = ref<SliderItem[]>([
   {
     title: "Start learning something new today",
@@ -37,9 +35,7 @@ const sliderItems = ref<SliderItem[]>([
     description:
       "Your learning journey is already in progress. Continue your enrolled courses, track your progress, and stay on track toward completing your goals.",
     buttonLabel: "Start Learning",
-    action: () => {
-      startLearningSection.value?.scrollIntoView({ behavior: "smooth" });
-    },
+    action: () => router.push("/catalog"),
     image: Slide2
   },
   {
@@ -95,10 +91,13 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="flex min-h-screen flex-col gap-16 bg-[#F5F5F5] px-44.25 pt-43">
+  <div
+    class="flex min-h-screen flex-col items-center gap-16 bg-[#F5F5F5] pt-43"
+    :class="[isAuthenticated && coursesInProgress.length ? 'pb-62' : '', !isAuthenticated ? 'pb-30' : '']"
+  >
     <Slider :items="sliderItems" />
 
-    <div v-if="isAuthenticated && coursesInProgress?.length" class="flex flex-col gap-8">
+    <div v-if="isAuthenticated && coursesInProgress?.length" class="flex max-w-391.5 flex-col gap-8">
       <div class="flex justify-between">
         <div class="flex flex-col gap-1.5">
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
@@ -116,6 +115,7 @@ onMounted(async () => {
           v-for="item in limitedCourses"
           :key="item.id"
           :title="item.course.title"
+          :image="item.course.image"
           :instructor-name="item.course.instructor.name"
           :avg-rating="item.course.avgRating"
           :progress="item.progress"
@@ -124,12 +124,12 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div ref="startLearningSection" class="flex flex-col gap-8">
+    <div v-if="featuredCourses.length" class="flex flex-col gap-8">
       <div class="flex flex-col gap-1.5">
         <span class="text-[40px] font-semibold text-[#0A0A0A]">Start Learning Today</span>
         <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>
       </div>
-      <div v-if="featuredCourses" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div v-if="featuredCourses" class="grid grid-cols-3 gap-6">
         <CourseCard
           v-for="course in featuredCourses"
           :key="course.id"
@@ -139,7 +139,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="!isAuthenticated" class="relative flex flex-col gap-8 pb-10">
+    <div v-if="!isAuthenticated" class="relative flex flex-col gap-8 pb-8.75">
       <div class="flex justify-between">
         <div class="flex flex-col gap-1.5">
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
