@@ -255,6 +255,11 @@ const handleRetakeCourse = async () => {
 const handleRateCourse = async () => {
   if (isRatingSubmitting.value) return;
 
+  if (rating.value === 0) {
+    showEnrollmentCompletionModal.value = false;
+    return;
+  }
+
   isRatingSubmitting.value = true;
   try {
     await rateCourse(course.value?.id ?? 0, rating.value);
@@ -614,6 +619,10 @@ onMounted(async () => {
           <div class="relative -top-1 px-12.5 pb-10">
             <StarRating v-model="rating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
           </div>
+        </div>
+
+        <div v-if="userCourseEnrollment && !isLoading && userCourseEnrollment.completedAt && course?.isRated">
+          <ActionBanner title="You've already rated this course" />
         </div>
       </div>
     </div>
