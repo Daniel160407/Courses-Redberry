@@ -87,6 +87,7 @@ const limitedCourses = computed(() => {
 
 const handleOpenDetails = (course: Course) => {
   router.push(`/dashboard/course/${course.id}`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 onMounted(async () => {

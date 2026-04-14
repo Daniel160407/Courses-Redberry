@@ -27,6 +27,7 @@ const handleOpenDetails = (courseId: number) => {
   const rootPath = route.path.split("/")[1] || "dashboard";
   closeSidebar();
   router.push(`/${rootPath}/course/${courseId}`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 watch(isSidebarOpen, (open) => {

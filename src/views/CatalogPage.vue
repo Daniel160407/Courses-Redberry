@@ -133,6 +133,7 @@ const handleClearFilters = async () => {
 
 const handleOpenDetails = (course: Course) => {
   router.push(`/catalog/course/${course.id}`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 const setPaginationData = (coursesResponse: CoursesResponse) => {

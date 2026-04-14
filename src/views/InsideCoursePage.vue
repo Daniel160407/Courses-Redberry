@@ -72,7 +72,8 @@ const enrollmentConflicts = ref<EnrollmentConflict[]>([]);
 const isSubmitting = ref(false);
 const isRatingSubmitting = ref(false);
 const errorMessage = ref<string>("");
-const rating = ref<number>(0);
+const modalRating = ref<number>(0);
+const bannerRating = ref<number>(0);
 
 const showLogInModal = ref(false);
 const showProfileModal = ref(false);
@@ -252,18 +253,29 @@ const handleRetakeCourse = async () => {
   }
 };
 
-const handleRateCourse = async () => {
+const handleRateCourse = async (ratingVal?: any) => {
   if (isRatingSubmitting.value) return;
 
-  if (rating.value === 0) {
+  const finalRating =
+    typeof ratingVal === "number"
+      ? ratingVal
+      : showEnrollmentCompletionModal.value
+        ? modalRating.value
+        : bannerRating.value;
+
+  if (finalRating === 0) {
     showEnrollmentCompletionModal.value = false;
     return;
   }
 
   isRatingSubmitting.value = true;
   try {
-    await rateCourse(course.value?.id ?? 0, rating.value);
-    rating.value = 0;
+    await rateCourse(course.value?.id ?? 0, finalRating);
+    if (course.value) {
+      course.value.isRated = true;
+    }
+    modalRating.value = 0;
+    bannerRating.value = 0;
     showEnrollmentCompletionModal.value = false;
     isRatingDismissed.value = true;
   } finally {
@@ -605,7 +617,7 @@ onMounted(async () => {
             </div>
             <StarRating
               v-if="showRatingBox"
-              v-model="rating"
+              v-model="modalRating"
               :disabled="isRatingSubmitting"
               @submit="handleRateCourse"
             />
@@ -617,7 +629,7 @@ onMounted(async () => {
             <Button :icon="CloseIcon" class="gap-0!" @click="isRatingDismissed = true" />
           </div>
           <div class="relative -top-1 px-12.5 pb-10">
-            <StarRating v-model="rating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
+            <StarRating v-model="bannerRating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
           </div>
         </div>
 
