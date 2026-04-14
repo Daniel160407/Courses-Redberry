@@ -201,7 +201,7 @@ onMounted(async () => {
               :loading="isFiltering"
               :icon="CloseIcon"
               icon-pos="right"
-              class="gap-1.75! text-[16px] font-medium text-[#8A8A8A]"
+              variant="danger-nav"
               @click="handleClearFilters"
             />
           </div>

@@ -103,11 +103,7 @@ onMounted(async () => {
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
           <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
         </div>
-        <Button
-          label="See All"
-          class="p-0! text-[20px] font-medium text-[#4F46E5] underline"
-          @click="router.push({ query: { enrolled: 'true' } })"
-        />
+        <Button label="See All" variant="link" @click="router.push({ query: { enrolled: 'true' } })" />
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -145,11 +141,7 @@ onMounted(async () => {
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
           <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
         </div>
-        <Button
-          label="See All"
-          class="p-0! text-[20px] font-medium text-[#4F46E5] underline"
-          @click="router.push({ query: { enrolled: 'true' } })"
-        />
+        <Button label="See All" variant="link" @click="router.push({ query: { enrolled: 'true' } })" />
       </div>
 
       <div class="pointer-events-none grid grid-cols-1 gap-6 select-none md:grid-cols-2 lg:grid-cols-3">
@@ -175,7 +167,7 @@ onMounted(async () => {
               </div>
               <span class="text-[16px] font-medium text-[#0A0A0A]">Sign in to track your learning progress</span>
             </div>
-            <Button label="Log In" class="w-21 rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="showLogIn = true" />
+            <Button label="Log In" variant="primary" @click="showLogIn = true" />
           </div>
         </div>
       </div>

@@ -74,7 +74,8 @@ watch(isSidebarOpen, (open) => {
           </div>
           <Button
             :icon="CloseIcon"
-            class="mb-2 h-10 w-10 rounded-full p-2 transition-colors hover:bg-black/5 active:scale-95"
+            variant="icon"
+            class="mb-2 h-10 w-10 rounded-full hover:bg-black/5"
             @click="closeSidebar"
           />
         </div>
@@ -105,7 +106,8 @@ watch(isSidebarOpen, (open) => {
               <p class="text-medium text-[14px] text-[#130E67]">Your learning journey starts here!</p>
               <Button
                 label="Browse Courses"
-                class="mt-2 h-14.5 w-43.75 rounded-lg bg-[#4F46E5] text-white"
+                variant="primary"
+                class="mt-2 h-14.5 w-43.75! rounded-lg"
                 @click="router.push(CATALOG_ROUTE)"
               />
             </div>

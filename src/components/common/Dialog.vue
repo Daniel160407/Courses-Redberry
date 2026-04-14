@@ -63,16 +63,11 @@ const handleFinalClick = () => {
             v-if="hasSteps && step > 1"
             :icon="AngleLeftIcon"
             type="button"
-            class="cursor-pointer p-0! transition-opacity hover:opacity-70"
+            variant="dialog-icon"
             @click="changeStep(-1)"
           />
         </div>
-        <Button
-          :icon="CloseIcon"
-          type="button"
-          class="cursor-pointer p-0! transition-opacity hover:opacity-70"
-          @click="close"
-        />
+        <Button :icon="CloseIcon" type="button" variant="dialog-icon" @click="close" />
       </div>
 
       <form class="flex flex-col gap-6 px-13 pb-10" @submit.prevent="handleFinalClick">
@@ -102,7 +97,7 @@ const handleFinalClick = () => {
           type="submit"
           :loading="loading"
           :label="(step === 3 || !hasSteps) && buttonLabel ? buttonLabel : 'Next'"
-          class="h-11.75 rounded-md bg-[#4F46E5] text-[#FFFFFF]"
+          variant="dialog-submit"
         />
 
         <div v-if="$slots.end" class="gap-2">

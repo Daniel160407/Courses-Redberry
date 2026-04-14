@@ -74,8 +74,8 @@ const emit = defineEmits(["openDetails"]);
       <ProgressBar :progress="props.progress" class="w-full pb-1" :class="!extended ? 'max-w-84' : ''" />
       <Button
         label="View"
-        class="text-md h-12 rounded-lg border-2 border-[#958FEF] px-4 py-3 font-medium text-[#4F46E5] transition-all duration-300 ease-out hover:bg-[#4F46E5] hover:text-[#F5F5F5] active:scale-95"
-        :class="extended ? 'w-29.25' : 'w-22.5'"
+        variant="outline"
+        :class="extended ? 'h-12! w-29.25' : 'h-12! w-22.5'"
         @click="emit('openDetails')"
       />
     </div>

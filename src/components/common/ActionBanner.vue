@@ -29,7 +29,7 @@ defineEmits(["action"]);
       :label="buttonLabel"
       :icon="ArrowRightIcon"
       icon-pos="right"
-      class="h-11.5 gap-2.5 rounded-lg border border-[#B7B3F4] bg-[#EEEDFC] px-3 py-2.5 text-[14px] whitespace-nowrap text-[#281ED2] [&_svg]:h-4 [&_svg]:w-4"
+      variant="banner-action"
       @click="$emit('action')"
     />
   </div>

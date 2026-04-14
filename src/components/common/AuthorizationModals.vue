@@ -290,11 +290,7 @@ watch(
       <template #end>
         <div class="flex items-center justify-center gap-2 px-15">
           <span class="text-sm text-[#666666]">Already have an account?</span>
-          <Button
-            label="Log In"
-            class="h-4 w-12 text-sm font-medium whitespace-nowrap underline"
-            @click="switchAuthorizationModal"
-          />
+          <Button label="Log In" variant="auth-switch-link" @click="switchAuthorizationModal" />
         </div>
       </template>
     </Dialog>
@@ -329,11 +325,7 @@ watch(
       <template #end>
         <div class="flex items-center justify-center gap-2 px-15">
           <span class="text-sm text-[#666666]">Don`t have an account?</span>
-          <Button
-            label="Sign Up"
-            class="h-4 w-12 text-sm font-medium whitespace-nowrap underline"
-            @click="switchAuthorizationModal"
-          />
+          <Button label="Sign Up" variant="auth-switch-link" @click="switchAuthorizationModal" />
         </div>
       </template>
     </Dialog>

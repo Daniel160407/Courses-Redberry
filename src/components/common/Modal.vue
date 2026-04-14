@@ -26,14 +26,10 @@ const emit = defineEmits(["continue", "cancel"]);
             </slot>
           </div>
           <div v-if="buttonLabel" class="flex w-full gap-2">
-            <Button
-              :label="buttonLabel"
-              class="flex-1 rounded-lg border-2 border-[#958FEF] text-[#4F46E5]"
-              @click="emit('continue')"
-            />
-            <Button label="Cancel" class="flex-1 rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="emit('cancel')" />
+            <Button :label="buttonLabel" variant="modal-outline" class="flex-1" @click="emit('continue')" />
+            <Button label="Cancel" variant="modal-primary" class="flex-1" @click="emit('cancel')" />
           </div>
-          <Button v-else label="Done" class="w-full rounded-lg bg-[#4F46E5] text-[#FFFFFF]" @click="emit('continue')" />
+          <Button v-else label="Done" variant="modal-primary" class="w-full" @click="emit('continue')" />
         </div>
       </div>
     </div>

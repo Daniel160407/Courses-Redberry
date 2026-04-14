@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, toRaw } from "vue";
 import UploadIcon from "../icons/UploadIcon.vue";
+import Button from "./Button.vue";
 
 interface Props {
   modelValue: File | string | null;
@@ -100,13 +101,7 @@ watch(
           {{ fileName }}
         </span>
         <span v-if="fileSize" class="text-sm text-[#8A8A8A]">Size - {{ fileSize }}</span>
-        <button
-          type="button"
-          class="crusor-pointer mt-1 text-left text-sm font-medium text-[#281ED2] underline underline-offset-4 hover:opacity-80"
-          @click="triggerFileInput"
-        >
-          Change
-        </button>
+        <Button type="button" variant="file-input-change" @click="triggerFileInput">Change</Button>
       </div>
     </div>
 

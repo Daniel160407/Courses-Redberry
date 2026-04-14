@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { inject, type Component } from "vue";
 import ArrowDownIcon from "../icons/ArrowDownIcon.vue";
+import Button from "./Button.vue";
 
 const props = defineProps<{
   icon?: Component;
@@ -17,10 +18,10 @@ const toggle = () => {
 </script>
 
 <template>
-  <button
+  <Button
     type="button"
+    variant="accordion-header"
     :class="panel?.isOpen.value ? 'text-[#130E67]!' : 'text-[#8A8A8A]!'"
-    class="flex w-full cursor-pointer items-center justify-between py-4 text-left font-medium"
     @click="toggle"
   >
     <div class="flex items-center gap-2">
@@ -30,5 +31,5 @@ const toggle = () => {
     <span :class="{ 'rotate-180': panel?.isOpen.value }" class="transition-transform duration-200"
       ><arrow-down-icon
     /></span>
-  </button>
+  </Button>
 </template>

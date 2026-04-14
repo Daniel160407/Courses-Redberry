@@ -535,12 +535,7 @@ watch(
               type="submit"
               label="Enroll Now"
               :loading="isSubmitting"
-              class="h-15.75 rounded-xl p-2.5 text-[20px]"
-              :class="
-                isAuthenticated && isProfileComplete
-                  ? 'bg-[#4F46E5] font-medium text-[#FFFFFF]'
-                  : 'bg-[#EEEDFC] font-semibold text-[#B7B3F4]'
-              "
+              :variant="isAuthenticated && isProfileComplete ? 'enroll-auth' : 'enroll-unauth'"
               @click="handleEnrollment(false)"
             />
           </div>
@@ -598,7 +593,7 @@ watch(
             :loading="isSubmitting"
             :icon="RefreshIcon"
             icon-pos="right"
-            class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
+            variant="action"
             @click="handleRetakeCourse"
           />
           <Button
@@ -607,7 +602,7 @@ watch(
             :loading="isSubmitting"
             :icon="MarkIcon"
             icon-pos="right"
-            class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
+            variant="action"
             @click="handleCompleteEnrollment(userCourseEnrollment?.id ?? 0)"
           />
 
@@ -634,7 +629,7 @@ watch(
 
         <div v-if="showRatingBox" class="rounded-lg bg-[#FFFFFF]">
           <div class="flex w-full justify-end p-2.5">
-            <Button :icon="CloseIcon" class="gap-0!" @click="isRatingDismissed = true" />
+            <Button :icon="CloseIcon" variant="icon" @click="isRatingDismissed = true" />
           </div>
           <div class="relative -top-1 px-12.5 pb-10">
             <StarRating v-model="bannerRating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />

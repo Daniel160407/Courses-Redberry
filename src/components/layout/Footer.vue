@@ -51,10 +51,10 @@ const showProfileModal = ref(false);
               <Button
                 v-if="isAuthenticated"
                 label="Enrolled Courses"
-                class="justify-start hover:underline"
+                variant="footer-link-gray"
                 @click="router.push({ query: { enrolled: 'true' } })"
               />
-              <Button label="Browse Courses" class="justify-start hover:underline" @click="router.push('/catalog')" />
+              <Button label="Browse Courses" variant="footer-link-gray" @click="router.push('/catalog')" />
             </div>
           </div>
           <div class="flex flex-col gap-4">
@@ -62,15 +62,10 @@ const showProfileModal = ref(false);
             <Button
               v-if="isAuthenticated"
               label="My Profile"
-              class="justify-start text-[#666666] hover:underline"
+              variant="footer-link-gray"
               @click="showProfileModal = !showProfileModal"
             />
-            <Button
-              v-else
-              label="Log In"
-              class="justify-start text-[#666666] hover:underline"
-              @click="showLogInModal = true"
-            />
+            <Button v-else label="Log In" variant="footer-link-gray" @click="showLogInModal = true" />
           </div>
           <div class="flex flex-col gap-4">
             <span class="text-[20px] font-semibold text-[#130E67]">Contact</span>

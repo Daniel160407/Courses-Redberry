@@ -32,12 +32,7 @@ const handleOptionClick = (option: Option) => {
 
 <template>
   <div class="relative flex flex-col gap-2.75">
-    <Button
-      :icon="ArrowDownIcon"
-      icon-pos="right"
-      class="rounded-lg border border-[#F5F5F5] bg-[#FFFFFF] px-5 py-1.75 text-[16px] font-medium text-[#666666]"
-      @click="extended = !extended"
-    >
+    <Button :icon="ArrowDownIcon" icon-pos="right" variant="sort-trigger" @click="extended = !extended">
       Sort By: <span class="font-medium text-[#4F46E5]">{{ currentLabel }}</span>
     </Button>
 
@@ -49,7 +44,7 @@ const handleOptionClick = (option: Option) => {
         v-for="option in options"
         :key="option.value"
         :label="option.label"
-        class="w-full justify-start px-5 py-2.5 text-[16px] font-medium"
+        variant="sort-option"
         :class="currentLabel === option.label ? 'bg-[#DDDBFA] text-[#4F46E5]' : 'bg-[#FFFFFF] text-[#666666]'"
         @click="handleOptionClick(option)"
       />
