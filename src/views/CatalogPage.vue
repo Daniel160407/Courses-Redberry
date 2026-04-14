@@ -46,6 +46,7 @@ const selectedInstructorIds = ref<number[]>(parseQueryParam(route.query.instruct
 const sort = ref<string>((route.query.sort as string) || "");
 
 const totalCourses = ref<number>(0);
+const isFiltering = ref(false);
 const perPage = ref<number>(0);
 const currentPage = ref<number>(Number(route.query.page) || 1);
 const lastPage = ref<number>(0);
@@ -71,15 +72,20 @@ const getCategoryIcon = (iconName: string) => {
 };
 
 const updateCourses = async () => {
-  const coursesResponse = await fetchCourses({
-    categoryIds: selectedCategoryIds.value,
-    topicIds: selectedTopicIds.value,
-    instructorIds: selectedInstructorIds.value,
-    sort: sort.value,
-    page: currentPage.value
-  });
-  if (coursesResponse && coursesResponse.success && coursesResponse.courses && coursesResponse.meta) {
-    setPaginationData(coursesResponse as CoursesResponse);
+  isFiltering.value = true;
+  try {
+    const coursesResponse = await fetchCourses({
+      categoryIds: selectedCategoryIds.value,
+      topicIds: selectedTopicIds.value,
+      instructorIds: selectedInstructorIds.value,
+      sort: sort.value,
+      page: currentPage.value
+    });
+    if (coursesResponse && coursesResponse.success && coursesResponse.courses && coursesResponse.meta) {
+      setPaginationData(coursesResponse as CoursesResponse);
+    }
+  } finally {
+    isFiltering.value = false;
   }
 };
 
@@ -112,10 +118,16 @@ const handleClickInstructor = async (isSelected: boolean, instructor: Instructor
 };
 
 const handleClearFilters = async () => {
+  if (
+    isFiltering.value ||
+    (selectedCategoryIds.value.length === 0 &&
+      selectedTopicIds.value.length === 0 &&
+      selectedInstructorIds.value.length === 0)
+  )
+    return;
   selectedCategoryIds.value = [];
   selectedTopicIds.value = [];
   selectedInstructorIds.value = [];
-  sort.value = "";
   currentPage.value = 1;
 };
 
@@ -185,6 +197,7 @@ onMounted(async () => {
             <span class="text-[40px] font-semibold text-[#000000]">Filters</span>
             <Button
               label="Clear All Filters"
+              :loading="isFiltering"
               :icon="CloseIcon"
               icon-pos="right"
               class="gap-1.75! text-[16px] font-medium text-[#8A8A8A]"
