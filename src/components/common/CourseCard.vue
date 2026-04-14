@@ -54,7 +54,7 @@ const emit = defineEmits(["openDetails"]);
 
   <div
     v-else-if="props.variant === 'secondary'"
-    class="flex max-w-93.25 cursor-pointer flex-col gap-2.5 rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-5"
+    class="flex min-h-112.75 max-w-93.25 cursor-pointer flex-col gap-2.5 rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-5 transition-all duration-300 ease-out hover:border-[#B7B3F4] hover:shadow-[0px_0px_25px_0px_rgba(138,168,212,0.1)] active:border-[#958FEF] active:shadow-[0px_0px_15px_0px_rgba(138,168,212,0.25)]"
     @click="emit('openDetails')"
   >
     <div class="flex h-full flex-col justify-between gap-4.5">
@@ -66,7 +66,7 @@ const emit = defineEmits(["openDetails"]);
               <div class="text-[14px] font-medium text-[#8A8A8A]">
                 <span>{{ props.instructor.name }}</span> | <span>{{ props.durationWeeks }} Weeks</span>
               </div>
-              <div class="flex items-center gap-1">
+              <div class="flex items-start gap-1">
                 <StarIcon />
                 <span class="text-[14px] font-medium text-[#525252]">{{ props.avgRating ?? 0 }}</span>
               </div>

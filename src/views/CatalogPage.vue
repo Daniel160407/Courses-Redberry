@@ -178,109 +178,111 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <div class="min-h-screen overflow-x-hidden bg-[#F5F5F5] px-44.25 pt-43 pb-40">
-    <div class="mb-12 flex items-center gap-0.5 text-[18px]">
-      <div class="flex items-center gap-1 px-1 py-0.5">
-        <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push(DASHBOARD_ROUTE)">Home</span>
-        <AngleRightIcon />
+  <div class="flex min-h-screen flex-col items-center overflow-x-hidden bg-[#F5F5F5] pt-43 pb-40">
+    <div>
+      <div class="mb-12 flex items-center gap-0.5 text-[18px]">
+        <div class="flex items-center gap-1 px-1 py-0.5">
+          <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push(DASHBOARD_ROUTE)">Home</span>
+          <AngleRightIcon />
+        </div>
+        <div class="px-1 py-0.5">
+          <span class="text-[#736BEA]">Browse</span>
+        </div>
       </div>
-      <div class="px-1 py-0.5">
-        <span class="text-[#736BEA]">Browse</span>
-      </div>
-    </div>
 
-    <div class="flex items-start gap-22.5">
-      <div class="flex flex-col gap-6">
-        <aside
-          class="scrollbar-hide sticky flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
-        >
+      <div class="flex max-w-391.5 items-start gap-22.5">
+        <div class="flex flex-col gap-6">
+          <aside
+            class="scrollbar-hide sticky flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-[40px] font-semibold text-[#000000]">Filters</span>
+              <Button
+                label="Clear All Filters"
+                :loading="isFiltering"
+                :icon="CloseIcon"
+                icon-pos="right"
+                variant="danger-nav"
+                @click="handleClearFilters"
+              />
+            </div>
+
+            <div class="flex flex-col gap-6">
+              <span class="text-[18px] font-medium text-[#8A8A8A]">Categories</span>
+              <div class="flex flex-wrap gap-2">
+                <SelectButton
+                  v-for="category in categories"
+                  :key="category.id"
+                  :label="category.name"
+                  :icon="getCategoryIcon(category.icon)"
+                  :is-selected="selectedCategoryIds.includes(category.id)"
+                  @click="(isSelected) => handleClickCategory(isSelected, category)"
+                />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-6">
+              <span class="text-[18px] font-medium text-[#8A8A8A]">Topics</span>
+              <div class="flex flex-wrap gap-2">
+                <SelectButton
+                  v-for="topic in topics"
+                  :key="topic.id"
+                  :label="topic.name"
+                  :is-selected="selectedTopicIds.includes(topic.id)"
+                  @click="(isSelected) => handleClickTopic(isSelected, topic)"
+                />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-6">
+              <span class="text-[18px] font-medium text-[#8A8A8A]">Instructor</span>
+              <div class="flex flex-wrap gap-2">
+                <SelectButton
+                  v-for="instructor in instructors"
+                  :key="instructor.id"
+                  :label="instructor.name"
+                  :image="instructor.avatar"
+                  :is-selected="selectedInstructorIds.includes(instructor.id)"
+                  @click="(isSelected) => handleClickInstructor(isSelected, instructor)"
+                />
+              </div>
+            </div>
+          </aside>
+
+          <div class="border-t border-[#ADADAD] pt-4 font-medium text-[#8A8A8A]">
+            <p>
+              <span>{{ activeFiltersQuantity }} Filters Active</span>
+            </p>
+          </div>
+        </div>
+
+        <main class="flex flex-1 flex-col gap-8">
           <div class="flex items-center justify-between">
-            <span class="text-[40px] font-semibold text-[#000000]">Filters</span>
-            <Button
-              label="Clear All Filters"
-              :loading="isFiltering"
-              :icon="CloseIcon"
-              icon-pos="right"
-              variant="danger-nav"
-              @click="handleClearFilters"
+            <div>
+              <p v-if="showingCount">
+                Showing <span>{{ showingCount }}</span> out of
+                <span>{{ totalCourses }}</span>
+              </p>
+              <p v-else>No courses found</p>
+            </div>
+            <SortingDropdown v-model="sort" :options="SORT_OPTIONS" />
+          </div>
+
+          <div v-if="showingCount" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <CourseCard
+              v-for="course in courses"
+              :key="course.id"
+              v-bind="course"
+              variant="secondary"
+              :category-icon="getCategoryIcon(course.category.icon)"
+              @open-details="handleOpenDetails(course)"
             />
           </div>
-
-          <div class="flex flex-col gap-6">
-            <span class="text-[18px] font-medium text-[#8A8A8A]">Categories</span>
-            <div class="flex flex-wrap gap-2">
-              <SelectButton
-                v-for="category in categories"
-                :key="category.id"
-                :label="category.name"
-                :icon="getCategoryIcon(category.icon)"
-                :is-selected="selectedCategoryIds.includes(category.id)"
-                @click="(isSelected) => handleClickCategory(isSelected, category)"
-              />
-            </div>
+          <div v-if="showingCount" class="flex justify-center">
+            <Paginator v-model="currentPage" :total="lastPage" />
           </div>
-
-          <div class="flex flex-col gap-6">
-            <span class="text-[18px] font-medium text-[#8A8A8A]">Topics</span>
-            <div class="flex flex-wrap gap-2">
-              <SelectButton
-                v-for="topic in topics"
-                :key="topic.id"
-                :label="topic.name"
-                :is-selected="selectedTopicIds.includes(topic.id)"
-                @click="(isSelected) => handleClickTopic(isSelected, topic)"
-              />
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-6">
-            <span class="text-[18px] font-medium text-[#8A8A8A]">Instructor</span>
-            <div class="flex flex-wrap gap-2">
-              <SelectButton
-                v-for="instructor in instructors"
-                :key="instructor.id"
-                :label="instructor.name"
-                :image="instructor.avatar"
-                :is-selected="selectedInstructorIds.includes(instructor.id)"
-                @click="(isSelected) => handleClickInstructor(isSelected, instructor)"
-              />
-            </div>
-          </div>
-        </aside>
-
-        <div class="border-t border-[#ADADAD] pt-4 font-medium text-[#8A8A8A]">
-          <p>
-            <span>{{ activeFiltersQuantity }} Filters Active</span>
-          </p>
-        </div>
+        </main>
       </div>
-
-      <main class="flex flex-1 flex-col gap-8">
-        <div class="flex items-center justify-between">
-          <div>
-            <p v-if="showingCount">
-              Showing <span>{{ showingCount }}</span> out of
-              <span>{{ totalCourses }}</span>
-            </p>
-            <p v-else>No courses found</p>
-          </div>
-          <SortingDropdown v-model="sort" :options="SORT_OPTIONS" />
-        </div>
-
-        <div v-if="showingCount" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <CourseCard
-            v-for="course in courses"
-            :key="course.id"
-            v-bind="course"
-            variant="secondary"
-            :category-icon="getCategoryIcon(course.category.icon)"
-            @open-details="handleOpenDetails(course)"
-          />
-        </div>
-        <div v-if="showingCount" class="flex justify-center">
-          <Paginator v-model="currentPage" :total="lastPage" />
-        </div>
-      </main>
     </div>
   </div>
 </template>

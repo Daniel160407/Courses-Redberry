@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Button from "./Button.vue";
-import previewImg from "@/assets/images/coursePreviewImg.png";
 import StarIcon from "../icons/StarIcon.vue";
 import CalendarIcon from "../icons/CalendarIcon.vue";
 import ClockIcon from "../icons/ClockIcon.vue";
@@ -34,7 +33,7 @@ const emit = defineEmits(["openDetails"]);
   >
     <div class="flex">
       <img
-        :src="image ?? previewImg"
+        :src="image"
         alt="Course preview"
         class="max-h-30.75 min-h-30.75 max-w-35 min-w-35 flex-1 rounded-xl object-cover"
       />

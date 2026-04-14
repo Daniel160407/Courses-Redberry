@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import AuthorizationModals from "../common/AuthorizationModals.vue";
 import Avatar from "../common/Avatar.vue";
 import Button from "../common/Button.vue";
