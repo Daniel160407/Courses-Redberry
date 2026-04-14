@@ -11,6 +11,7 @@ export const useGlobalStore = defineStore("globalStore", () => {
 
   const isAuthorized = ref(!!Cookies.get("token"));
   const isProfileComplete = ref(false);
+  const showLoginModal = ref(false);
 
   const setUser = (userData: User | null) => {
     user.value = userData;
@@ -34,6 +35,10 @@ export const useGlobalStore = defineStore("globalStore", () => {
     isProfileComplete.value = value;
   };
 
+  const setShowLoginModal = (value: boolean) => {
+    showLoginModal.value = value;
+  };
+
   return {
     user,
     courses,
@@ -41,11 +46,13 @@ export const useGlobalStore = defineStore("globalStore", () => {
     coursesInProgress,
     isAuthorized,
     isProfileComplete,
+    showLoginModal,
 
     setUser,
     setCourses,
     setFeaturedCourses,
     setCoursesInProgress,
-    setIsProfileComplete
+    setIsProfileComplete,
+    setShowLoginModal
   };
 });

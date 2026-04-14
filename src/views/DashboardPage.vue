@@ -13,7 +13,6 @@ import Button from "@/components/common/Button.vue";
 import CourseProgressCard from "@/components/common/CourseProgressCard.vue";
 import LockIcon from "@/components/icons/LockIcon.vue";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
-import BoxIcon from "@/components/icons/BoxIcon.vue";
 import { useRouter } from "vue-router";
 import { useAuthorize } from "@/composables/useAuthorize";
 
@@ -22,12 +21,15 @@ const { featuredCourses, coursesInProgress } = storeToRefs(useGlobalStore());
 const { isAuthenticated } = useAuthorize();
 const router = useRouter();
 
+const startLearningSection = ref<HTMLElement | null>(null);
+
 const sliderItems = ref<SliderItem[]>([
   {
     title: "Start learning something new today",
     description:
       "Explore a wide range of expert-led courses in design, development, business, and more. Find the skills you need to grow your career and learn at your own pace.",
     buttonLabel: "Browse Courses",
+    action: () => router.push("/catalog"),
     image: Slide1
   },
   {
@@ -35,12 +37,16 @@ const sliderItems = ref<SliderItem[]>([
     description:
       "Your learning journey is already in progress. Continue your enrolled courses, track your progress, and stay on track toward completing your goals.",
     buttonLabel: "Start Learning",
+    action: () => {
+      startLearningSection.value?.scrollIntoView({ behavior: "smooth" });
+    },
     image: Slide2
   },
   {
     title: "Learn together, grow faster",
     description: "",
     buttonLabel: "Learn More",
+    action: () => router.push("/catalog"),
     image: Slide3
   }
 ]);
@@ -71,19 +77,9 @@ const dummyCourses = ref<DummyCourse[]>([
       title: "Vue 3 Composition API"
     },
     progress: 75
-  },
-  {
-    id: 4,
-    course: {
-      instructor: { name: "Sarah Johnson" },
-      avgRating: 5,
-      title: "Vue 3 Composition API"
-    },
-    progress: 75
   }
 ]);
 const showLogIn = ref(false);
-const showEnrolledCoursesSidebar = ref(false);
 
 const limitedCourses = computed(() => {
   return coursesInProgress.value.slice(0, 4);
@@ -91,11 +87,11 @@ const limitedCourses = computed(() => {
 
 const handleOpenDetails = (course: Course) => {
   router.push(`/dashboard/course/${course.id}`);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 onMounted(async () => {
-  await fetchFeaturedCourses();
-  await fetchInProgressCourses();
+  await Promise.all([fetchFeaturedCourses(), fetchInProgressCourses()]);
 });
 </script>
 <template>
@@ -111,7 +107,7 @@ onMounted(async () => {
         <Button
           label="See All"
           class="p-0! text-[20px] font-medium text-[#4F46E5] underline"
-          @click="showEnrolledCoursesSidebar = true"
+          @click="router.push({ query: { enrolled: 'true' } })"
         />
       </div>
 
@@ -128,7 +124,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="flex flex-col gap-8">
+    <div ref="startLearningSection" class="flex flex-col gap-8">
       <div class="flex flex-col gap-1.5">
         <span class="text-[40px] font-semibold text-[#0A0A0A]">Start Learning Today</span>
         <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>
@@ -152,7 +148,7 @@ onMounted(async () => {
         <Button
           label="See All"
           class="p-0! text-[20px] font-medium text-[#4F46E5] underline"
-          @click="showEnrolledCoursesSidebar = true"
+          @click="router.push({ query: { enrolled: 'true' } })"
         />
       </div>
 
@@ -184,62 +180,6 @@ onMounted(async () => {
         </div>
       </div>
       <AuthorizationModals v-model:showLogInModal="showLogIn" />
-    </div>
-
-    <div
-      v-if="showEnrolledCoursesSidebar"
-      class="fixed inset-0 z-50 bg-black/20"
-      @click="showEnrolledCoursesSidebar = false"
-    ></div>
-    <div
-      v-if="showEnrolledCoursesSidebar"
-      class="fixed inset-y-0 right-0 z-100 w-198.5 max-w-198.5 overflow-y-auto border-l border-[#D1D1D1] bg-[#F5F5F5] shadow-xl"
-    >
-      <div class="flex h-21.5 items-end justify-between px-14.25">
-        <span class="text-[40px] font-semibold text-[#0A0A0A]">Enrolled Courses</span>
-        <p class="text-[16px] font-semibold text-[#0A0A0A]">
-          Total Enrollments <span>{{ coursesInProgress?.length ?? 0 }}</span>
-        </p>
-      </div>
-      <div class="px-21"></div>
-
-      <div v-if="coursesInProgress" class="mt-9.25 flex flex-col items-center px-21">
-        <CourseProgressCard
-          v-for="enrollment in coursesInProgress"
-          :key="enrollment.id"
-          :title="enrollment.course.title"
-          :instructor-name="enrollment.course.instructor.name"
-          :avg-rating="enrollment.course.avgRating"
-          :progress="enrollment.progress"
-          :image="enrollment.course.image"
-          :days="enrollment.schedule.weeklySchedule.label"
-          :times="enrollment.schedule.timeSlot.label"
-          :session-type="enrollment.schedule.sessionType.name"
-          :location="enrollment.schedule.location"
-          extended
-        />
-      </div>
-      <div v-else class="flex h-full w-full items-center justify-center">
-        <div class="flex flex-col items-center gap-1">
-          <BoxIcon />
-          <div class="flex flex-col items-center gap-3">
-            <div class="flex flex-col gap-2 text-center">
-              <div>
-                <span class="text-2xl font-semibold text-[#130E67]">No Enrolled Courses Yet</span>
-              </div>
-              <div>
-                <span class="text-medium text-[14px] text-[#130E67]"
-                  >Your learning journey starts here! Browse courses to get started.</span
-                >
-              </div>
-            </div>
-            <Button
-              label="Browse Courses"
-              class="h-14.5 w-43.75 rounded-lg bg-[#4F46E5] px-6 py-4 text-[16px] font-medium text-[#F5F5F5]"
-            />
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>

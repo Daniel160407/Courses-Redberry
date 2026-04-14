@@ -69,9 +69,11 @@ const selectedSessionType = ref<SessionType | null>(null);
 const userCourseEnrollment = ref<Enrollment | null>(null);
 
 const enrollmentConflicts = ref<EnrollmentConflict[]>([]);
+const isSubmitting = ref(false);
 const isRatingSubmitting = ref(false);
 const errorMessage = ref<string>("");
-const rating = ref<number>(0);
+const modalRating = ref<number>(0);
+const bannerRating = ref<number>(0);
 
 const showLogInModal = ref(false);
 const showProfileModal = ref(false);
@@ -82,9 +84,14 @@ const showProfileIncompleteModal = ref(false);
 const showEnrollmentCompletionModal = ref(false);
 const showNoAvailableSeatsModal = ref(false);
 const isRatingDismissed = ref(false);
-const showRatingBox = computed(() => {
-  return !!userCourseEnrollment.value?.completedAt && !isRatingDismissed.value;
-});
+
+const showRatingBox = computed(
+  () =>
+    !!userCourseEnrollment.value?.completedAt &&
+    !isRatingDismissed.value &&
+    !course.value?.isRated &&
+    !isSubmitting.value
+);
 
 const parentPage = computed(() => route.path.split("/")[1]);
 
@@ -105,7 +112,7 @@ const formattedSessionTypes = computed(() => {
     ...st,
     displayName: st.name.charAt(0).toUpperCase() + st.name.slice(1),
     displayLocation: st.name === "online" ? "Google Meet" : st.location,
-    displayPrice: st.priceModifier === "0.00" ? "Included" : `+ $${st.priceModifier}`,
+    displayPrice: st.name === "online" ? "Included" : `+ $${st.priceModifier}`,
     isLowSeats: st.availableSeats <= 5 && st.availableSeats > 0,
     isFull: st.availableSeats === 0
   }));
@@ -116,6 +123,14 @@ const totalPrice = computed(() => {
   const modifier = Number(selectedSessionType.value?.priceModifier) || 0;
   return base + modifier;
 });
+
+const refreshEnrollmentStatus = async () => {
+  if (!course.value) return;
+  const res = await fetchUserEnrollments();
+  if (res?.success) {
+    userCourseEnrollment.value = res.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
+  }
+};
 
 const handleEnrollment = (force = false) => {
   if (!isAuthenticated.value) {
@@ -156,44 +171,39 @@ const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot | (typeof 
   if (isSelected) {
     selectedTimeSlot.value = timeSlot;
     selectedSessionType.value = null;
-  } else {
-    selectedTimeSlot.value = null;
   }
-};
-
-const handleSelectSessionType = (isSelected: boolean, sessionType: SessionType) => {
-  selectedSessionType.value = isSelected ? sessionType : null;
 };
 
 const handleClickEnroll = async (courseId: number, courseScheduleId: number, force: boolean = false) => {
   enrollmentConflicts.value = [];
   showEnrollmentConflictModal.value = false;
 
-  const formData: EnrollmentForm = {
-    courseId,
-    courseScheduleId,
-    force
-  };
+  isSubmitting.value = true;
+  try {
+    const formData: EnrollmentForm = {
+      courseId,
+      courseScheduleId,
+      force
+    };
 
-  const response = await enrollCourse(formData);
+    const response = await enrollCourse(formData);
 
-  if (response?.success) {
-    showEnrollmentConfirmationModal.value = true;
-    const enrollmentRes = await fetchUserEnrollments();
-    if (enrollmentRes?.success && course.value) {
-      userCourseEnrollment.value =
-        enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
+    if (response?.success) {
+      showEnrollmentConfirmationModal.value = true;
+      await refreshEnrollmentStatus();
+    } else {
+      const errorData = response?.serverErrors;
+      if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
+        const conflicts = (errorData as { conflicts: EnrollmentConflict | EnrollmentConflict[] }).conflicts;
+        enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];
+        showEnrollmentConflictModal.value = true;
+      } else if (errorData && typeof errorData === "object") {
+        errorMessage.value = (errorData as any).message || "An error occurred";
+        showAlreadyEnrolledModal.value = true;
+      }
     }
-  } else {
-    const errorData = response?.serverErrors;
-    if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
-      const conflicts = (errorData as { conflicts: EnrollmentConflict | EnrollmentConflict[] }).conflicts;
-      enrollmentConflicts.value = Array.isArray(conflicts) ? conflicts : [conflicts];
-      showEnrollmentConflictModal.value = true;
-    } else if (errorData && typeof errorData === "object") {
-      errorMessage.value = (errorData as any).message || "An error occurred";
-      showAlreadyEnrolledModal.value = true;
-    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -205,41 +215,69 @@ const handleOpenProfileModal = () => {
 const handleCompleteEnrollment = async (enrollmentId: number) => {
   if (!enrollmentId) return;
 
-  const response = await completeEnrollment(enrollmentId);
-  if (response?.success) {
-    showEnrollmentCompletionModal.value = true;
+  isSubmitting.value = true;
+  try {
+    const response = await completeEnrollment(enrollmentId);
+    if (response?.success) {
+      await refreshEnrollmentStatus();
+
+      const courseResponse = await fetchCourseById(courseId.value);
+      if (courseResponse?.success) {
+        course.value = courseResponse.course;
+      }
+
+      showEnrollmentCompletionModal.value = true;
+    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
 const handleRetakeCourse = async () => {
-  const response = await deleteEnrollment(userCourseEnrollment.value?.id ?? 0);
-  if (response?.success) {
-    userCourseEnrollment.value = null;
-    activeTab.value = ["0"];
+  isSubmitting.value = true;
+  try {
+    const response = await deleteEnrollment(userCourseEnrollment.value?.id ?? 0);
+    if (response?.success) {
+      userCourseEnrollment.value = null;
+      activeTab.value = ["0"];
 
-    selectedWeeklySchedule.value = null;
-    selectedTimeSlot.value = null;
-    selectedSessionType.value = null;
+      selectedWeeklySchedule.value = null;
+      selectedTimeSlot.value = null;
+      selectedSessionType.value = null;
 
-    await nextTick();
-    selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+      await nextTick();
+      selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
-const handleRateCourse = async () => {
+const handleRateCourse = async (ratingVal?: any) => {
   if (isRatingSubmitting.value) return;
+
+  const finalRating =
+    typeof ratingVal === "number"
+      ? ratingVal
+      : showEnrollmentCompletionModal.value
+        ? modalRating.value
+        : bannerRating.value;
+
+  if (finalRating === 0) {
+    showEnrollmentCompletionModal.value = false;
+    return;
+  }
 
   isRatingSubmitting.value = true;
   try {
-    await rateCourse(course.value?.id ?? 0, rating.value);
+    await rateCourse(course.value?.id ?? 0, finalRating);
+    if (course.value) {
+      course.value.isRated = true;
+    }
+    modalRating.value = 0;
+    bannerRating.value = 0;
     showEnrollmentCompletionModal.value = false;
     isRatingDismissed.value = true;
-
-    const enrollmentRes = await fetchUserEnrollments();
-    if (enrollmentRes?.success) {
-      userCourseEnrollment.value =
-        enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
-    }
   } finally {
     isRatingSubmitting.value = false;
   }
@@ -253,12 +291,8 @@ watch(
 );
 
 watch([isAuthenticated, isProfileComplete], async (authorized, profileComplete) => {
-  if (authorized && profileComplete && course.value) {
-    const enrollmentRes = await fetchUserEnrollments();
-    if (enrollmentRes?.success) {
-      userCourseEnrollment.value =
-        enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === course.value?.id) || null;
-    }
+  if (authorized && profileComplete) {
+    await refreshEnrollmentStatus();
   } else {
     userCourseEnrollment.value = null;
   }
@@ -284,32 +318,39 @@ watch(selectedTimeSlot, async (newVal) => {
   }
 });
 
-onMounted(async () => {
-  isLoading.value = true;
+watch(
+  courseId,
+  async (newId) => {
+    if (!newId) return;
 
-  try {
-    if (!courseId.value) return;
+    isLoading.value = true;
+    course.value = null;
+    userCourseEnrollment.value = null;
+    selectedWeeklySchedule.value = null;
+    selectedTimeSlot.value = null;
+    selectedSessionType.value = null;
+    activeTab.value = ["0"];
+    isRatingDismissed.value = false;
 
-    const courseResponse = await fetchCourseById(courseId.value);
-    if (courseResponse?.success) {
-      course.value = courseResponse.course;
-      const cId = courseResponse.course.id;
+    try {
+      const courseResponse = await fetchCourseById(newId);
+      if (courseResponse?.success) {
+        course.value = courseResponse.course;
+        const cId = courseResponse.course.id;
 
-      const [weeklyRes, enrollmentRes] = await Promise.all([fetchCourseWeeklySchedules(cId), fetchUserEnrollments()]);
-
-      if (weeklyRes?.success) {
-        weeklySchedules.value = weeklyRes.weeklySchedules;
-        selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+        const weeklyRes = await fetchCourseWeeklySchedules(cId);
+        if (weeklyRes?.success) {
+          weeklySchedules.value = weeklyRes.weeklySchedules;
+          selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+        }
+        await refreshEnrollmentStatus();
       }
-
-      if (enrollmentRes?.success) {
-        userCourseEnrollment.value = enrollmentRes.enrollments.find((e: Enrollment) => e.course.id === cId) || null;
-      }
+    } finally {
+      isLoading.value = false;
     }
-  } finally {
-    isLoading.value = false;
-  }
-});
+  },
+  { immediate: true }
+);
 </script>
 <template>
   <div class="min-h-screen bg-[#F5F5F5] px-44.25 pt-43 pb-40">
@@ -436,7 +477,7 @@ onMounted(async () => {
                     :is-selected="selectedSessionType?.id === sessionType.id"
                     :disabled="sessionType.isFull"
                     class="min-h-38.75 min-w-42.75 px-5 py-3.75"
-                    @click="(isSelected) => handleSelectSessionType(isSelected, sessionType)"
+                    @click="selectedSessionType = sessionType"
                   >
                     <div class="flex w-full flex-col items-center justify-center gap-2.5 text-inherit">
                       <component :is="SESSION_TYPE_ICONS[sessionType.id]" v-if="SESSION_TYPE_ICONS[sessionType.id]" />
@@ -482,7 +523,11 @@ onMounted(async () => {
                 <div class="flex items-center justify-between">
                   <span class="text-[16px] font-medium text-[#8A8A8A]">Session Type</span>
                   <span class="text-[16px] font-medium text-[#292929]">
-                    + ${{ selectedSessionType?.priceModifier || "0.00" }}
+                    {{
+                      selectedSessionType?.name === "online"
+                        ? "Included"
+                        : `+ $${selectedSessionType?.priceModifier || "0.00"}`
+                    }}
                   </span>
                 </div>
               </div>
@@ -490,6 +535,7 @@ onMounted(async () => {
             <Button
               type="submit"
               label="Enroll Now"
+              :loading="isSubmitting"
               class="h-15.75 rounded-xl p-2.5 text-[20px]"
               :class="
                 isAuthenticated && isProfileComplete
@@ -550,6 +596,7 @@ onMounted(async () => {
           <Button
             v-if="userCourseEnrollment?.completedAt"
             label="Retake Course"
+            :loading="isSubmitting"
             :icon="RefreshIcon"
             icon-pos="right"
             class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
@@ -558,6 +605,7 @@ onMounted(async () => {
           <Button
             v-else
             label="Complete Course"
+            :loading="isSubmitting"
             :icon="MarkIcon"
             icon-pos="right"
             class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
@@ -576,7 +624,12 @@ onMounted(async () => {
                 >" Course!
               </p>
             </div>
-            <StarRating v-model="rating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
+            <StarRating
+              v-if="showRatingBox"
+              v-model="modalRating"
+              :disabled="isRatingSubmitting"
+              @submit="handleRateCourse"
+            />
           </Modal>
         </div>
 
@@ -585,8 +638,12 @@ onMounted(async () => {
             <Button :icon="CloseIcon" class="gap-0!" @click="isRatingDismissed = true" />
           </div>
           <div class="relative -top-1 px-12.5 pb-10">
-            <StarRating v-model="rating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
+            <StarRating v-model="bannerRating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
           </div>
+        </div>
+
+        <div v-if="userCourseEnrollment && !isLoading && userCourseEnrollment.completedAt && course?.isRated">
+          <ActionBanner title="You've already rated this course" />
         </div>
       </div>
     </div>
@@ -611,17 +668,20 @@ onMounted(async () => {
       @continue="handleEnrollment(true)"
       @cancel="showEnrollmentConflictModal = false"
     >
-      <p class="text-[20px] font-medium text-[#3D3D3D]">
-        You are already enrolled in "<span
-          v-for="(conflict, index) in enrollmentConflicts"
-          :key="conflict.conflictingEnrollmentId"
-          class="font-semibold"
-          >{{ conflict.conflictingCourseName }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
-        >" with the same schedule:
-        <span v-for="(conflict, index) in enrollmentConflicts" :key="conflict.conflictingEnrollmentId"
-          >{{ conflict.schedule }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
-        >
-      </p>
+      <div class="text-[20px] font-medium text-[#3D3D3D]">
+        <p>
+          You are already enrolled in "<span
+            v-for="(conflict, index) in enrollmentConflicts"
+            :key="conflict.conflictingEnrollmentId"
+            class="font-semibold"
+            >{{ conflict.conflictingCourseName }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+          >" with the same schedule:
+          <span v-for="(conflict, index) in enrollmentConflicts" :key="conflict.conflictingEnrollmentId"
+            >{{ conflict.schedule }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+          >
+        </p>
+        <span>Are you sure you want to continue?</span>
+      </div>
     </Modal>
 
     <Modal

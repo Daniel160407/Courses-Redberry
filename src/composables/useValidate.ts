@@ -4,6 +4,7 @@ import type { LogInErrors, ProfileErrors, RegistrationErrors } from "../types/in
 export const useValidate = () => {
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const MAX_AVATAR_SIZE = 2 * 1024 * 1024; 
 
   const validateEmail = (val: string, touched: boolean) => {
     if (touched && val.length === 0) return "Email is required";
@@ -40,9 +41,14 @@ export const useValidate = () => {
     return "";
   };
 
-  const validateAvatar = (file: File | null) => {
-    if (file && !ALLOWED_AVATAR_TYPES.includes(file.type)) {
-      return "Profile image should be .jpg, .png or .webp";
+  const validateAvatar = (file: File | string | null) => {
+    if (file instanceof File) {
+      if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+        return "Profile image should be .jpg, .png or .webp";
+      }
+      if (file.size > MAX_AVATAR_SIZE) {
+        return "Image size should not exceed 2MB";
+      }
     }
     return "";
   };
@@ -102,7 +108,7 @@ export const useValidate = () => {
   };
 
   const useProfileValidate = (formData: any) => {
-    const errors = reactive<ProfileErrors>({ full_name: "", mobile_number: "", age: "" });
+    const errors = reactive<ProfileErrors>({ full_name: "", mobile_number: "", age: "", avatar: "" });
     const touched = reactive({ full_name: false, mobile_number: false, age: false });
 
     watch(
@@ -121,6 +127,7 @@ export const useValidate = () => {
 
         errors.mobile_number = validateMobile(newData.mobile_number, touched.mobile_number);
         errors.age = validateAge(newData.age, touched.age);
+        errors.avatar = validateAvatar(newData.avatar);
       },
       { deep: true, immediate: true }
     );

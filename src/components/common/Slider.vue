@@ -68,7 +68,11 @@ onUnmounted(() => stopAutoPlay());
             </span>
           </div>
           <div>
-            <Button :label="item.buttonLabel" class="rounded-md bg-[#4F46E5] px-6 py-4 text-xl text-[#F5F5F5]" />
+            <Button
+              :label="item.buttonLabel"
+              class="rounded-md bg-[#4F46E5] px-6 py-4 text-xl text-[#F5F5F5]"
+              @click="item.action"
+            />
           </div>
         </div>
       </div>

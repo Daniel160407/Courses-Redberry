@@ -51,8 +51,6 @@ export const useCoursesCrud = () => {
   };
 
   const fetchFeaturedCourses = async () => {
-    if (featuredCourses.value.length > 0) return { success: true, courses: featuredCourses.value };
-
     try {
       await sendRequest({ method: "GET", url: "/courses/featured", useToken: true });
 
@@ -67,8 +65,6 @@ export const useCoursesCrud = () => {
   };
 
   const fetchInProgressCourses = async () => {
-    if (coursesInProgress.value.length > 0) return { success: true, courses: coursesInProgress.value };
-
     try {
       await sendRequest({ method: "GET", url: "/courses/in-progress", useToken: true });
 

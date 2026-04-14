@@ -11,12 +11,13 @@ interface Props {
   buttonLabel?: string;
   hasSteps?: boolean;
   confirmClosing?: boolean;
+  loading?: boolean;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits(["update:visible", "submit", "close"]);
 
-const step = ref<number>(1);
+const step = defineModel<number>("step", { default: 1 });
 
 const openStep = (targetStep: number) => {
   if (targetStep >= 1 && targetStep <= 3) {
@@ -50,7 +51,11 @@ const handleFinalClick = () => {
 </script>
 
 <template>
-  <div v-if="visible" class="font-inter fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+  <div
+    v-if="visible"
+    class="font-inter fixed inset-0 z-50 flex items-center justify-center bg-black/20"
+    @click.self="close"
+  >
     <div class="relative flex w-115 flex-col gap-3 rounded-xl bg-white">
       <div class="flex justify-between px-4 py-6">
         <div>
@@ -95,8 +100,9 @@ const handleFinalClick = () => {
 
         <Button
           type="submit"
+          :loading="loading"
           :label="(step === 3 || !hasSteps) && buttonLabel ? buttonLabel : 'Next'"
-          class="rounded-md bg-[#4F46E5] text-[#FFFFFF]"
+          class="h-11.75 rounded-md bg-[#4F46E5] text-[#FFFFFF]"
         />
 
         <div v-if="$slots.end" class="gap-2">
