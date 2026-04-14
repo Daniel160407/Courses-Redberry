@@ -25,8 +25,9 @@ const closeSidebar = () => {
 
 const handleOpenDetails = (courseId: number) => {
   const rootPath = route.path.split("/")[1] || "dashboard";
-  closeSidebar();
-  router.push(`/${rootPath}/course/${courseId}`);
+  const query = { ...route.query };
+  delete query.enrolled;
+  router.push({ path: `/${rootPath}/course/${courseId}`, query });
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 

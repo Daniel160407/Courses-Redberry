@@ -46,7 +46,7 @@ const sliderItems = ref<SliderItem[]>([
     title: "Learn together, grow faster",
     description: "",
     buttonLabel: "Learn More",
-    action: () => {},
+    action: () => router.push("/catalog"),
     image: Slide3
   }
 ]);

@@ -318,30 +318,39 @@ watch(selectedTimeSlot, async (newVal) => {
   }
 });
 
-onMounted(async () => {
-  isLoading.value = true;
+watch(
+  courseId,
+  async (newId) => {
+    if (!newId) return;
 
-  try {
-    if (!courseId.value) return;
+    isLoading.value = true;
+    course.value = null;
+    userCourseEnrollment.value = null;
+    selectedWeeklySchedule.value = null;
+    selectedTimeSlot.value = null;
+    selectedSessionType.value = null;
+    activeTab.value = ["0"];
+    isRatingDismissed.value = false;
 
-    const courseResponse = await fetchCourseById(courseId.value);
-    if (courseResponse?.success) {
-      course.value = courseResponse.course;
-      const cId = courseResponse.course.id;
+    try {
+      const courseResponse = await fetchCourseById(newId);
+      if (courseResponse?.success) {
+        course.value = courseResponse.course;
+        const cId = courseResponse.course.id;
 
-      const weeklyRes = await fetchCourseWeeklySchedules(cId);
-
-      if (weeklyRes?.success) {
-        weeklySchedules.value = weeklyRes.weeklySchedules;
-        selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+        const weeklyRes = await fetchCourseWeeklySchedules(cId);
+        if (weeklyRes?.success) {
+          weeklySchedules.value = weeklyRes.weeklySchedules;
+          selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+        }
+        await refreshEnrollmentStatus();
       }
-
-      await refreshEnrollmentStatus();
+    } finally {
+      isLoading.value = false;
     }
-  } finally {
-    isLoading.value = false;
-  }
-});
+  },
+  { immediate: true }
+);
 </script>
 <template>
   <div class="min-h-screen bg-[#F5F5F5] px-44.25 pt-43 pb-40">
