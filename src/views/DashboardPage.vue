@@ -15,10 +15,12 @@ import LockIcon from "@/components/icons/LockIcon.vue";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
 import { useRouter } from "vue-router";
 import { useAuthorize } from "@/composables/useAuthorize";
+import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
 
 const { fetchFeaturedCourses, fetchInProgressCourses } = useCoursesCrud();
 const { featuredCourses, coursesInProgress } = storeToRefs(useGlobalStore());
 const { isAuthenticated } = useAuthorize();
+const { fetchUserEnrollments } = useEnrollmentsCrud();
 const router = useRouter();
 
 const sliderItems = ref<SliderItem[]>([
@@ -87,7 +89,7 @@ const handleOpenDetails = (course: Course) => {
 };
 
 onMounted(async () => {
-  await Promise.all([fetchFeaturedCourses(), fetchInProgressCourses()]);
+  await Promise.all([fetchFeaturedCourses(), fetchInProgressCourses(), fetchUserEnrollments()]);
 });
 </script>
 <template>

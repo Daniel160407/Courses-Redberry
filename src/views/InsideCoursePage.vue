@@ -54,7 +54,7 @@ import StepTwoFilledIcon from "@/components/icons/StepTwoFilledIcon.vue";
 import StepThreeFilledIcon from "@/components/icons/StepThreeFilledIcon.vue";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
-const { fetchCourseById, rateCourse } = useCoursesCrud();
+const { fetchCourseById, rateCourse, fetchInProgressCourses } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
 const { fetchUserEnrollments, enrollCourse, completeEnrollment, deleteEnrollment } = useEnrollmentsCrud();
 const router = useRouter();
@@ -107,7 +107,7 @@ const courseAvgRating = computed(() => {
   if (!course.value?.reviews?.length) return 0;
   const total = course.value.reviews.reduce((sum, r) => sum + r.rating, 0);
   const avg = total / course.value.reviews.length;
-  return Math.floor(avg * 10) / 10;
+  return Math.round(avg * 10) / 10;
 });
 
 const formattedSessionTypes = computed(() => {
@@ -198,6 +198,7 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
     if (response?.success) {
       showEnrollmentConfirmationModal.value = true;
       await refreshEnrollmentStatus();
+      await fetchUserEnrollments();
     } else {
       const errorData = response?.serverErrors;
       if (errorData && typeof errorData === "object" && "conflicts" in errorData) {

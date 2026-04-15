@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { storeToRefs } from "pinia";
-import { useGlobalStore } from "@/stores/GlobalStore";
 import { useAuthorize } from "@/composables/useAuthorize";
 import { CATALOG_ROUTE } from "@/constants/constants";
 import CourseProgressCard from "@/components/common/CourseProgressCard.vue";
 import BoxIcon from "@/components/icons/BoxIcon.vue";
 import Button from "@/components/common/Button.vue";
+import { storeToRefs } from "pinia";
+import { useGlobalStore } from "@/stores/GlobalStore";
 
 const route = useRoute();
 const router = useRouter();
 const { isAuthenticated } = useAuthorize();
-const { coursesInProgress } = storeToRefs(useGlobalStore());
+const { userEnrollments } = storeToRefs(useGlobalStore());
 
 const isSidebarOpen = computed(() => isAuthenticated.value && route.query.enrolled === "true");
 
@@ -67,13 +67,13 @@ watch(isSidebarOpen, (open) => {
         <div class="z-10 mt-10.5 flex h-21.5 items-end justify-between bg-[#F5F5F5] px-14.25">
           <span class="text-[40px] font-semibold text-[#0A0A0A]">Enrolled Courses</span>
           <p class="text-[16px] font-semibold text-[#0A0A0A]">
-            Total Enrollments <span>{{ coursesInProgress?.length ?? 0 }}</span>
+            Total Enrollments <span>{{ userEnrollments?.length ?? 0 }}</span>
           </p>
         </div>
 
-        <div v-if="coursesInProgress?.length" class="mt-9.25 flex flex-col items-center gap-3 px-21 pb-10">
+        <div v-if="userEnrollments?.length" class="mt-9.25 flex flex-col items-center gap-3 px-21 pb-10">
           <CourseProgressCard
-            v-for="enrollment in coursesInProgress"
+            v-for="enrollment in userEnrollments"
             :key="enrollment.id"
             :title="enrollment.course.title"
             :instructor-name="enrollment.course.instructor.name"

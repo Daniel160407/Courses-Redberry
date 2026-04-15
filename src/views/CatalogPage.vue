@@ -17,9 +17,11 @@ import { useCoursesCrud } from "@/composables/useCoursesCrud";
 import type { Course, Category, Instructor, Topic, CoursesResponse } from "@/types/interfaces";
 import { computed, onMounted, ref, watch, type Component } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
 
 const { fetchFilters, fetchTopics } = useCatalogCrud();
 const { fetchCourses } = useCoursesCrud();
+const { fetchUserEnrollments } = useEnrollmentsCrud();
 const router = useRouter();
 const route = useRoute();
 
@@ -174,7 +176,7 @@ onMounted(async () => {
     topics.value = responses.topicsResponse.topics;
   }
 
-  await updateCourses();
+  await Promise.all([updateCourses(), fetchUserEnrollments()]);
 });
 </script>
 <template>
