@@ -160,9 +160,9 @@ onMounted(async () => {
         />
       </div>
 
-      <div class="absolute inset-0 z-10 flex items-center justify-center pt-24">
+      <div class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center pt-24">
         <div
-          class="flex w-104.5 flex-col gap-2.5 rounded-xl border border-[#ADADAD] bg-[#FFFFFF] px-14 py-8 shadow-2xl"
+          class="pointer-events-auto flex w-104.5 flex-col gap-2.5 rounded-xl border border-[#ADADAD] bg-[#FFFFFF] px-14 py-8 shadow-2xl"
         >
           <div class="flex flex-col items-center gap-6">
             <div class="flex flex-col items-center gap-3 text-center">
@@ -171,7 +171,7 @@ onMounted(async () => {
               </div>
               <span class="text-[16px] font-medium text-[#0A0A0A]">Sign in to track your learning progress</span>
             </div>
-            <Button label="Log In" variant="primary" @click="showLogIn = true" />
+            <Button label="Log In" variant="login-action" @click="showLogIn = true" />
           </div>
         </div>
       </div>

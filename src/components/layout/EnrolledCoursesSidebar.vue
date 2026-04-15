@@ -99,8 +99,8 @@ watch(isSidebarOpen, (open) => {
               <p class="text-medium text-[14px] text-[#130E67]">Your learning journey starts here!</p>
               <Button
                 label="Browse Courses"
-                variant="primary"
-                class="mt-2 h-14.5 w-43.75! rounded-lg"
+                variant="browse-catalog"
+                class="mt-2"
                 @click="router.push(CATALOG_ROUTE)"
               />
             </div>
