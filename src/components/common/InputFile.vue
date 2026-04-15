@@ -89,7 +89,7 @@ watch(
 
     <div
       v-if="modelValue && previewUrl"
-      class="flex h-48 w-full items-center gap-4 rounded-xl border bg-[#F3F0FF] px-10 transition-all"
+      class="flex h-35.5 w-full items-center gap-4 rounded-xl border bg-[#F3F0FF] px-10 transition-all duration-500 ease-out"
       :class="displayError ? 'border-[#EF4444]' : success ? 'border-[#1DC31D]' : 'border-[#D1D1D1]'"
     >
       <div class="h-20 w-20 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-sm">
@@ -107,7 +107,7 @@ watch(
 
     <div
       v-else
-      class="flex h-48 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-[1.5px] transition-all"
+      class="flex h-35 w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-[1.5px] transition-all duration-500 ease-out"
       :class="displayError ? 'border-[#EF4444]' : success ? 'border-[#1DC31D]' : 'border-[#D1D1D1]'"
       @click="
         () => {

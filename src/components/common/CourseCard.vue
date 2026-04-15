@@ -2,6 +2,7 @@
 import { type Course } from "@/types/interfaces";
 import StarIcon from "../icons/StarIcon.vue";
 import Button from "./Button.vue";
+import SelectButton from "./SelectButton.vue";
 import type { Component } from "vue";
 
 interface Props extends Course {
@@ -75,12 +76,7 @@ const emit = defineEmits(["openDetails"]);
               <p>{{ props.title }}</p>
             </div>
           </div>
-          <div class="flex">
-            <div class="flex items-center gap-1.5 rounded-xl bg-[#F5F5F5] px-3 py-2 text-[#525252]">
-              <component :is="props.categoryIcon" v-if="props.categoryIcon" />
-              <span class="text-[16px] font-medium">{{ props.category.name }}</span>
-            </div>
-          </div>
+          <SelectButton :label="props.category.name" :icon="props.categoryIcon" variant="category" />
         </div>
       </div>
       <div class="flex items-center justify-between">

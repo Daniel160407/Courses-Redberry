@@ -7,7 +7,7 @@ interface Props {
   image?: string;
   isSelected?: boolean;
   disabled?: boolean;
-  variant?: "primary" | "outline" | "text" | "schedule" | "time-slot" | "session-type";
+  variant?: "primary" | "outline" | "text" | "schedule" | "time-slot" | "session-type" | "category";
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -24,7 +24,7 @@ const VARIANT_STYLES: Record<string, string> = {
   outline: "border-[#D1D1D1] bg-[#FFFFFF]",
   schedule: "border-[#D1D1D1] bg-[#FFFFFF] h-22.75 w-full justify-center p-2.5",
   "time-slot": "border-[#FFFFFF] bg-[#FFFFFF] p-3.75",
-  "session-type": "border-[#FFFFFF] bg-[#FFFFFF] min-h-38.75 min-w-42.75 px-5 py-3.75"
+  "session-type": "border-[#FFFFFF] bg-[#FFFFFF] min-h-32.75 min-w-42.75 px-5 py-2"
 } as const;
 
 const handleClick = () => {
@@ -40,6 +40,10 @@ const buttonClasses = computed(() => {
 
   if (props.variant === "text") {
     return `${BASE_STYLES} cursor-default border-transparent bg-white text-[#666666] w-fit!`;
+  }
+
+  if (props.variant === "category") {
+    return `${BASE_STYLES} cursor-default border-transparent bg-[#F5F5F5] text-[#525252] gap-1.5! w-fit! hover:bg-[#F5F5F5]! hover:text-[#525252]!`;
   }
 
   const isSelected = props.isSelected;

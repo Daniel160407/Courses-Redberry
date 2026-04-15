@@ -196,7 +196,7 @@ onMounted(async () => {
             class="scrollbar-hide sticky flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
           >
             <div class="flex items-center justify-between">
-              <span class="text-[40px] font-semibold text-[#000000]">Filters</span>
+              <span class="text-[40px] font-semibold text-[#0A0A0A]">Filters</span>
               <Button
                 label="Clear All Filters"
                 :loading="isFiltering"
@@ -208,7 +208,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex flex-col gap-6">
-              <span class="text-[18px] font-medium text-[#8A8A8A]">Categories</span>
+              <span class="text-[18px] font-medium text-[#666666]">Categories</span>
               <div class="flex flex-wrap gap-2">
                 <SelectButton
                   v-for="category in categories"
@@ -222,7 +222,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex flex-col gap-6">
-              <span class="text-[18px] font-medium text-[#8A8A8A]">Topics</span>
+              <span class="text-[18px] font-medium text-[#666666]">Topics</span>
               <div class="flex flex-wrap gap-2">
                 <SelectButton
                   v-for="topic in topics"
@@ -235,7 +235,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex flex-col gap-6">
-              <span class="text-[18px] font-medium text-[#8A8A8A]">Instructor</span>
+              <span class="text-[18px] font-medium text-[#666666]">Instructor</span>
               <div class="flex flex-wrap gap-2">
                 <SelectButton
                   v-for="instructor in instructors"
@@ -258,7 +258,7 @@ onMounted(async () => {
 
         <main class="flex flex-1 flex-col gap-8">
           <div class="flex items-center justify-between">
-            <div>
+            <div class="text-[16px] font-medium text-[#8A8A8A]">
               <p v-if="showingCount">
                 Showing <span>{{ showingCount }}</span> out of
                 <span>{{ totalCourses }}</span>

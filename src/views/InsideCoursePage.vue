@@ -49,6 +49,9 @@ import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
 import { CATEGORY_ICONS, SESSION_TYPE_ICONS, TIME_SLOT_ICONS } from "@/constants/iconMappings";
+import StepOneFilledIcon from "@/components/icons/StepOneFilledIcon.vue";
+import StepTwoFilledIcon from "@/components/icons/StepTwoFilledIcon.vue";
+import StepThreeFilledIcon from "@/components/icons/StepThreeFilledIcon.vue";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
 const { fetchCourseById, rateCourse } = useCoursesCrud();
@@ -160,17 +163,21 @@ const handleSelectWeeklySchedule = (
   isSelected: boolean,
   weeklySchedule: WeeklySchedule | (typeof WEEKLY_SCHEDULE_CONFIG)[number]
 ) => {
+  selectedWeeklySchedule.value = isSelected ? weeklySchedule : null;
+  selectedTimeSlot.value = null;
+  selectedSessionType.value = null;
+
   if (isSelected) {
-    selectedWeeklySchedule.value = weeklySchedule;
-    selectedTimeSlot.value = null;
-    selectedSessionType.value = null;
+    activeTab.value.push("1");
   }
 };
 
 const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot | (typeof TIME_SLOT_CONFIG)[number]) => {
+  selectedTimeSlot.value = isSelected ? timeSlot : null;
+  selectedSessionType.value = null;
+
   if (isSelected) {
-    selectedTimeSlot.value = timeSlot;
-    selectedSessionType.value = null;
+    activeTab.value.push("2");
   }
 };
 
@@ -425,7 +432,12 @@ watch(
         <div v-if="!userCourseEnrollment && !isLoading" class="flex max-w-132.5 flex-1 flex-col gap-3">
           <Accordion v-model:value="activeTab">
             <AccordionPanel value="0">
-              <AccordionHeader :icon="StepOneIcon">Weekly Schedule</AccordionHeader>
+              <AccordionHeader
+                :icon="StepOneIcon"
+                :secondary-icon="StepOneFilledIcon"
+                :is-selected="!!selectedWeeklySchedule"
+                >Weekly Schedule</AccordionHeader
+              >
               <AccordionContent>
                 <div class="grid grid-cols-4 gap-3">
                   <SelectButton
@@ -441,7 +453,9 @@ watch(
               </AccordionContent>
             </AccordionPanel>
             <AccordionPanel value="1">
-              <AccordionHeader :icon="StepTwoIcon">Time Slot</AccordionHeader>
+              <AccordionHeader :icon="StepTwoIcon" :secondary-icon="StepTwoFilledIcon" :is-selected="!!selectedTimeSlot"
+                >Time Slot</AccordionHeader
+              >
               <AccordionContent>
                 <div class="grid grid-cols-3 gap-1.5">
                   <SelectButton
@@ -464,7 +478,12 @@ watch(
               </AccordionContent>
             </AccordionPanel>
             <AccordionPanel value="2">
-              <AccordionHeader :icon="StepThreeIcon">Session Type</AccordionHeader>
+              <AccordionHeader
+                :icon="StepThreeIcon"
+                :secondary-icon="StepThreeFilledIcon"
+                :is-selected="!!selectedSessionType"
+                >Session Type</AccordionHeader
+              >
               <AccordionContent>
                 <div class="grid grid-cols-3 gap-2">
                   <div
@@ -476,15 +495,22 @@ watch(
                       :is-selected="selectedSessionType?.id === sessionType.id"
                       :disabled="sessionType.isFull"
                       variant="session-type"
-                      @click="selectedSessionType = sessionType"
+                      @click="(isSelected) => (selectedSessionType = isSelected ? sessionType : null)"
                     >
                       <div class="flex w-full flex-col items-center justify-center gap-2.5 text-inherit">
-                        <component :is="SESSION_TYPE_ICONS[sessionType.id]" v-if="SESSION_TYPE_ICONS[sessionType.id]" />
+                        <component
+                          :is="SESSION_TYPE_ICONS[sessionType.id]"
+                          v-if="SESSION_TYPE_ICONS[sessionType.id]"
+                          class="h-6.5 w-6.5"
+                        />
                         <div class="flex flex-col items-center gap-1.5">
                           <span class="text-[16px] font-semibold">{{ sessionType.displayName }}</span>
-                          <span>{{ sessionType.displayLocation }}</span>
+                          <div class="flex items-center gap-0.5">
+                            <PointerIcon />
+                            <span class="text-[12px]">{{ sessionType.displayLocation }}</span>
+                          </div>
                         </div>
-                        <span :class="sessionType.isFull ? 'text-[#CCCCCC]' : 'text-[#736BEA]'">
+                        <span class="text-[14px]" :class="sessionType.isFull ? 'text-[#CCCCCC]' : 'text-[#736BEA]'">
                           {{ sessionType.displayPrice }}
                         </span>
                       </div>
