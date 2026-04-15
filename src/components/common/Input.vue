@@ -96,8 +96,8 @@ const handleBlur = () => {
         <component
           :is="icon"
           v-if="icon && type !== 'password'"
-          class="h-6 w-6"
-          :class="displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : ''"
+          class="h-6 w-6 text-[#ADADAD]"
+          :class="[displayError ? 'text-[#EF4444]' : success ? 'text-[#1DC31D]' : '']"
         />
 
         <div v-if="type === 'password'" class="cursor-pointer select-none" @click="togglePassword">

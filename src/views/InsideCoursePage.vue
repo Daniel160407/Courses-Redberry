@@ -44,7 +44,7 @@ import MonitorIcon from "@/components/icons/MonitorIcon.vue";
 import PointerIcon from "@/components/icons/PointerIcon.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
-import MarkIcon from "@/components/icons/MarkIcon.vue";
+import CheckIcon from "@/components/icons/CheckIcon.vue";
 import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
@@ -54,7 +54,7 @@ import StepTwoFilledIcon from "@/components/icons/StepTwoFilledIcon.vue";
 import StepThreeFilledIcon from "@/components/icons/StepThreeFilledIcon.vue";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
-const { fetchCourseById, rateCourse, fetchInProgressCourses } = useCoursesCrud();
+const { fetchCourseById, rateCourse } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
 const { fetchUserEnrollments, enrollCourse, completeEnrollment, deleteEnrollment } = useEnrollmentsCrud();
 const router = useRouter();
@@ -136,12 +136,12 @@ const refreshEnrollmentStatus = async () => {
 };
 
 const handleEnrollment = (force = false) => {
-  if (!isAuthenticated.value) {
+  if (!isAuthenticated) {
     showLogInModal.value = true;
     return;
   }
 
-  if (!isProfileComplete.value) {
+  if (!isProfileComplete) {
     showProfileIncompleteModal.value = true;
     return;
   }
@@ -627,7 +627,7 @@ watch(
               v-else
               label="Complete Course"
               :loading="isSubmitting"
-              :icon="MarkIcon"
+              :icon="CheckIcon"
               icon-pos="right"
               variant="action"
               @click="handleCompleteEnrollment(userCourseEnrollment?.id ?? 0)"

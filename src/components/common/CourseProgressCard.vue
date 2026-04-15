@@ -81,7 +81,7 @@ const emit = defineEmits(["openDetails"]);
       <Button
         label="View"
         variant="outline"
-        :class="extended ? 'h-12! w-29.25' : 'h-12! w-22.5'"
+        :class="extended ? 'h-12! min-w-29.25' : 'h-12! min-w-22.5'"
         @click="emit('openDetails')"
       />
     </div>

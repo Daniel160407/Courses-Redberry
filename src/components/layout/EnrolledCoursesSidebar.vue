@@ -14,7 +14,7 @@ const router = useRouter();
 const { isAuthenticated } = useAuthorize();
 const { userEnrollments } = storeToRefs(useGlobalStore());
 
-const isSidebarOpen = computed(() => isAuthenticated.value && route.query.enrolled === "true");
+const isSidebarOpen = computed(() => isAuthenticated && route.query.enrolled === "true");
 
 const closeSidebar = () => {
   const query = { ...route.query };

@@ -16,10 +16,10 @@ import Select from "../common/Select.vue";
 import Modal from "../common/Modal.vue";
 
 import PencilIcon from "../icons/PencilIcon.vue";
-import MarkIcon from "../icons/MarkIcon.vue";
 import ArrowDownIcon from "../icons/ArrowDownIcon.vue";
 import WarningIcon from "../icons/WarningIcon.vue";
 import SuccessIcon from "../icons/SuccessIcon.vue";
+import CheckSmallIcon from "../icons/CheckSmallIcon.vue";
 
 const showSignUpModal = defineModel<boolean>("showSignUpModal");
 const showLogInModal = defineModel<boolean>("showLogInModal");
@@ -58,17 +58,28 @@ const profileFormData = ref<ProfileForm>({
   avatar: user.value?.avatar ?? null
 });
 
-const registrationFormErrors = useRegistrationValidate(registrationFormData);
-const logInFormErrors = useLogInValidate(logInFormData);
-const profileFormErrors = useProfileValidate(profileFormData);
+const {
+  errors: registrationFormErrors,
+  touchAll: touchRegistration,
+  reset: resetRegistration
+} = useRegistrationValidate(registrationFormData);
+const { errors: logInFormErrors, touchAll: touchLogIn, reset: resetLogIn } = useLogInValidate(logInFormData);
+const { errors: profileFormErrors, touchAll: touchProfile, reset: resetProfile } = useProfileValidate(profileFormData);
 
 const handleRegister = async () => {
+  touchRegistration();
+
   if (Object.values(registrationFormErrors).some((err) => err !== "")) {
     if (registrationFormErrors.email) {
       registrationStep.value = 1;
     } else if (registrationFormErrors.password || registrationFormErrors.confirmPassword) {
       registrationStep.value = 2;
     }
+    return;
+  }
+
+  if (registrationStep.value < 3) {
+    registrationStep.value++;
     return;
   }
 
@@ -100,6 +111,7 @@ const handleRegister = async () => {
 };
 
 const handleLogIn = async () => {
+  touchLogIn();
   if (Object.values(logInFormErrors).some((err) => err !== "")) return;
   isSubmitting.value = true;
   try {
@@ -119,6 +131,7 @@ const handleLogIn = async () => {
 };
 
 const handleUpdateProfile = async () => {
+  touchProfile();
   if (Object.values(profileFormErrors).some((err) => err !== "")) return;
   isSubmitting.value = true;
   try {
@@ -160,7 +173,7 @@ const getAgeOptions = () => {
 };
 
 const handleCloseProfile = () => {
-  if (isProfileComplete.value) showProfileModal.value = false;
+  if (isProfileComplete) showProfileModal.value = false;
   showCloseConfirm.value = true;
 };
 const handleClickCancelProfileConfirm = () => {
@@ -194,12 +207,14 @@ watch(
 );
 watch(showSignUpModal, (isOpen) => {
   if (isOpen) registrationSubmitted.value = false;
+  else resetRegistration();
 });
 watch(showLogInModal, (isOpen) => {
   if (isOpen) {
     logInSubmitted.value = false;
   } else {
     setShowLoginModal(false);
+    resetLogIn();
   }
 });
 
@@ -208,6 +223,7 @@ watch(showLoginModal, (isOpen) => {
 });
 watch(showProfileModal, (isOpen) => {
   if (isOpen) profileSubmitted.value = false;
+  else resetProfile();
 });
 
 watch(
@@ -360,7 +376,7 @@ watch(
           placeholder="Username"
           :icon="PencilIcon"
         />
-        <Input :model-value="user?.email ?? ''" label="Email" :icon="MarkIcon" disabled />
+        <Input :model-value="user?.email ?? ''" label="Email" :icon="CheckSmallIcon" disabled />
         <div class="flex gap-2">
           <Input
             v-model="profileFormData.mobile_number"
@@ -369,7 +385,7 @@ watch(
             label="Mobile Number"
             type="tel"
             placeholder="599209820"
-            :icon="MarkIcon"
+            :icon="CheckSmallIcon"
             class="flex-3"
           />
           <Select

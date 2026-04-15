@@ -17,7 +17,7 @@ import { useRouter } from "vue-router";
 import { useAuthorize } from "@/composables/useAuthorize";
 import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
 
-const { fetchFeaturedCourses, fetchInProgressCourses } = useCoursesCrud();
+const { fetchFeaturedCourses } = useCoursesCrud();
 const { featuredCourses, coursesInProgress } = storeToRefs(useGlobalStore());
 const { isAuthenticated } = useAuthorize();
 const { fetchUserEnrollments } = useEnrollmentsCrud();
@@ -89,7 +89,9 @@ const handleOpenDetails = (course: Course) => {
 };
 
 onMounted(async () => {
-  await Promise.all([fetchFeaturedCourses(), fetchInProgressCourses(), fetchUserEnrollments()]);
+  if (isAuthenticated) await fetchUserEnrollments();
+
+  await fetchFeaturedCourses();
 });
 </script>
 <template>

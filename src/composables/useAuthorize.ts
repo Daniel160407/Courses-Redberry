@@ -100,7 +100,7 @@ export const useAuthorize = () => {
 
   return {
     isAuthenticated: isAuthorized,
-    isProfileComplete,
+    isProfileComplete: isProfileComplete,
     user,
     fetchUserInfo,
     register,

@@ -18,10 +18,12 @@ import type { Course, Category, Instructor, Topic, CoursesResponse } from "@/typ
 import { computed, onMounted, ref, watch, type Component } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
+import { useAuthorize } from "@/composables/useAuthorize";
 
 const { fetchFilters, fetchTopics } = useCatalogCrud();
 const { fetchCourses } = useCoursesCrud();
 const { fetchUserEnrollments } = useEnrollmentsCrud();
+const { isAuthenticated } = useAuthorize();
 const router = useRouter();
 const route = useRoute();
 
@@ -176,7 +178,8 @@ onMounted(async () => {
     topics.value = responses.topicsResponse.topics;
   }
 
-  await Promise.all([updateCourses(), fetchUserEnrollments()]);
+  if (isAuthenticated) await fetchUserEnrollments();
+  await updateCourses();
 });
 </script>
 <template>
