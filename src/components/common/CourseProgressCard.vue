@@ -17,6 +17,8 @@ interface CourseProgressProps {
   times?: string;
   sessionType?: string;
   location?: string;
+  basePrice?: string;
+  priceModifier?: string;
   blured?: boolean;
   extended?: boolean;
 }
@@ -35,7 +37,8 @@ const emit = defineEmits(["openDetails"]);
       <img
         :src="image"
         alt="Course preview"
-        class="max-h-30.75 min-h-30.75 max-w-35 min-w-35 flex-1 rounded-xl object-cover"
+        class="max-h-30.75 flex-1 rounded-xl object-cover"
+        :class="extended ? 'min-h-47.75 min-w-67.25' : 'min-h-30.75 max-w-35 min-w-35'"
       />
       <div class="flex flex-3 flex-col gap-2 pr-1 pl-4">
         <div class="flex justify-between">
@@ -64,6 +67,10 @@ const emit = defineEmits(["openDetails"]);
           <div v-if="props.location" class="flex w-full items-center gap-2">
             <PointerIcon />
             <span class="text-[14px] text-[#666666]">{{ props.location }}</span>
+          </div>
+          <div v-if="props.basePrice" class="flex w-full items-center gap-2 text-[18px] font-normal text-[#141414]">
+            <span>Price: ${{ props.basePrice }}</span>
+            <span v-if="props.priceModifier"> + ${{ props.priceModifier }}</span>
           </div>
         </div>
       </div>
