@@ -68,11 +68,7 @@ onUnmounted(() => stopAutoPlay());
             </span>
           </div>
           <div>
-            <Button
-              :label="item.buttonLabel"
-              class="rounded-md bg-[#4F46E5] px-6 py-4 text-xl text-[#F5F5F5]"
-              @click="item.action"
-            />
+            <Button :label="item.buttonLabel" variant="primary" class="w-fit!" @click="item.action" />
           </div>
         </div>
       </div>
@@ -92,13 +88,17 @@ onUnmounted(() => stopAutoPlay());
         <div class="flex gap-6">
           <Button
             :icon="ArrowLeftOutlinedIcon"
-            class="p-0! text-[#FFFFFF] hover:opacity-70"
+            variant="icon"
+            :loading="showSlide === 0"
+            :class="showSlide === 0 ? 'cursor-not-allowed! text-[#C1BCBC80]' : 'text-[#FFFFFF]'"
             :icon-size="3.5"
             @click="prevSlide"
           />
           <Button
             :icon="ArrowRightOutlinedIcon"
-            class="p-0! text-[#FFFFFF] hover:opacity-70"
+            variant="icon"
+            :loading="showSlide === 2"
+            :class="showSlide === 2 ? 'cursor-not-allowed! text-[#C1BCBC80]' : 'text-[#FFFFFF]'"
             :icon-size="3.5"
             @click="nextSlide"
           />
@@ -107,16 +107,3 @@ onUnmounted(() => stopAutoPlay());
     </div>
   </div>
 </template>
-
-<style scoped>
-.flex-shrink-0 {
-  flex-shrink: 0;
-}
-
-.pointer-events-none {
-  pointer-events: none;
-}
-.pointer-events-auto {
-  pointer-events: auto;
-}
-</style>

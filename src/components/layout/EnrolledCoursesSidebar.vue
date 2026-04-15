@@ -8,7 +8,6 @@ import { CATALOG_ROUTE } from "@/constants/constants";
 import CourseProgressCard from "@/components/common/CourseProgressCard.vue";
 import BoxIcon from "@/components/icons/BoxIcon.vue";
 import Button from "@/components/common/Button.vue";
-import CloseIcon from "@/components/icons/CloseIcon.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -65,21 +64,14 @@ watch(isSidebarOpen, (open) => {
         v-if="isSidebarOpen"
         class="fixed inset-y-0 right-0 z-120 w-198.5 max-w-full overflow-y-auto border-l border-[#D1D1D1] bg-[#F5F5F5] shadow-xl"
       >
-        <div class="sticky top-0 z-10 flex h-21.5 items-end justify-between bg-[#F5F5F5] px-14.25 pb-4">
-          <div class="flex flex-col">
-            <span class="text-[40px] font-semibold text-[#0A0A0A]">Enrolled Courses</span>
-            <p class="text-[16px] font-semibold text-[#666666]">
-              Total Enrollments <span class="text-[#0A0A0A]">{{ coursesInProgress?.length ?? 0 }}</span>
-            </p>
-          </div>
-          <Button
-            :icon="CloseIcon"
-            class="mb-2 h-10 w-10 rounded-full p-2 transition-colors hover:bg-black/5 active:scale-95"
-            @click="closeSidebar"
-          />
+        <div class="z-10 mt-10.5 flex h-21.5 items-end justify-between bg-[#F5F5F5] px-14.25">
+          <span class="text-[40px] font-semibold text-[#0A0A0A]">Enrolled Courses</span>
+          <p class="text-[16px] font-semibold text-[#0A0A0A]">
+            Total Enrollments <span>{{ coursesInProgress?.length ?? 0 }}</span>
+          </p>
         </div>
 
-        <div v-if="coursesInProgress?.length" class="mt-9.25 flex flex-col items-center px-21 pb-10">
+        <div v-if="coursesInProgress?.length" class="mt-9.25 flex flex-col items-center gap-3 px-21 pb-10">
           <CourseProgressCard
             v-for="enrollment in coursesInProgress"
             :key="enrollment.id"
@@ -92,6 +84,8 @@ watch(isSidebarOpen, (open) => {
             :times="enrollment.schedule.timeSlot.label"
             :session-type="enrollment.schedule.sessionType.name"
             :location="enrollment.schedule.location"
+            :base-price="enrollment.course.basePrice"
+            :price-modifier="enrollment.schedule.sessionType.priceModifier"
             extended
             @open-details="handleOpenDetails(enrollment.course.id)"
           />
@@ -105,7 +99,8 @@ watch(isSidebarOpen, (open) => {
               <p class="text-medium text-[14px] text-[#130E67]">Your learning journey starts here!</p>
               <Button
                 label="Browse Courses"
-                class="mt-2 h-14.5 w-43.75 rounded-lg bg-[#4F46E5] text-white"
+                variant="primary"
+                class="mt-2 h-14.5 w-43.75! rounded-lg"
                 @click="router.push(CATALOG_ROUTE)"
               />
             </div>

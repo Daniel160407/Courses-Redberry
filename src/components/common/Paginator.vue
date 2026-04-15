@@ -48,15 +48,15 @@ const setPage = (page: number | string) => {
       :disabled="modelValue === 1"
       :icon="ArrowLeftIcon"
       :icon-size="0.75"
-      :class="modelValue !== 1 ? 'cursor-pointer! text-[#4F46E5]!' : 'cursor-not-allowed! text-[#D1D1D1]!'"
-      class="flex h-10 w-10 items-center justify-center rounded-sm border border-[#D1D1D1] bg-[#FFFFFF] py-0! pl-2"
+      variant="paginator-nav"
+      :class="modelValue !== 1 ? 'text-[#4F46E5]!' : 'cursor-not-allowed! text-[#D1D1D1]!'"
       @click="setPage(modelValue - 1)"
     />
     <template v-for="(page, index) in pages" :key="index">
       <Button
         v-if="typeof page === 'number'"
         type="button"
-        class="flex h-10 min-w-10 cursor-pointer items-center justify-center rounded-sm border border-[#D1D1D1] text-[16px] font-medium transition-colors"
+        variant="paginator-page"
         :class="page === modelValue ? 'bg-[#281ED2] text-[#FFFFFF]' : 'bg-[#FFFFFF] text-[#4F46E5]'"
         @click="setPage(page)"
       >
@@ -69,8 +69,8 @@ const setPage = (page: number | string) => {
       :disabled="modelValue === total"
       :icon="ArrowRightIcon"
       :icon-size="0.75"
-      :class="modelValue !== total ? 'cursor-pointer! text-[#4F46E5]!' : 'cursor-not-allowed! text-[#D1D1D1]!'"
-      class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm border border-[#D1D1D1] bg-[#FFFFFF] py-0! pl-2"
+      variant="paginator-nav"
+      :class="modelValue !== total ? 'text-[#4F46E5]!' : 'cursor-not-allowed! text-[#D1D1D1]!'"
       @click="setPage(modelValue + 1)"
     />
   </div>

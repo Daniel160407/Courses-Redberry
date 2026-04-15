@@ -10,7 +10,7 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1" :class="size === 'small' ? 'gap-1' : 'gap-3'">
+  <div class="flex flex-col gap-1 text-[#141414]" :class="size === 'small' ? 'gap-1' : 'gap-3'">
     <span :class="size === 'small' ? 'text-sm font-medium' : 'text-[20px] font-semibold'"
       >{{ progress }}% Complete</span
     >

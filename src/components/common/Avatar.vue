@@ -12,7 +12,7 @@ const { src, alt, status } = defineProps<Props>();
 
 <template>
   <div class="relative inline-block">
-    <div class="h-14 w-14 overflow-hidden rounded-full border-2 border-white">
+    <div class="h-14 w-14 overflow-hidden rounded-full border-[1.5px] border-[#f5f5f5] hover:border-[#B7B3F4]">
       <img v-if="src" :src="src" :alt="alt" class="h-full w-full object-cover" />
       <div v-else class="flex h-14 w-14 items-center justify-center rounded-full bg-[#EEEDFC]">
         <UserIcon />

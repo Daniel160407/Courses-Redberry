@@ -1,11 +1,9 @@
 import { useGlobalStore } from "@/stores/GlobalStore";
 import { useAxios } from "./useAxios";
-import { storeToRefs } from "pinia";
 
 export const useCoursesCrud = () => {
   const { sendRequest, data, error } = useAxios();
   const globalStore = useGlobalStore();
-  const { featuredCourses, coursesInProgress } = storeToRefs(globalStore);
   const { setCourses, setFeaturedCourses, setCoursesInProgress } = globalStore;
 
   const fetchCourses = async (

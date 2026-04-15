@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import AuthorizationModals from "../common/AuthorizationModals.vue";
 import Avatar from "../common/Avatar.vue";
 import Button from "../common/Button.vue";
@@ -17,27 +17,25 @@ const route = useRoute();
 const showSignUp = ref(false);
 const showLogIn = ref(false);
 const showProfile = ref(false);
-
-const activeSegment = computed(() => route.path.split("/")[1]);
 </script>
 
 <template>
-  <div class="fixed top-0 left-0 z-100 w-full border-b border-b-[#D1D1D1] bg-[#F5F5F5] px-44 py-6">
-    <div class="flex items-center justify-between">
-      <Button :icon="LogoIcon" class="p-0!" :iconSize="3.75" @click="router.push(DASHBOARD_ROUTE)" />
+  <div class="fixed top-0 left-0 z-100 flex w-full justify-center border-b border-b-[#D1D1D1] bg-[#F5F5F5] py-6">
+    <div class="flex min-w-391.5 items-center justify-between">
+      <Button :icon="LogoIcon" variant="icon" :iconSize="3.75" @click="router.push(DASHBOARD_ROUTE)" />
       <div v-if="isAuthenticated" class="flex gap-9">
         <div class="flex gap-2">
           <Button
             label="Browse Courses"
             :icon="StarsIcon"
-            class="p-3.75"
-            :class="{ 'text-[#4F46E5]': activeSegment === 'catalog' }"
+            variant="nav"
+            :class="{ 'text-[#4F46E5]': route.path === CATALOG_ROUTE }"
             @click="router.push(CATALOG_ROUTE)"
           />
           <Button
             label="Enrolled Courses"
             :icon="BookIcon"
-            class="p-3.75"
+            variant="nav"
             @click="router.push({ query: { ...route.query, enrolled: 'true' } })"
           />
         </div>
@@ -53,21 +51,14 @@ const activeSegment = computed(() => route.path.split("/")[1]);
         <Button
           label="Browse Courses"
           :icon="StarsIcon"
-          :class="{ 'text-[#4F46E5]': activeSegment === 'catalog' }"
+          variant="nav"
+          :class="{ 'text-[#4F46E5]': route.path === CATALOG_ROUTE }"
           @click="router.push(CATALOG_ROUTE)"
         />
 
         <div class="flex gap-3.75">
-          <Button
-            label="Log In"
-            class="rounded-md border-2 border-[#958FEF] px-4 py-3 font-medium text-[#4F46E5]"
-            @click="showLogIn = !showLogIn"
-          />
-          <Button
-            label="Sign Up"
-            class="rounded-md bg-[#4F46E5] px-6 py-4 font-medium text-[#FFFFFF]"
-            @click="showSignUp = !showSignUp"
-          />
+          <Button label="Log In" variant="outline" @click="showLogIn = !showLogIn" />
+          <Button label="Sign Up" variant="primary" class="h-auto! w-auto!" @click="showSignUp = !showSignUp" />
         </div>
       </div>
     </div>

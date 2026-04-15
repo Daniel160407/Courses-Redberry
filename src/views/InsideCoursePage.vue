@@ -25,7 +25,7 @@ import type {
   EnrollmentConflict,
   Enrollment
 } from "@/types/interfaces";
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useScheduleCrud } from "@/composables/useScheduleCrud";
 import StepOneIcon from "@/components/icons/StepOneIcon.vue";
@@ -49,6 +49,9 @@ import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
 import { CATEGORY_ICONS, SESSION_TYPE_ICONS, TIME_SLOT_ICONS } from "@/constants/iconMappings";
+import StepOneFilledIcon from "@/components/icons/StepOneFilledIcon.vue";
+import StepTwoFilledIcon from "@/components/icons/StepTwoFilledIcon.vue";
+import StepThreeFilledIcon from "@/components/icons/StepThreeFilledIcon.vue";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
 const { fetchCourseById, rateCourse } = useCoursesCrud();
@@ -160,17 +163,21 @@ const handleSelectWeeklySchedule = (
   isSelected: boolean,
   weeklySchedule: WeeklySchedule | (typeof WEEKLY_SCHEDULE_CONFIG)[number]
 ) => {
+  selectedWeeklySchedule.value = isSelected ? weeklySchedule : null;
+  selectedTimeSlot.value = null;
+  selectedSessionType.value = null;
+
   if (isSelected) {
-    selectedWeeklySchedule.value = weeklySchedule;
-    selectedTimeSlot.value = null;
-    selectedSessionType.value = null;
+    activeTab.value.push("1");
   }
 };
 
 const handleSelectTimeSlot = (isSelected: boolean, timeSlot: TimeSlot | (typeof TIME_SLOT_CONFIG)[number]) => {
+  selectedTimeSlot.value = isSelected ? timeSlot : null;
+  selectedSessionType.value = null;
+
   if (isSelected) {
-    selectedTimeSlot.value = timeSlot;
-    selectedSessionType.value = null;
+    activeTab.value.push("2");
   }
 };
 
@@ -353,34 +360,35 @@ watch(
 );
 </script>
 <template>
-  <div class="min-h-screen bg-[#F5F5F5] px-44.25 pt-43 pb-40">
-    <div class="flex items-start gap-16">
-      <div class="flex w-225.75 min-w-225.75 flex-col gap-6">
-        <div>
-          <div class="mb-12 flex items-center gap-0.5">
-            <div class="flex items-center gap-1 px-1 py-0.5">
-              <span
-                class="cursor-pointer text-[18px] font-medium text-[#666666] hover:underline"
-                @click="router.push(DASHBOARD_ROUTE)"
-                >Home</span
-              >
-              <AngleRightIcon />
-            </div>
-            <div v-if="parentPage === CATALOG_PAGE_NAME" class="flex items-center gap-1 px-1 py-0.5">
-              <span
-                class="cursor-pointer text-[18px] font-medium text-[#666666] hover:underline"
-                @click="router.push(CATALOG_ROUTE)"
-                >Browse</span
-              >
-              <AngleRightIcon />
-            </div>
-            <div>
-              <span class="text-[18px] font-medium text-[#4F46E5]">{{ course?.category.name }}</span>
-            </div>
+  <div class="flex min-h-screen justify-center bg-[#F5F5F5] pt-43 pb-40">
+    <div class="flex min-w-391.5 flex-col gap-6">
+      <div>
+        <div class="mb-12 flex items-center gap-0.5">
+          <div class="flex items-center gap-1 px-1 py-0.5">
+            <span
+              class="cursor-pointer text-[18px] font-medium text-[#666666] hover:underline"
+              @click="router.push(DASHBOARD_ROUTE)"
+              >Home</span
+            >
+            <AngleRightIcon />
           </div>
-          <h1 class="text-[40px] font-semibold text-[#141414]">{{ course?.title }}</h1>
+          <div v-if="parentPage === CATALOG_PAGE_NAME" class="flex items-center gap-1 px-1 py-0.5">
+            <span
+              class="cursor-pointer text-[18px] font-medium text-[#666666] hover:underline"
+              @click="router.push(CATALOG_ROUTE)"
+              >Browse</span
+            >
+            <AngleRightIcon />
+          </div>
+          <div>
+            <span class="text-[18px] font-medium text-[#4F46E5]">{{ course?.category.name }}</span>
+          </div>
         </div>
-        <div class="flex flex-col gap-4.5">
+        <h1 class="text-[40px] font-semibold text-[#141414]">{{ course?.title }}</h1>
+      </div>
+
+      <div class="flex items-start gap-33.25">
+        <div class="flex w-225.75 min-w-225.75 flex-col gap-4.5">
           <div class="flex flex-col gap-4">
             <img :src="course?.image" class="h-118.5 w-225.75 rounded-[10px] object-cover" />
             <div class="flex gap-4">
@@ -420,296 +428,309 @@ watch(
             </div>
           </div>
         </div>
-      </div>
 
-      <div v-if="!userCourseEnrollment && !isLoading" class="mt-28 flex max-w-132.5 flex-1 flex-col gap-3">
-        <Accordion v-model:value="activeTab">
-          <AccordionPanel value="0">
-            <AccordionHeader :icon="StepOneIcon">Weekly Schedule</AccordionHeader>
-            <AccordionContent>
-              <div class="grid grid-cols-4 gap-3">
-                <SelectButton
-                  v-for="weeklySchedule in WEEKLY_SCHEDULE_CONFIG"
-                  :key="weeklySchedule.id"
-                  :label="weeklySchedule.shortLabel"
-                  :is-selected="selectedWeeklySchedule?.id === weeklySchedule.id"
-                  :disabled="!isScheduleAvailable(weeklySchedule.id)"
-                  variant="outline"
-                  class="h-22.75 w-full justify-center p-2.5"
-                  @click="(isSelected) => handleSelectWeeklySchedule(isSelected, weeklySchedule)"
-                />
-              </div>
-            </AccordionContent>
-          </AccordionPanel>
-          <AccordionPanel value="1">
-            <AccordionHeader :icon="StepTwoIcon">Time Slot</AccordionHeader>
-            <AccordionContent>
-              <div class="grid grid-cols-3 gap-1.5">
-                <SelectButton
-                  v-for="timeSlot in TIME_SLOT_CONFIG"
-                  :key="timeSlot.id"
-                  :is-selected="selectedTimeSlot?.id === timeSlot.id"
-                  :disabled="!isTimeSlotAvailable(timeSlot.id)"
-                  class="p-3.75"
-                  @click="(isSelected) => handleSelectTimeSlot(isSelected, timeSlot)"
-                >
-                  <div class="flex items-center gap-3">
-                    <component :is="TIME_SLOT_ICONS[timeSlot.id]" v-if="TIME_SLOT_ICONS[timeSlot.id]" />
-                    <div class="flex flex-col gap-0.5">
-                      <span class="text-[14px] font-medium">{{ timeSlot.label }}</span>
-                      <span class="text-[10px]">{{ timeSlot.startTime }} - {{ timeSlot.endTime }}</span>
-                    </div>
-                  </div>
-                </SelectButton>
-              </div>
-            </AccordionContent>
-          </AccordionPanel>
-          <AccordionPanel value="2">
-            <AccordionHeader :icon="StepThreeIcon">Session Type</AccordionHeader>
-            <AccordionContent>
-              <div class="grid grid-cols-3 gap-2">
-                <div
-                  v-for="sessionType in formattedSessionTypes"
-                  :key="sessionType.id"
-                  class="flex min-h-38.75 min-w-42.75 flex-col items-center gap-2"
-                >
+        <div v-if="!userCourseEnrollment && !isLoading" class="flex max-w-132.5 flex-1 flex-col gap-3">
+          <Accordion v-model:value="activeTab">
+            <AccordionPanel value="0">
+              <AccordionHeader
+                :icon="StepOneIcon"
+                :secondary-icon="StepOneFilledIcon"
+                :is-selected="!!selectedWeeklySchedule"
+                >Weekly Schedule</AccordionHeader
+              >
+              <AccordionContent>
+                <div class="grid grid-cols-4 gap-3">
                   <SelectButton
-                    :is-selected="selectedSessionType?.id === sessionType.id"
-                    :disabled="sessionType.isFull"
-                    class="min-h-38.75 min-w-42.75 px-5 py-3.75"
-                    @click="selectedSessionType = sessionType"
+                    v-for="weeklySchedule in WEEKLY_SCHEDULE_CONFIG"
+                    :key="weeklySchedule.id"
+                    :label="weeklySchedule.shortLabel"
+                    :is-selected="selectedWeeklySchedule?.id === weeklySchedule.id"
+                    :disabled="!isScheduleAvailable(weeklySchedule.id)"
+                    variant="schedule"
+                    @click="(isSelected) => handleSelectWeeklySchedule(isSelected, weeklySchedule)"
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionPanel>
+            <AccordionPanel value="1">
+              <AccordionHeader :icon="StepTwoIcon" :secondary-icon="StepTwoFilledIcon" :is-selected="!!selectedTimeSlot"
+                >Time Slot</AccordionHeader
+              >
+              <AccordionContent>
+                <div class="grid grid-cols-3 gap-1.5">
+                  <SelectButton
+                    v-for="timeSlot in TIME_SLOT_CONFIG"
+                    :key="timeSlot.id"
+                    :is-selected="selectedTimeSlot?.id === timeSlot.id"
+                    :disabled="!isTimeSlotAvailable(timeSlot.id)"
+                    variant="time-slot"
+                    @click="(isSelected) => handleSelectTimeSlot(isSelected, timeSlot)"
                   >
-                    <div class="flex w-full flex-col items-center justify-center gap-2.5 text-inherit">
-                      <component :is="SESSION_TYPE_ICONS[sessionType.id]" v-if="SESSION_TYPE_ICONS[sessionType.id]" />
-                      <div class="flex flex-col items-center gap-1.5">
-                        <span class="text-[16px] font-semibold">{{ sessionType.displayName }}</span>
-                        <span>{{ sessionType.displayLocation }}</span>
+                    <div class="flex items-center gap-3">
+                      <component :is="TIME_SLOT_ICONS[timeSlot.id]" v-if="TIME_SLOT_ICONS[timeSlot.id]" />
+                      <div class="flex flex-col gap-0.5">
+                        <span class="text-[14px] font-medium">{{ timeSlot.label }}</span>
+                        <span class="text-[10px]">{{ timeSlot.startTime }} - {{ timeSlot.endTime }}</span>
                       </div>
-                      <span :class="sessionType.isFull ? 'text-[#CCCCCC]' : 'text-[#736BEA]'">
-                        {{ sessionType.displayPrice }}
-                      </span>
                     </div>
                   </SelectButton>
-                  <div>
-                    <p v-if="!sessionType.isLowSeats" class="text-[12px] font-medium text-[#3D3D3D]">
-                      <span>{{ sessionType.availableSeats }}</span>
-                      Seats Available
-                    </p>
-                    <div v-else class="flex items-center gap-1">
-                      <WarningIcon class="h-4 w-4" />
-                      <p class="text-[12px] font-medium text-[#F4A316]">
-                        Only <span>{{ sessionType.availableSeats }} Seats Remaining</span>
+                </div>
+              </AccordionContent>
+            </AccordionPanel>
+            <AccordionPanel value="2">
+              <AccordionHeader
+                :icon="StepThreeIcon"
+                :secondary-icon="StepThreeFilledIcon"
+                :is-selected="!!selectedSessionType"
+                >Session Type</AccordionHeader
+              >
+              <AccordionContent>
+                <div class="grid grid-cols-3 gap-2">
+                  <div
+                    v-for="sessionType in formattedSessionTypes"
+                    :key="sessionType.id"
+                    class="flex min-h-38.75 min-w-42.75 flex-col items-center gap-2"
+                  >
+                    <SelectButton
+                      :is-selected="selectedSessionType?.id === sessionType.id"
+                      :disabled="sessionType.isFull"
+                      variant="session-type"
+                      @click="(isSelected) => (selectedSessionType = isSelected ? sessionType : null)"
+                    >
+                      <div class="flex w-full flex-col items-center justify-center gap-2.5 text-inherit">
+                        <component
+                          :is="SESSION_TYPE_ICONS[sessionType.id]"
+                          v-if="SESSION_TYPE_ICONS[sessionType.id]"
+                          class="h-6.5 w-6.5"
+                        />
+                        <div class="flex flex-col items-center gap-1.5">
+                          <span class="text-[16px] font-semibold">{{ sessionType.displayName }}</span>
+                          <div class="flex items-center gap-0.5">
+                            <PointerIcon />
+                            <span class="text-[12px]">{{ sessionType.displayLocation }}</span>
+                          </div>
+                        </div>
+                        <span class="text-[14px]" :class="sessionType.isFull ? 'text-[#CCCCCC]' : 'text-[#736BEA]'">
+                          {{ sessionType.displayPrice }}
+                        </span>
+                      </div>
+                    </SelectButton>
+                    <div>
+                      <p v-if="!sessionType.isLowSeats" class="text-[12px] font-medium text-[#3D3D3D]">
+                        <span>{{ sessionType.availableSeats }}</span>
+                        Seats Available
                       </p>
+                      <div v-else class="flex items-center gap-1">
+                        <WarningIcon class="h-4 w-4" />
+                        <p class="text-[12px] font-medium text-[#F4A316]">
+                          Only <span>{{ sessionType.availableSeats }} Seats Remaining</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </AccordionContent>
-          </AccordionPanel>
-        </Accordion>
+              </AccordionContent>
+            </AccordionPanel>
+          </Accordion>
 
-        <div class="rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-10">
-          <div class="flex flex-col gap-8">
+          <div class="rounded-xl border border-[#F5F5F5] bg-[#FFFFFF] p-10">
             <div class="flex flex-col gap-8">
-              <div class="flex items-center justify-between">
-                <p class="text-[20px] font-semibold text-[#8A8A8A]">Total Price</p>
-                <span class="text-[32px] font-semibold text-[#333333]">${{ totalPrice }}</span>
-              </div>
-              <div class="flex flex-col gap-3 pr-1">
+              <div class="flex flex-col gap-8">
                 <div class="flex items-center justify-between">
-                  <span class="text-[16px] font-medium text-[#8A8A8A]">Base Price</span>
-                  <span class="text-[16px] font-medium text-[#292929]">+ ${{ course?.basePrice || "0.00" }}</span>
+                  <p class="text-[20px] font-semibold text-[#8A8A8A]">Total Price</p>
+                  <span class="text-[32px] font-semibold text-[#333333]">${{ totalPrice }}</span>
                 </div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[16px] font-medium text-[#8A8A8A]">Session Type</span>
-                  <span class="text-[16px] font-medium text-[#292929]">
-                    {{
-                      selectedSessionType?.name === "online"
-                        ? "Included"
-                        : `+ $${selectedSessionType?.priceModifier || "0.00"}`
-                    }}
-                  </span>
+                <div class="flex flex-col gap-3 pr-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[16px] font-medium text-[#8A8A8A]">Base Price</span>
+                    <span class="text-[16px] font-medium text-[#292929]">+ ${{ course?.basePrice || "0.00" }}</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[16px] font-medium text-[#8A8A8A]">Session Type</span>
+                    <span class="text-[16px] font-medium text-[#292929]">
+                      {{
+                        selectedSessionType?.name === "online"
+                          ? "Included"
+                          : `+ $${selectedSessionType?.priceModifier || "0.00"}`
+                      }}
+                    </span>
+                  </div>
                 </div>
               </div>
+              <Button
+                type="submit"
+                label="Enroll Now"
+                :loading="isSubmitting"
+                :variant="isAuthenticated && isProfileComplete ? 'enroll-auth' : 'enroll-unauth'"
+                @click="handleEnrollment(false)"
+              />
             </div>
+          </div>
+
+          <ActionBanner
+            v-if="!isAuthenticated"
+            title="Authentication Required"
+            description="You need sign in to your profile before enrolling in this course."
+            button-label="Sign In"
+            @action="showLogInModal = !showLogInModal"
+          />
+          <ActionBanner
+            v-else-if="!isProfileComplete"
+            title="Complete Your Profile"
+            description="You need to fill in your profile details before enrolling in this course."
+            button-label="Complete"
+            @action="showProfileModal = !showProfileModal"
+          />
+        </div>
+        <div v-else-if="!isLoading" class="flex min-w-118.25 flex-col gap-12">
+          <div class="flex flex-col gap-5.5">
+            <div
+              v-if="userCourseEnrollment?.completedAt"
+              class="w-fit rounded-[100px] bg-[#1DC31D1A] p-4 text-[20px] font-semibold text-[#1DC31D]"
+            >
+              Completed
+            </div>
+            <div v-else class="w-fit rounded-[100px] bg-[#736BEA1A] p-4 text-[20px] font-semibold text-[#736BEA]">
+              Enrolled
+            </div>
+            <div class="flex items-center gap-3">
+              <CalendarIcon class="h-6 w-6" />
+              <span>{{ userCourseEnrollment?.schedule.weeklySchedule.label }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <ClockIcon class="h-6 w-6" />
+              <span>{{ userCourseEnrollment?.schedule.timeSlot.label }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <MonitorIcon class="h-6 w-6" />
+              <span>{{ userCourseEnrollment?.schedule.sessionType.name }}</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <PointerIcon class="h-6 w-6" />
+              <span>{{ userCourseEnrollment?.schedule.sessionType.location ?? "Google Meet" }}</span>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-10">
+            <ProgressBar :progress="userCourseEnrollment?.progress ?? 0" size="medium" />
             <Button
-              type="submit"
-              label="Enroll Now"
+              v-if="userCourseEnrollment?.completedAt"
+              label="Retake Course"
               :loading="isSubmitting"
-              class="h-15.75 rounded-xl p-2.5 text-[20px]"
-              :class="
-                isAuthenticated && isProfileComplete
-                  ? 'bg-[#4F46E5] font-medium text-[#FFFFFF]'
-                  : 'bg-[#EEEDFC] font-semibold text-[#B7B3F4]'
-              "
-              @click="handleEnrollment(false)"
+              :icon="RefreshIcon"
+              icon-pos="right"
+              variant="action"
+              @click="handleRetakeCourse"
             />
-          </div>
-        </div>
+            <Button
+              v-else
+              label="Complete Course"
+              :loading="isSubmitting"
+              :icon="MarkIcon"
+              icon-pos="right"
+              variant="action"
+              @click="handleCompleteEnrollment(userCourseEnrollment?.id ?? 0)"
+            />
 
-        <ActionBanner
-          v-if="!isAuthenticated"
-          title="Authentication Required"
-          description="You need sign in to your profile before enrolling in this course."
-          button-label="Sign In"
-          @action="showLogInModal = !showLogInModal"
-        />
-        <ActionBanner
-          v-else-if="!isProfileComplete"
-          title="Complete Your Profile"
-          description="You need to fill in your profile details before enrolling in this course."
-          button-label="Complete"
-          @action="showProfileModal = !showProfileModal"
-        />
-      </div>
-      <div v-else-if="!isLoading" class="mt-28 flex min-w-118.25 flex-col gap-12">
-        <div class="flex flex-col gap-5.5">
-          <div
-            v-if="userCourseEnrollment?.completedAt"
-            class="w-fit rounded-[100px] bg-[#1DC31D1A] p-4 text-[20px] font-semibold text-[#1DC31D]"
-          >
-            Completed
+            <Modal
+              :visible="showEnrollmentCompletionModal"
+              :icon="ConfettiIcon"
+              title="Congratulations!"
+              @continue="handleRateCourse"
+            >
+              <div>
+                <p class="text-[20px] font-medium text-[#3D3D3D]">
+                  You`ve completed "<span class="font-semibold">{{ userCourseEnrollment?.course.title }}</span
+                  >" Course!
+                </p>
+              </div>
+              <StarRating
+                v-if="showRatingBox"
+                v-model="modalRating"
+                :disabled="isRatingSubmitting"
+                @submit="handleRateCourse"
+              />
+            </Modal>
           </div>
-          <div v-else class="w-fit rounded-[100px] bg-[#736BEA1A] p-4 text-[20px] font-semibold text-[#736BEA]">
-            Enrolled
-          </div>
-          <div class="flex items-center gap-3">
-            <CalendarIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment?.schedule.weeklySchedule.label }}</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <ClockIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment?.schedule.timeSlot.label }}</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <MonitorIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment?.schedule.sessionType.name }}</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <PointerIcon class="h-6 w-6" />
-            <span>{{ userCourseEnrollment?.schedule.sessionType.location ?? "Google Meet" }}</span>
-          </div>
-        </div>
 
-        <div class="flex flex-col gap-10">
-          <ProgressBar :progress="userCourseEnrollment?.progress ?? 0" size="medium" />
-          <Button
-            v-if="userCourseEnrollment?.completedAt"
-            label="Retake Course"
-            :loading="isSubmitting"
-            :icon="RefreshIcon"
-            icon-pos="right"
-            class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
-            @click="handleRetakeCourse"
-          />
-          <Button
-            v-else
-            label="Complete Course"
-            :loading="isSubmitting"
-            :icon="MarkIcon"
-            icon-pos="right"
-            class="rounded-lg bg-[#4F46E5] px-6.25 py-4.25 text-[20px] font-medium text-[#FFFFFF]"
-            @click="handleCompleteEnrollment(userCourseEnrollment?.id ?? 0)"
-          />
-
-          <Modal
-            :visible="showEnrollmentCompletionModal"
-            :icon="ConfettiIcon"
-            title="Congratulations!"
-            @continue="handleRateCourse"
-          >
-            <div>
-              <p class="text-[20px] font-medium text-[#3D3D3D]">
-                You`ve completed "<span class="font-semibold">{{ userCourseEnrollment?.course.title }}</span
-                >" Course!
-              </p>
+          <div v-if="showRatingBox" class="rounded-lg bg-[#FFFFFF]">
+            <div class="flex w-full justify-end p-2.5">
+              <Button :icon="CloseIcon" variant="icon" @click="isRatingDismissed = true" />
             </div>
-            <StarRating
-              v-if="showRatingBox"
-              v-model="modalRating"
-              :disabled="isRatingSubmitting"
-              @submit="handleRateCourse"
-            />
-          </Modal>
-        </div>
-
-        <div v-if="showRatingBox" class="rounded-lg bg-[#FFFFFF]">
-          <div class="flex w-full justify-end p-2.5">
-            <Button :icon="CloseIcon" class="gap-0!" @click="isRatingDismissed = true" />
+            <div class="relative -top-1 px-12.5 pb-10">
+              <StarRating v-model="bannerRating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
+            </div>
           </div>
-          <div class="relative -top-1 px-12.5 pb-10">
-            <StarRating v-model="bannerRating" :disabled="isRatingSubmitting" @submit="handleRateCourse" />
-          </div>
-        </div>
 
-        <div v-if="userCourseEnrollment && !isLoading && userCourseEnrollment.completedAt && course?.isRated">
-          <ActionBanner title="You've already rated this course" />
+          <div v-if="userCourseEnrollment && !isLoading && userCourseEnrollment.completedAt && course?.isRated">
+            <ActionBanner title="You've already rated this course" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <Modal
-      :visible="showEnrollmentConfirmationModal"
-      :icon="ConfirmationIcon"
-      title="Enrollment Confirmed!"
-      @continue="showEnrollmentConfirmationModal = false"
-    >
-      <p class="text-[20px] font-medium text-[#3D3D3D]">
-        You`ve successfully enrolled to the "<span class="font-semibold">{{ course?.title }}</span
-        >" Course!
-      </p>
-    </Modal>
-
-    <Modal
-      :visible="showEnrollmentConflictModal"
-      :icon="WarningIcon"
-      title="Enrollment Conflict"
-      button-label="Continue Anyway"
-      @continue="handleEnrollment(true)"
-      @cancel="showEnrollmentConflictModal = false"
-    >
-      <div class="text-[20px] font-medium text-[#3D3D3D]">
-        <p>
-          You are already enrolled in "<span
-            v-for="(conflict, index) in enrollmentConflicts"
-            :key="conflict.conflictingEnrollmentId"
-            class="font-semibold"
-            >{{ conflict.conflictingCourseName }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
-          >" with the same schedule:
-          <span v-for="(conflict, index) in enrollmentConflicts" :key="conflict.conflictingEnrollmentId"
-            >{{ conflict.schedule }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
-          >
+      <Modal
+        :visible="showEnrollmentConfirmationModal"
+        :icon="ConfirmationIcon"
+        title="Enrollment Confirmed!"
+        @continue="showEnrollmentConfirmationModal = false"
+      >
+        <p class="text-[20px] font-medium text-[#3D3D3D]">
+          You`ve successfully enrolled to the "<span class="font-semibold">{{ course?.title }}</span
+          >" Course!
         </p>
-        <span>Are you sure you want to continue?</span>
-      </div>
-    </Modal>
+      </Modal>
 
-    <Modal
-      :visible="showAlreadyEnrolledModal"
-      :icon="WarningIcon"
-      title="Enrollment Denyed!"
-      :content="errorMessage"
-      @continue="showAlreadyEnrolledModal = false"
-    />
+      <Modal
+        :visible="showEnrollmentConflictModal"
+        :icon="WarningIcon"
+        title="Enrollment Conflict"
+        button-label="Continue Anyway"
+        @continue="handleEnrollment(true)"
+        @cancel="showEnrollmentConflictModal = false"
+      >
+        <div class="text-[20px] font-medium text-[#3D3D3D]">
+          <p>
+            You are already enrolled in "<span
+              v-for="(conflict, index) in enrollmentConflicts"
+              :key="conflict.conflictingEnrollmentId"
+              class="font-semibold"
+              >{{ conflict.conflictingCourseName }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+            >" with the same schedule:
+            <span v-for="(conflict, index) in enrollmentConflicts" :key="conflict.conflictingEnrollmentId"
+              >{{ conflict.schedule }}{{ index < enrollmentConflicts.length - 1 ? ", " : "" }}</span
+            >
+          </p>
+          <span>Are you sure you want to continue?</span>
+        </div>
+      </Modal>
 
-    <Modal
-      :visible="showProfileIncompleteModal"
-      :icon="UserIcon"
-      title="Complete your profile to continue"
-      content="You need to complete your profile before enrolling in this course."
-      button-label="Complete Profile"
-      @continue="handleOpenProfileModal"
-      @cancel="showProfileIncompleteModal = false"
-    />
+      <Modal
+        :visible="showAlreadyEnrolledModal"
+        :icon="WarningIcon"
+        title="Enrollment Denyed!"
+        :content="errorMessage"
+        @continue="showAlreadyEnrolledModal = false"
+      />
 
-    <Modal
-      :visible="showNoAvailableSeatsModal"
-      :icon="WarningIcon"
-      title="No Seats Available"
-      content="No seats available for this session type. Please select another, or try to change weekly schedule."
-      @continue="showNoAvailableSeatsModal = false"
-    />
+      <Modal
+        :visible="showProfileIncompleteModal"
+        :icon="UserIcon"
+        title="Complete your profile to continue"
+        content="You need to complete your profile before enrolling in this course."
+        button-label="Complete Profile"
+        @continue="handleOpenProfileModal"
+        @cancel="showProfileIncompleteModal = false"
+      />
 
-    <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
+      <Modal
+        :visible="showNoAvailableSeatsModal"
+        :icon="WarningIcon"
+        title="No Seats Available"
+        content="No seats available for this session type. Please select another, or try to change weekly schedule."
+        @continue="showNoAvailableSeatsModal = false"
+      />
+
+      <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />
+    </div>
   </div>
 </template>

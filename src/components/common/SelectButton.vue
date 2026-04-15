@@ -7,7 +7,7 @@ interface Props {
   image?: string;
   isSelected?: boolean;
   disabled?: boolean;
-  variant?: "primary" | "outline" | "text";
+  variant?: "primary" | "outline" | "text" | "schedule" | "time-slot" | "session-type" | "category";
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,6 +15,17 @@ const props = withDefaults(defineProps<Props>(), {
   variant: "primary"
 });
 const emit = defineEmits(["click"]);
+
+const BASE_STYLES =
+  "inline-flex items-center justify-center gap-2.5 rounded-xl border transition-all duration-300 ease-out px-3 py-2" as const;
+
+const VARIANT_STYLES: Record<string, string> = {
+  primary: "border-[#FFFFFF] bg-[#FFFFFF]",
+  outline: "border-[#D1D1D1] bg-[#FFFFFF]",
+  schedule: "border-[#D1D1D1] bg-[#FFFFFF] h-22.75 w-full justify-center p-2.5",
+  "time-slot": "border-[#FFFFFF] bg-[#FFFFFF] p-3.75",
+  "session-type": "border-[#FFFFFF] bg-[#FFFFFF] min-h-32.75 min-w-42.75 px-5 py-2"
+} as const;
 
 const handleClick = () => {
   if (!props.disabled) {
@@ -24,29 +35,31 @@ const handleClick = () => {
 
 const buttonClasses = computed(() => {
   if (props.disabled) {
-    return "cursor-not-allowed! border-[#D1D1D1]! bg-[#F5F5F5] text-[#CCCCCC]!";
+    return `${BASE_STYLES} cursor-not-allowed border-[#D1D1D1] bg-[#F5F5F5] text-[#CCCCCC] w-full`;
   }
 
   if (props.variant === "text") {
-    return "cursor-default border-transparent bg-[#FFFFFF] text-[#666666]";
+    return `${BASE_STYLES} cursor-default border-transparent bg-white text-[#666666] w-fit!`;
   }
 
-  const base = "cursor-pointer transition-all duration-300 ease-out";
-  const selected = "border-[#281ED2] bg-[#EEEDFC] text-[#281ED2]";
+  if (props.variant === "category") {
+    return `${BASE_STYLES} cursor-default border-transparent bg-[#F5F5F5] text-[#525252] gap-1.5! w-fit! hover:bg-[#F5F5F5]! hover:text-[#525252]!`;
+  }
 
-  const unselectedMap = {
-    primary: "border-[#FFFFFF] bg-[#FFFFFF]",
-    outline: "border-[#D1D1D1] bg-[#FFFFFF]"
-  };
+  const isSelected = props.isSelected;
 
-  const unselected = `${unselectedMap[props.variant as "primary" | "outline"]} text-[#525252] hover:border-[#DDDBFA] hover:bg-[#DDDBFA] hover:text-[#281ED2]`;
+  const currentVariant = VARIANT_STYLES[props.variant as keyof typeof VARIANT_STYLES] || VARIANT_STYLES.primary;
 
-  return `${base} ${props.isSelected ? selected : unselected}`;
+  if (isSelected) {
+    return `${BASE_STYLES} cursor-pointer border-[#281ED2] bg-[#EEEDFC] text-[#281ED2] ${props.variant !== "primary" ? "w-full" : ""}`;
+  }
+
+  return `${BASE_STYLES} cursor-pointer ${currentVariant} text-[#525252] hover:border-[#DDDBFA] hover:bg-[#DDDBFA] hover:text-[#281ED2]`;
 });
 </script>
 <template>
   <div
-    class="inline-flex w-fit items-center gap-2.5 rounded-xl border px-3 py-2"
+    class="inline-flex items-center justify-center gap-2.5 rounded-xl border px-3 py-2"
     :class="buttonClasses"
     @click="handleClick"
   >
