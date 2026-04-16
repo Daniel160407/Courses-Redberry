@@ -114,10 +114,7 @@ onMounted(async () => {
         <CourseProgressCard
           v-for="item in limitedCourses"
           :key="item.id"
-          :title="item.course.title"
-          :image="item.course.image"
-          :instructor-name="item.course.instructor.name"
-          :avg-rating="item.course.avgRating"
+          :course="item.course"
           :progress="item.progress"
           @open-details="handleOpenDetails(item.course)"
         />
@@ -152,9 +149,7 @@ onMounted(async () => {
         <CourseProgressCard
           v-for="item in dummyCourses"
           :key="item.id"
-          :title="item.course.title"
-          :instructor-name="item.course.instructor.name"
-          :avg-rating="item.course.avgRating"
+          :course="item.course"
           :progress="item.progress"
           blured
         />

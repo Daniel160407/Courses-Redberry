@@ -507,7 +507,7 @@ watch(
                         <div class="flex flex-col items-center gap-1.5">
                           <span class="text-[16px] font-semibold">{{ sessionType.displayName }}</span>
                           <div class="flex items-center gap-0.5">
-                            <PointerIcon />
+                            <PointerIcon v-if="sessionType.name !== 'online'" />
                             <span class="text-[12px]">{{ sessionType.displayLocation }}</span>
                           </div>
                         </div>

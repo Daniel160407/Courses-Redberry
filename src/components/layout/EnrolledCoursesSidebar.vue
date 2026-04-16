@@ -75,17 +75,15 @@ watch(isSidebarOpen, (open) => {
           <CourseProgressCard
             v-for="enrollment in userEnrollments"
             :key="enrollment.id"
-            :title="enrollment.course.title"
-            :instructor-name="enrollment.course.instructor.name"
-            :avg-rating="enrollment.course.avgRating"
+            :course="enrollment.course"
             :progress="enrollment.progress"
-            :image="enrollment.course.image"
-            :days="enrollment.schedule.weeklySchedule.label"
-            :times="enrollment.schedule.timeSlot.label"
-            :session-type="enrollment.schedule.sessionType.name"
-            :location="enrollment.schedule.location"
-            :base-price="enrollment.course.basePrice"
-            :price-modifier="enrollment.schedule.sessionType.priceModifier"
+            :schedule="{
+              days: enrollment.schedule.weeklySchedule.label,
+              times: enrollment.schedule.timeSlot.label,
+              sessionType: enrollment.schedule.sessionType.name,
+              location: enrollment.schedule.location,
+              priceModifier: enrollment.schedule.sessionType.priceModifier
+            }"
             extended
             @open-details="handleOpenDetails(enrollment.course.id)"
           />
