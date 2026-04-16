@@ -55,7 +55,7 @@ import StepThreeFilledIcon from "@/components/icons/StepThreeFilledIcon.vue";
 import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
-const { fetchCourseById, rateCourse } = useCoursesCrud();
+const { fetchCourseById, rateCourse, fetchInProgressCourses } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
 const { fetchUserEnrollments, enrollCourse, completeEnrollment, deleteEnrollment } = useEnrollmentsCrud();
 const router = useRouter();
@@ -202,6 +202,7 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
       showEnrollmentConfirmationModal.value = true;
       await refreshEnrollmentStatus();
       await fetchUserEnrollments();
+      await fetchInProgressCourses();
     } else {
       const errorData = response?.serverErrors;
       if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
@@ -238,6 +239,8 @@ const handleCompleteEnrollment = async (enrollmentId: number) => {
       }
 
       showEnrollmentCompletionModal.value = true;
+      
+      await fetchInProgressCourses();
     }
   } finally {
     isSubmitting.value = false;
@@ -258,6 +261,7 @@ const handleRetakeCourse = async () => {
 
       await nextTick();
       selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+      await fetchUserEnrollments();
     }
   } finally {
     isSubmitting.value = false;
