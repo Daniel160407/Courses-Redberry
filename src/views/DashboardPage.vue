@@ -110,7 +110,15 @@ onMounted(async () => {
         <Button label="See All" variant="link" @click="router.push({ query: { enrolled: 'true' } })" />
       </div>
 
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <TransitionGroup
+        appear
+        tag="div"
+        class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+        enter-active-class="transition duration-500 ease-out"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        move-class="transition duration-500"
+      >
         <CourseProgressCard
           v-for="item in limitedCourses"
           :key="item.id"
@@ -118,7 +126,7 @@ onMounted(async () => {
           :progress="item.progress"
           @open-details="handleOpenDetails(item.course)"
         />
-      </div>
+      </TransitionGroup>
     </div>
 
     <div v-if="featuredCourses.length" class="flex flex-col gap-8">
@@ -126,14 +134,22 @@ onMounted(async () => {
         <span class="text-[40px] font-semibold text-[#0A0A0A]">Start Learning Today</span>
         <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>
       </div>
-      <div v-if="featuredCourses" class="grid grid-cols-3 gap-6">
+      <TransitionGroup
+        appear
+        tag="div"
+        class="grid grid-cols-3 gap-6"
+        enter-active-class="transition duration-500 ease-out"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        move-class="transition duration-500"
+      >
         <CourseCard
           v-for="course in featuredCourses"
           :key="course.id"
           v-bind="course"
           @open-details="handleOpenDetails(course)"
         />
-      </div>
+      </TransitionGroup>
     </div>
 
     <div v-if="!isAuthenticated" class="relative flex flex-col gap-8 pb-8.75">

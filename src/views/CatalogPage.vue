@@ -185,74 +185,90 @@ onMounted(async () => {
 <template>
   <div class="flex min-h-screen flex-col items-center overflow-x-hidden bg-[#F5F5F5] pt-43 pb-40">
     <div>
-      <div class="mb-12 flex items-center gap-0.5 text-[18px]">
-        <div class="flex items-center gap-1 px-1 py-0.5">
-          <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push(DASHBOARD_ROUTE)">Home</span>
-          <AngleRightIcon />
+      <Transition
+        appear
+        enter-active-class="transition duration-500 ease-out"
+        enter-from-class="opacity-0 -translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+      >
+        <div class="mb-12 flex items-center gap-0.5 text-[18px]">
+          <div class="flex items-center gap-1 px-1 py-0.5">
+            <span class="cursor-pointer text-[#666666] hover:underline" @click="router.push(DASHBOARD_ROUTE)"
+              >Home</span
+            >
+            <AngleRightIcon />
+          </div>
+          <div class="px-1 py-0.5">
+            <span class="text-[#736BEA]">Browse</span>
+          </div>
         </div>
-        <div class="px-1 py-0.5">
-          <span class="text-[#736BEA]">Browse</span>
-        </div>
-      </div>
+      </Transition>
 
       <div class="flex max-w-391.5 items-start gap-22.5">
         <div class="flex flex-col gap-6">
-          <aside
-            class="scrollbar-hide sticky flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
+          <Transition
+            appear
+            enter-active-class="transition duration-700 ease-out"
+            enter-from-class="opacity-0 -translate-x-8"
+            enter-to-class="opacity-100 translate-x-0"
           >
-            <div class="flex items-center justify-between">
-              <span class="text-[40px] font-semibold text-[#0A0A0A]">Filters</span>
-              <Button
-                label="Clear All Filters"
-                :loading="isFiltering"
-                :icon="CloseIcon"
-                icon-pos="right"
-                variant="danger-nav"
-                @click="handleClearFilters"
-              />
-            </div>
-
-            <div class="flex flex-col gap-6">
-              <span class="text-[18px] font-medium text-[#666666]">Categories</span>
-              <div class="flex flex-wrap gap-2">
-                <SelectButton
-                  v-for="category in categories"
-                  :key="category.id"
-                  :label="category.name"
-                  :icon="getCategoryIcon(category.icon)"
-                  :is-selected="selectedCategoryIds.includes(category.id)"
-                  @click="(isSelected) => handleClickCategory(isSelected, category)"
+            <aside
+              class="scrollbar-hide sticky flex h-[calc(100vh-160px)] w-77.25 min-w-77.25 flex-col gap-8 overflow-y-auto pr-4"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-[40px] font-semibold text-[#0A0A0A]">Filters</span>
+                <Button
+                  label="Clear All Filters"
+                  :loading="isFiltering"
+                  :icon="CloseIcon"
+                  icon-pos="right"
+                  variant="danger-nav"
+                  @click="handleClearFilters"
                 />
               </div>
-            </div>
 
-            <div class="flex flex-col gap-6">
-              <span class="text-[18px] font-medium text-[#666666]">Topics</span>
-              <div class="flex flex-wrap gap-2">
-                <SelectButton
-                  v-for="topic in topics"
-                  :key="topic.id"
-                  :label="topic.name"
-                  :is-selected="selectedTopicIds.includes(topic.id)"
-                  @click="(isSelected) => handleClickTopic(isSelected, topic)"
-                />
+              <div class="flex flex-col gap-6">
+                <span class="text-[18px] font-medium text-[#666666]">Categories</span>
+                <div class="flex flex-wrap gap-2">
+                  <SelectButton
+                    v-for="category in categories"
+                    :key="category.id"
+                    :label="category.name"
+                    :icon="getCategoryIcon(category.icon)"
+                    :is-selected="selectedCategoryIds.includes(category.id)"
+                    @click="(isSelected) => handleClickCategory(isSelected, category)"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div class="flex flex-col gap-6">
-              <span class="text-[18px] font-medium text-[#666666]">Instructor</span>
-              <div class="flex flex-wrap gap-2">
-                <SelectButton
-                  v-for="instructor in instructors"
-                  :key="instructor.id"
-                  :label="instructor.name"
-                  :image="instructor.avatar"
-                  :is-selected="selectedInstructorIds.includes(instructor.id)"
-                  @click="(isSelected) => handleClickInstructor(isSelected, instructor)"
-                />
+              <div class="flex flex-col gap-6">
+                <span class="text-[18px] font-medium text-[#666666]">Topics</span>
+                <div class="flex flex-wrap gap-2">
+                  <SelectButton
+                    v-for="topic in topics"
+                    :key="topic.id"
+                    :label="topic.name"
+                    :is-selected="selectedTopicIds.includes(topic.id)"
+                    @click="(isSelected) => handleClickTopic(isSelected, topic)"
+                  />
+                </div>
               </div>
-            </div>
-          </aside>
+
+              <div class="flex flex-col gap-6">
+                <span class="text-[18px] font-medium text-[#666666]">Instructor</span>
+                <div class="flex flex-wrap gap-2">
+                  <SelectButton
+                    v-for="instructor in instructors"
+                    :key="instructor.id"
+                    :label="instructor.name"
+                    :image="instructor.avatar"
+                    :is-selected="selectedInstructorIds.includes(instructor.id)"
+                    @click="(isSelected) => handleClickInstructor(isSelected, instructor)"
+                  />
+                </div>
+              </div>
+            </aside>
+          </Transition>
 
           <div class="border-t border-[#ADADAD] pt-4 font-medium text-[#8A8A8A]">
             <p>
@@ -261,19 +277,35 @@ onMounted(async () => {
           </div>
         </div>
 
-        <main class="flex flex-1 flex-col gap-8">
-          <div class="flex items-center justify-between">
-            <div class="text-[16px] font-medium text-[#8A8A8A]">
-              <p v-if="showingCount">
-                Showing <span>{{ showingCount }}</span> out of
-                <span>{{ totalCourses }}</span>
-              </p>
-              <p v-else>No courses found</p>
+        <main class="flex min-w-291.75 flex-1 flex-col gap-8 transition-opacity duration-300">
+          <Transition
+            appear
+            enter-active-class="transition duration-500 delay-100 ease-out"
+            enter-from-class="opacity-0 translate-y-2"
+            enter-to-class="opacity-100 translate-y-0"
+          >
+            <div class="flex items-center justify-between">
+              <div class="text-[16px] font-medium text-[#8A8A8A]">
+                <p v-if="showingCount">
+                  Showing <span>{{ showingCount }}</span> out of
+                  <span>{{ totalCourses }}</span>
+                </p>
+                <p v-else>No courses found</p>
+              </div>
+              <SortingDropdown v-model="sort" :options="SORT_OPTIONS" />
             </div>
-            <SortingDropdown v-model="sort" :options="SORT_OPTIONS" />
-          </div>
+          </Transition>
 
-          <div v-if="showingCount" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <TransitionGroup
+            v-if="showingCount"
+            appear
+            tag="div"
+            class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+            enter-active-class="transition duration-500 ease-out"
+            enter-from-class="opacity-0 translate-y-4"
+            enter-to-class="opacity-100 translate-y-0"
+            move-class="transition duration-500"
+          >
             <CourseCard
               v-for="course in courses"
               :key="course.id"
@@ -282,7 +314,7 @@ onMounted(async () => {
               :category-icon="getCategoryIcon(course.category.icon)"
               @open-details="handleOpenDetails(course)"
             />
-          </div>
+          </TransitionGroup>
           <div v-if="showingCount" class="flex justify-center">
             <Paginator v-model="currentPage" :total="lastPage" />
           </div>
