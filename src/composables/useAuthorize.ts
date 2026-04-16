@@ -94,7 +94,7 @@ export const useAuthorize = () => {
       }
     } catch (err) {
       console.error("Profile Update Error:", err);
-      return { success: false, serverErrors: error.value };
+      return { success: false, serverErrors: error.value, status: 413 };
     }
   };
 

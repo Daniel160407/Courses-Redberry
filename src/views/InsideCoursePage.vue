@@ -52,6 +52,7 @@ import { CATEGORY_ICONS, SESSION_TYPE_ICONS, TIME_SLOT_ICONS } from "@/constants
 import StepOneFilledIcon from "@/components/icons/StepOneFilledIcon.vue";
 import StepTwoFilledIcon from "@/components/icons/StepTwoFilledIcon.vue";
 import StepThreeFilledIcon from "@/components/icons/StepThreeFilledIcon.vue";
+import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
 const { fetchCourseById, rateCourse } = useCoursesCrud();
@@ -87,6 +88,8 @@ const showProfileIncompleteModal = ref(false);
 const showEnrollmentCompletionModal = ref(false);
 const showNoAvailableSeatsModal = ref(false);
 const isRatingDismissed = ref(false);
+
+const loading = ref(false);
 
 const showRatingBox = computed(
   () =>
@@ -362,7 +365,9 @@ watch(
 </script>
 <template>
   <div class="flex min-h-screen justify-center bg-[#F5F5F5] pt-43 pb-40">
-    <div class="flex min-w-391.5 flex-col gap-6">
+    <LoadingSpinner v-if="isLoading" />
+
+    <div v-else class="flex min-w-391.5 flex-col gap-6">
       <div>
         <div class="mb-12 flex items-center gap-0.5">
           <div class="flex items-center gap-1 px-1 py-0.5">

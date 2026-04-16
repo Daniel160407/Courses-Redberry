@@ -36,11 +36,11 @@ const showProfileModal = ref(false);
             </div>
           </div>
           <div class="flex items-center gap-5.5">
-            <FacebookIcon />
-            <TwitterIcon />
-            <InstagramIcon />
-            <LinkedInIcon />
-            <YouTubeIcon />
+            <FacebookIcon class="cursor-pointer" />
+            <TwitterIcon class="cursor-pointer" />
+            <InstagramIcon class="cursor-pointer" />
+            <LinkedInIcon class="cursor-pointer" />
+            <YouTubeIcon class="cursor-pointer" />
           </div>
         </div>
 
@@ -92,8 +92,8 @@ const showProfileModal = ref(false);
         </div>
         <div class="flex flex-1 justify-end">
           <p class="text-[#666666]">
-            All Rights Reserved | <span class="text-[#4F46E5]">Terms and Conditions</span> |
-            <span class="text-[#4F46E5]">Privacy Policy</span>
+            All Rights Reserved | <span class="cursor-pointer text-[#4F46E5]">Terms and Conditions</span> |
+            <span class="cursor-pointer text-[#4F46E5]">Privacy Policy</span>
           </p>
         </div>
       </div>

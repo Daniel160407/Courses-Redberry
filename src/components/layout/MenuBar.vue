@@ -57,7 +57,7 @@ const showProfile = ref(false);
         />
 
         <div class="flex gap-3.75">
-          <Button label="Log In" variant="outline" @click="showLogIn = !showLogIn" />
+          <Button label="Log In" variant="outline" class="text-[20px]" @click="showLogIn = !showLogIn" />
           <Button label="Sign Up" variant="primary" class="h-auto! w-auto!" @click="showSignUp = !showSignUp" />
         </div>
       </div>

@@ -139,11 +139,14 @@ const handleUpdateProfile = async () => {
       profileFormData.value.avatar = null;
     }
     const result = await updateProfile(profileFormData.value);
+    console.log(result?.status)
     if (result?.success) {
       showProfileModal.value = false;
       showProfileEditSuccessModal.value = true;
       setUser(result?.user ?? null);
       setIsProfileComplete(result?.user?.profileComplete ?? false);
+    } else if (result?.status === 413) {
+      profileFormErrors.avatar = "image size is too big";
     } else if (result?.serverErrors) {
       const serverErr = result?.serverErrors;
       if (typeof serverErr === "object" && serverErr?.errors) {

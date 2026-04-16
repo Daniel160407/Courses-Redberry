@@ -19,6 +19,7 @@ import { computed, onMounted, ref, watch, type Component } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
 import { useAuthorize } from "@/composables/useAuthorize";
+import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
 
 const { fetchFilters, fetchTopics } = useCatalogCrud();
 const { fetchCourses } = useCoursesCrud();
@@ -42,6 +43,8 @@ const topics = ref<Topic[]>([]);
 const instructors = ref<Instructor[]>([]);
 
 const courses = ref<Course[]>([]);
+
+const loading = ref(false);
 
 const selectedCategoryIds = ref<number[]>(parseQueryParam(route.query.categories as string));
 const selectedTopicIds = ref<number[]>(parseQueryParam(route.query.topics as string));
@@ -167,6 +170,8 @@ watch([selectedCategoryIds, selectedTopicIds, selectedInstructorIds, sort, curre
 });
 
 onMounted(async () => {
+  loading.value = true;
+
   const responses = await fetchFilters();
   if (responses.categoriesResponse?.success) categories.value = responses.categoriesResponse.categories;
   if (responses.instructorsResponse?.success) instructors.value = responses.instructorsResponse.instructors;
@@ -180,11 +185,15 @@ onMounted(async () => {
 
   if (isAuthenticated) await fetchUserEnrollments();
   await updateCourses();
+
+  loading.value = false;
 });
 </script>
 <template>
   <div class="flex min-h-screen flex-col items-center overflow-x-hidden bg-[#F5F5F5] pt-43 pb-40">
-    <div>
+    <LoadingSpinner v-if="loading" />
+
+    <div v-else>d
       <Transition
         appear
         enter-active-class="transition duration-500 ease-out"
