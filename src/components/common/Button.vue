@@ -25,7 +25,9 @@ type ButtonVariant =
   | "paginator-page"
   | "sort-trigger"
   | "sort-option"
-  | "accordion-header";
+  | "accordion-header"
+  | "browse-catalog"
+  | "login-action";
 
 interface Props {
   label?: string;
@@ -47,7 +49,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const STYLES: Record<ButtonVariant, string> = {
-  primary: "h-14.5 rounded-md bg-[#4F46E5] px-6 py-4 text-[20px] text-[#F5F5F5] font-medium",
+  primary: "h-14.5 rounded-md bg-[#4F46E5] px-6 py-4 text-[20px] text-[#F5F5F5] font-medium whitespace-nowrap",
   secondary: "h-12 rounded-md bg-[#4F46E5] px-6.25 py-4.25 text-[16px] text-[#F5F5F5] font-medium",
   outline:
     "rounded-md border-2 border-[#958FEF] px-4 py-3 font-medium text-[#4F46E5] hover:bg-[#4F46E5] hover:text-[#F5F5F5] active:scale-95",
@@ -69,11 +71,13 @@ const STYLES: Record<ButtonVariant, string> = {
     "justify-start mt-1 text-left text-sm font-medium text-[#281ED2] underline underline-offset-4 hover:opacity-80",
   "modal-primary": "rounded-lg bg-[#4F46E5] text-[#FFFFFF] py-3 px-4 font-medium h-14.5",
   "modal-outline": "rounded-lg border-2 border-[#958FEF] text-[#4F46E5] py-3 px-4 font-medium h-14.5",
-  "paginator-nav": "h-10 w-10 rounded-sm border border-[#D1D1D1] bg-[#FFFFFF] p-0! pl-2",
+  "paginator-nav": "h-10 w-10 rounded-sm border border-[#D1D1D1] bg-[#FFFFFF] p-0! pl-2!",
   "paginator-page": "h-10 min-w-10 rounded-sm border border-[#D1D1D1] text-[16px] font-medium",
   "sort-trigger": "rounded-lg border border-[#F5F5F5] bg-[#FFFFFF] px-5 py-1.75 text-[16px] font-medium text-[#666666]",
   "sort-option": "w-full justify-start px-5 py-2.5 text-[16px] font-medium",
-  "accordion-header": "w-full justify-between! py-4 text-left font-medium [&>span]:contents"
+  "accordion-header": "w-full justify-between! py-4 text-left font-medium [&>span]:contents",
+  "browse-catalog": "h-14.5 w-43.75 rounded-lg bg-[#4F46E5] text-[16px] text-[#FFFFFF] font-medium whitespace-nowrap",
+  "login-action": "h-10.5 w-20.75 rounded-md bg-[#4F46E5] text-[16px] text-[#FFFFFF] font-medium whitespace-nowrap"
 } as const;
 
 const BASE_STYLES = "flex items-center justify-center gap-2 transition-all duration-300 ease-out" as const;

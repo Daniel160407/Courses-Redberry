@@ -1,12 +1,15 @@
 import type { EnrollmentForm } from "@/types/interfaces";
 import { useAxios } from "./useAxios";
+import { useGlobalStore } from "@/stores/GlobalStore";
 
 export const useEnrollmentsCrud = () => {
   const { sendRequest, data, error } = useAxios();
+  const { setUserEnrollments } = useGlobalStore();
 
   const fetchUserEnrollments = async () => {
     try {
       await sendRequest({ method: "GET", url: "/enrollments", useToken: true });
+      setUserEnrollments(data.value?.data);
       return { success: true, enrollments: data.value?.data };
     } catch (err) {
       console.error("Fetch User Enrollments Error:", err);

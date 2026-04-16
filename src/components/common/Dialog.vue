@@ -51,64 +51,80 @@ const handleFinalClick = () => {
 </script>
 
 <template>
-  <div
-    v-if="visible"
-    class="font-inter fixed inset-0 z-200 flex items-center justify-center bg-black/20"
-    @click.self="close"
+  <div v-if="visible" class="fixed inset-0 z-200 bg-black/20" @click="close" />
+
+  <Transition
+    enter-active-class="transition-all duration-300 ease-out"
+    enter-from-class="opacity-0 scale-95"
+    enter-to-class="opacity-100 scale-100"
+    leave-active-class="transition-all duration-200 ease-in"
+    leave-from-class="opacity-100 scale-100"
+    leave-to-class="opacity-0 scale-95"
   >
-    <div class="relative flex w-115 flex-col gap-3 rounded-xl bg-white">
-      <div class="flex justify-between px-4 py-6">
-        <div>
-          <Button
-            v-if="hasSteps && step > 1"
-            :icon="AngleLeftIcon"
-            type="button"
-            variant="dialog-icon"
-            @click="changeStep(-1)"
-          />
-        </div>
-        <Button :icon="CloseIcon" type="button" variant="dialog-icon" @click="close" />
-      </div>
-
-      <form class="flex flex-col gap-6 px-13 pb-10" @submit.prevent="handleFinalClick">
-        <div class="flex flex-col items-center justify-center gap-1.5">
-          <span class="text-3xl">{{ props.title }}</span>
-          <span class="text-md">{{ props.subtitle }}</span>
-        </div>
-
-        <slot v-if="$slots.start" name="start" />
-
-        <div v-if="hasSteps" class="flex gap-2">
-          <div class="h-2 w-29 rounded-[30px]" :class="step > 0 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
-          <div class="h-2 w-29 rounded-[30px]" :class="step > 1 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
-          <div class="h-2 w-29 rounded-[30px]" :class="step > 2 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
-        </div>
-
-        <template v-if="!hasSteps">
-          <slot name="content" />
-        </template>
-        <template v-else>
-          <slot v-if="step === 1" name="step1" />
-          <slot v-else-if="step === 2" name="step2" />
-          <slot v-else-if="step === 3" name="step3" />
-        </template>
-
-        <Button
-          type="submit"
-          :loading="loading"
-          :label="(step === 3 || !hasSteps) && buttonLabel ? buttonLabel : 'Next'"
-          variant="dialog-submit"
-        />
-
-        <div v-if="$slots.end" class="gap-2">
-          <div class="flex w-full items-center gap-4">
-            <div class="flex-1 border-t border-[#EAEAEA]"></div>
-            <span class="text-sm font-medium text-[#757575]">or</span>
-            <div class="flex-1 border-t border-[#EAEAEA]"></div>
+    <div v-if="visible" class="font-inter pointer-events-none fixed inset-0 z-210 flex items-center justify-center">
+      <div class="pointer-events-auto relative flex w-115 flex-col gap-3 rounded-xl bg-white shadow-2xl">
+        <div class="flex justify-between px-4 pt-6">
+          <div>
+            <Button
+              v-if="hasSteps && step > 1"
+              :icon="AngleLeftIcon"
+              type="button"
+              variant="dialog-icon"
+              @click="changeStep(-1)"
+            />
           </div>
-          <slot name="end" />
+          <Button :icon="CloseIcon" type="button" variant="dialog-icon" @click="close" />
         </div>
-      </form>
+
+        <form class="flex flex-col gap-6 px-13 pb-10" @submit.prevent="handleFinalClick">
+          <div class="flex flex-col items-center justify-center gap-1.5">
+            <span class="text-[32px] font-semibold text-[#141414]">{{ props.title }}</span>
+            <span class="text-[14px] font-medium text-[#666666]">{{ props.subtitle }}</span>
+          </div>
+
+          <slot v-if="$slots.start" name="start" />
+
+          <div v-if="hasSteps" class="flex gap-2">
+            <div
+              class="h-2 w-29 rounded-[30px]"
+              :class="step > 0 ? (step === 1 ? 'bg-[#B7B3F4]' : 'bg-[#4F46E5]') : 'bg-[#EEEDFC]'"
+            ></div>
+            <div
+              class="h-2 w-29 rounded-[30px]"
+              :class="step > 1 ? (step === 2 ? 'bg-[#B7B3F4]' : 'bg-[#4F46E5]') : 'bg-[#EEEDFC]'"
+            ></div>
+            <div
+              class="h-2 w-29 rounded-[30px]"
+              :class="step > 2 ? (step === 3 ? 'bg-[#B7B3F4]' : 'bg-[#4F46E5]') : 'bg-[#EEEDFC]'"
+            ></div>
+          </div>
+
+          <template v-if="!hasSteps">
+            <slot name="content" />
+          </template>
+          <template v-else>
+            <slot v-if="step === 1" name="step1" />
+            <slot v-else-if="step === 2" name="step2" />
+            <slot v-else-if="step === 3" name="step3" />
+          </template>
+
+          <Button
+            type="submit"
+            :loading="loading"
+            :label="(step === 3 || !hasSteps) && buttonLabel ? buttonLabel : 'Next'"
+            variant="dialog-submit"
+          />
+
+          <div v-if="$slots.end" class="gap-2">
+            <div class="flex w-full items-center gap-4">
+              <div class="flex-1 border-t border-[#EAEAEA]"></div>
+              <span class="text-sm font-medium text-[#757575]">or</span>
+              <div class="flex-1 border-t border-[#EAEAEA]"></div>
+            </div>
+            <slot name="end" />
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </Transition>
 </template>

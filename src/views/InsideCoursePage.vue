@@ -44,7 +44,7 @@ import MonitorIcon from "@/components/icons/MonitorIcon.vue";
 import PointerIcon from "@/components/icons/PointerIcon.vue";
 import ProgressBar from "@/components/common/ProgressBar.vue";
 import RefreshIcon from "@/components/icons/RefreshIcon.vue";
-import MarkIcon from "@/components/icons/MarkIcon.vue";
+import CheckIcon from "@/components/icons/CheckIcon.vue";
 import ConfettiIcon from "@/components/icons/ConfettiIcon.vue";
 import StarRating from "@/components/common/StarRating.vue";
 import CloseIcon from "@/components/icons/CloseIcon.vue";
@@ -52,9 +52,10 @@ import { CATEGORY_ICONS, SESSION_TYPE_ICONS, TIME_SLOT_ICONS } from "@/constants
 import StepOneFilledIcon from "@/components/icons/StepOneFilledIcon.vue";
 import StepTwoFilledIcon from "@/components/icons/StepTwoFilledIcon.vue";
 import StepThreeFilledIcon from "@/components/icons/StepThreeFilledIcon.vue";
+import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
 
 const { isAuthenticated, isProfileComplete } = useAuthorize();
-const { fetchCourseById, rateCourse } = useCoursesCrud();
+const { fetchCourseById, rateCourse, fetchInProgressCourses } = useCoursesCrud();
 const { fetchCourseWeeklySchedules, fetchCourseTimeSlots, fetchCourseSessionTypes } = useScheduleCrud();
 const { fetchUserEnrollments, enrollCourse, completeEnrollment, deleteEnrollment } = useEnrollmentsCrud();
 const router = useRouter();
@@ -86,6 +87,7 @@ const showAlreadyEnrolledModal = ref(false);
 const showProfileIncompleteModal = ref(false);
 const showEnrollmentCompletionModal = ref(false);
 const showNoAvailableSeatsModal = ref(false);
+const showUnauthenticatedModal = ref(false);
 const isRatingDismissed = ref(false);
 
 const showRatingBox = computed(
@@ -107,7 +109,7 @@ const courseAvgRating = computed(() => {
   if (!course.value?.reviews?.length) return 0;
   const total = course.value.reviews.reduce((sum, r) => sum + r.rating, 0);
   const avg = total / course.value.reviews.length;
-  return Math.floor(avg * 10) / 10;
+  return Math.round(avg * 10) / 10;
 });
 
 const formattedSessionTypes = computed(() => {
@@ -138,10 +140,11 @@ const refreshEnrollmentStatus = async () => {
 const handleEnrollment = (force = false) => {
   if (!isAuthenticated.value) {
     showLogInModal.value = true;
+    showUnauthenticatedModal.value = true;
     return;
   }
 
-  if (!isProfileComplete.value) {
+  if (!isProfileComplete) {
     showProfileIncompleteModal.value = true;
     return;
   }
@@ -198,6 +201,8 @@ const handleClickEnroll = async (courseId: number, courseScheduleId: number, for
     if (response?.success) {
       showEnrollmentConfirmationModal.value = true;
       await refreshEnrollmentStatus();
+      await fetchUserEnrollments();
+      await fetchInProgressCourses();
     } else {
       const errorData = response?.serverErrors;
       if (errorData && typeof errorData === "object" && "conflicts" in errorData) {
@@ -234,6 +239,8 @@ const handleCompleteEnrollment = async (enrollmentId: number) => {
       }
 
       showEnrollmentCompletionModal.value = true;
+      
+      await fetchInProgressCourses();
     }
   } finally {
     isSubmitting.value = false;
@@ -254,6 +261,7 @@ const handleRetakeCourse = async () => {
 
       await nextTick();
       selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
+      await fetchUserEnrollments();
     }
   } finally {
     isSubmitting.value = false;
@@ -350,7 +358,8 @@ watch(
           weeklySchedules.value = weeklyRes.weeklySchedules;
           selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
         }
-        await refreshEnrollmentStatus();
+
+        if (isAuthenticated.value) await refreshEnrollmentStatus();
       }
     } finally {
       isLoading.value = false;
@@ -361,7 +370,9 @@ watch(
 </script>
 <template>
   <div class="flex min-h-screen justify-center bg-[#F5F5F5] pt-43 pb-40">
-    <div class="flex min-w-391.5 flex-col gap-6">
+    <LoadingSpinner v-if="isLoading" />
+
+    <div v-else class="flex min-w-391.5 flex-col gap-6">
       <div>
         <div class="mb-12 flex items-center gap-0.5">
           <div class="flex items-center gap-1 px-1 py-0.5">
@@ -506,7 +517,7 @@ watch(
                         <div class="flex flex-col items-center gap-1.5">
                           <span class="text-[16px] font-semibold">{{ sessionType.displayName }}</span>
                           <div class="flex items-center gap-0.5">
-                            <PointerIcon />
+                            <PointerIcon v-if="sessionType.name !== 'online'" />
                             <span class="text-[12px]">{{ sessionType.displayLocation }}</span>
                           </div>
                         </div>
@@ -626,7 +637,7 @@ watch(
               v-else
               label="Complete Course"
               :loading="isSubmitting"
-              :icon="MarkIcon"
+              :icon="CheckIcon"
               icon-pos="right"
               variant="action"
               @click="handleCompleteEnrollment(userCourseEnrollment?.id ?? 0)"
@@ -705,7 +716,7 @@ watch(
       </Modal>
 
       <Modal
-        :visible="showAlreadyEnrolledModal"
+        :visible="isAuthenticated && showAlreadyEnrolledModal"
         :icon="WarningIcon"
         title="Enrollment Denyed!"
         :content="errorMessage"
@@ -723,11 +734,19 @@ watch(
       />
 
       <Modal
-        :visible="showNoAvailableSeatsModal"
+        :visible="isAuthenticated && showNoAvailableSeatsModal"
         :icon="WarningIcon"
         title="No Seats Available"
         content="No seats available for this session type. Please select another, or try to change weekly schedule."
         @continue="showNoAvailableSeatsModal = false"
+      />
+
+      <Modal
+        :visible="showUnauthenticatedModal"
+        :icon="WarningIcon"
+        title="Please Log In"
+        content="You need to sign in before enrolling in this course."
+        @continue="showUnauthenticatedModal = false"
       />
 
       <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />

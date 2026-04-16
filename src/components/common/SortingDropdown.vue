@@ -60,7 +60,11 @@ onUnmounted(() => {
         :label="option.label"
         variant="sort-option"
         class="h-11"
-        :class="currentLabel === option.label ? 'bg-[#DDDBFA] text-[#4F46E5]' : 'bg-[#FFFFFF] text-[#666666]'"
+        :class="
+          currentLabel === option.label
+            ? 'bg-[#DDDBFA] text-[#4F46E5]'
+            : 'bg-[#FFFFFF] text-[#666666] hover:bg-[#EEEDFC]'
+        "
         @click="handleOptionClick(option)"
       />
     </div>

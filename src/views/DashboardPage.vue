@@ -15,10 +15,13 @@ import LockIcon from "@/components/icons/LockIcon.vue";
 import AuthorizationModals from "@/components/common/AuthorizationModals.vue";
 import { useRouter } from "vue-router";
 import { useAuthorize } from "@/composables/useAuthorize";
+import { useEnrollmentsCrud } from "@/composables/useEnrollmentsCrud";
+import LoadingSpinner from "@/components/common/LoadingSpinner.vue";
 
-const { fetchFeaturedCourses, fetchInProgressCourses } = useCoursesCrud();
+const { fetchFeaturedCourses } = useCoursesCrud();
 const { featuredCourses, coursesInProgress } = storeToRefs(useGlobalStore());
 const { isAuthenticated } = useAuthorize();
+const { fetchUserEnrollments } = useEnrollmentsCrud();
 const router = useRouter();
 
 const sliderItems = ref<SliderItem[]>([
@@ -76,6 +79,7 @@ const dummyCourses = ref<DummyCourse[]>([
   }
 ]);
 const showLogIn = ref(false);
+const loading = ref(false);
 
 const limitedCourses = computed(() => {
   return coursesInProgress.value.slice(0, 4);
@@ -87,91 +91,110 @@ const handleOpenDetails = (course: Course) => {
 };
 
 onMounted(async () => {
-  await Promise.all([fetchFeaturedCourses(), fetchInProgressCourses()]);
+  loading.value = true;
+  if (isAuthenticated.value) await fetchUserEnrollments();
+
+  await fetchFeaturedCourses();
+  loading.value = false;
 });
 </script>
 <template>
   <div
     class="flex min-h-screen flex-col items-center gap-16 bg-[#F5F5F5] pt-43"
-    :class="[isAuthenticated && coursesInProgress.length ? 'pb-62' : '', !isAuthenticated ? 'pb-30' : '']"
+    :class="isAuthenticated ? 'pb-62' : 'pb-30'"
   >
-    <Slider :items="sliderItems" />
+    <LoadingSpinner v-if="loading" />
 
-    <div v-if="isAuthenticated && coursesInProgress?.length" class="flex max-w-391.5 flex-col gap-8">
-      <div class="flex justify-between">
-        <div class="flex flex-col gap-1.5">
-          <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
-          <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
+    <template v-else>
+      <Slider :items="sliderItems" />
+
+      <div v-if="isAuthenticated && coursesInProgress?.length" class="flex max-w-391.5 flex-col gap-8">
+        <div class="flex justify-between">
+          <div class="flex flex-col gap-1.5">
+            <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
+            <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
+          </div>
+          <Button label="See All" variant="link" @click="router.push({ query: { enrolled: 'true' } })" />
         </div>
-        <Button label="See All" variant="link" @click="router.push({ query: { enrolled: 'true' } })" />
-      </div>
 
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <CourseProgressCard
-          v-for="item in limitedCourses"
-          :key="item.id"
-          :title="item.course.title"
-          :image="item.course.image"
-          :instructor-name="item.course.instructor.name"
-          :avg-rating="item.course.avgRating"
-          :progress="item.progress"
-          @open-details="handleOpenDetails(item.course)"
-        />
-      </div>
-    </div>
-
-    <div v-if="featuredCourses.length" class="flex flex-col gap-8">
-      <div class="flex flex-col gap-1.5">
-        <span class="text-[40px] font-semibold text-[#0A0A0A]">Start Learning Today</span>
-        <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>
-      </div>
-      <div v-if="featuredCourses" class="grid grid-cols-3 gap-6">
-        <CourseCard
-          v-for="course in featuredCourses"
-          :key="course.id"
-          v-bind="course"
-          @open-details="handleOpenDetails(course)"
-        />
-      </div>
-    </div>
-
-    <div v-if="!isAuthenticated" class="relative flex flex-col gap-8 pb-8.75">
-      <div class="flex justify-between">
-        <div class="flex flex-col gap-1.5">
-          <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
-          <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
-        </div>
-        <Button label="See All" variant="link" @click="router.push({ query: { enrolled: 'true' } })" />
-      </div>
-
-      <div class="pointer-events-none grid grid-cols-1 gap-6 select-none md:grid-cols-2 lg:grid-cols-3">
-        <CourseProgressCard
-          v-for="item in dummyCourses"
-          :key="item.id"
-          :title="item.course.title"
-          :instructor-name="item.course.instructor.name"
-          :avg-rating="item.course.avgRating"
-          :progress="item.progress"
-          blured
-        />
-      </div>
-
-      <div class="absolute inset-0 z-10 flex items-center justify-center pt-24">
-        <div
-          class="flex w-104.5 flex-col gap-2.5 rounded-xl border border-[#ADADAD] bg-[#FFFFFF] px-14 py-8 shadow-2xl"
+        <TransitionGroup
+          appear
+          tag="div"
+          class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          enter-active-class="transition duration-500 ease-out"
+          enter-from-class="opacity-0 translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
+          move-class="transition duration-500"
         >
-          <div class="flex flex-col items-center gap-6">
-            <div class="flex flex-col items-center gap-3 text-center">
-              <div class="w-18.5 rounded-full bg-[#DDDBFA] p-5">
-                <LockIcon />
+          <CourseProgressCard
+            v-for="item in limitedCourses"
+            :key="item.id"
+            :course="item.course"
+            :progress="item.progress"
+            @open-details="handleOpenDetails(item.course)"
+          />
+        </TransitionGroup>
+      </div>
+
+      <div v-if="featuredCourses.length" class="flex flex-col gap-8">
+        <div class="flex flex-col gap-1.5">
+          <span class="text-[40px] font-semibold text-[#0A0A0A]">Start Learning Today</span>
+          <span class="text-[#3D3D3D]">Choose from our most popular courses and begin your journey</span>
+        </div>
+        <TransitionGroup
+          appear
+          tag="div"
+          class="grid grid-cols-3 gap-6"
+          enter-active-class="transition duration-500 ease-out"
+          enter-from-class="opacity-0 translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
+          move-class="transition duration-500"
+        >
+          <CourseCard
+            v-for="course in featuredCourses"
+            :key="course.id"
+            v-bind="course"
+            @open-details="handleOpenDetails(course)"
+          />
+        </TransitionGroup>
+      </div>
+
+      <div v-if="!isAuthenticated" class="relative flex flex-col gap-8 pb-8.75">
+        <div class="flex justify-between">
+          <div class="flex flex-col gap-1.5">
+            <span class="text-[40px] font-semibold text-[#0A0A0A]">Continue Learning</span>
+            <span class="text-[18px] font-medium text-[#3D3D3D]">Pick up where you left</span>
+          </div>
+          <Button label="See All" variant="link" @click="router.push({ query: { enrolled: 'true' } })" />
+        </div>
+
+        <div class="pointer-events-none grid grid-cols-1 gap-6 select-none md:grid-cols-2 lg:grid-cols-3">
+          <CourseProgressCard
+            v-for="item in dummyCourses"
+            :key="item.id"
+            :course="item.course"
+            :progress="item.progress"
+            blured
+          />
+        </div>
+
+        <div class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center pt-24">
+          <div
+            class="pointer-events-auto flex w-104.5 flex-col gap-2.5 rounded-xl border border-[#ADADAD] bg-[#FFFFFF] px-14 py-8 shadow-2xl"
+          >
+            <div class="flex flex-col items-center gap-6">
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div class="w-18.5 rounded-full bg-[#DDDBFA] p-5">
+                  <LockIcon />
+                </div>
+                <span class="text-[16px] font-medium text-[#0A0A0A]">Sign in to track your learning progress</span>
               </div>
-              <span class="text-[16px] font-medium text-[#0A0A0A]">Sign in to track your learning progress</span>
+              <Button label="Log In" variant="login-action" @click="showLogIn = true" />
             </div>
-            <Button label="Log In" variant="primary" @click="showLogIn = true" />
           </div>
         </div>
+        <AuthorizationModals v-model:showLogInModal="showLogIn" />
       </div>
-      <AuthorizationModals v-model:showLogInModal="showLogIn" />
-    </div>
+    </template>
   </div>
 </template>
