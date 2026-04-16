@@ -46,7 +46,7 @@ https://github.com/Daniel160407/Courses-Redberry
 npm install
 ```
 
-4\. Run npm install axios, npm install js-cookie and npm install tailwindcss @tailwindcss/vite
+4\. Run these commands to install the required packages
 
 ```sh
 npm install axios
