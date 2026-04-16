@@ -193,7 +193,7 @@ onMounted(async () => {
   <div class="flex min-h-screen flex-col items-center overflow-x-hidden bg-[#F5F5F5] pt-43 pb-40">
     <LoadingSpinner v-if="loading" />
 
-    <div v-else>d
+    <div v-else>
       <Transition
         appear
         enter-active-class="transition duration-500 ease-out"
