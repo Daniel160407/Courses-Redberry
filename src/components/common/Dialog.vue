@@ -63,7 +63,7 @@ const handleFinalClick = () => {
   >
     <div v-if="visible" class="font-inter pointer-events-none fixed inset-0 z-210 flex items-center justify-center">
       <div class="pointer-events-auto relative flex w-115 flex-col gap-3 rounded-xl bg-white shadow-2xl">
-        <div class="flex justify-between px-4 py-6">
+        <div class="flex justify-between px-4 pt-6">
           <div>
             <Button
               v-if="hasSteps && step > 1"
@@ -78,16 +78,25 @@ const handleFinalClick = () => {
 
         <form class="flex flex-col gap-6 px-13 pb-10" @submit.prevent="handleFinalClick">
           <div class="flex flex-col items-center justify-center gap-1.5">
-            <span class="text-3xl">{{ props.title }}</span>
-            <span class="text-md">{{ props.subtitle }}</span>
+            <span class="text-[32px] font-semibold text-[#141414]">{{ props.title }}</span>
+            <span class="text-[14px] font-medium text-[#666666]">{{ props.subtitle }}</span>
           </div>
 
           <slot v-if="$slots.start" name="start" />
 
           <div v-if="hasSteps" class="flex gap-2">
-            <div class="h-2 w-29 rounded-[30px]" :class="step > 0 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
-            <div class="h-2 w-29 rounded-[30px]" :class="step > 1 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
-            <div class="h-2 w-29 rounded-[30px]" :class="step > 2 ? 'bg-[#4F46E5]' : 'bg-[#B7B3F4]'"></div>
+            <div
+              class="h-2 w-29 rounded-[30px]"
+              :class="step > 0 ? (step === 1 ? 'bg-[#B7B3F4]' : 'bg-[#4F46E5]') : 'bg-[#EEEDFC]'"
+            ></div>
+            <div
+              class="h-2 w-29 rounded-[30px]"
+              :class="step > 1 ? (step === 2 ? 'bg-[#B7B3F4]' : 'bg-[#4F46E5]') : 'bg-[#EEEDFC]'"
+            ></div>
+            <div
+              class="h-2 w-29 rounded-[30px]"
+              :class="step > 2 ? (step === 3 ? 'bg-[#B7B3F4]' : 'bg-[#4F46E5]') : 'bg-[#EEEDFC]'"
+            ></div>
           </div>
 
           <template v-if="!hasSteps">

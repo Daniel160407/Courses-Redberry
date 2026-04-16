@@ -97,15 +97,19 @@ const updateCourses = async () => {
 };
 
 const handleClickCategory = async (isSelected: boolean, category: Category) => {
-  selectedCategoryIds.value = isSelected
-    ? [...selectedCategoryIds.value, category.id]
-    : selectedCategoryIds.value.filter((id) => id !== category.id);
-
-  const topicsResponse = await fetchTopics(selectedCategoryIds.value);
+  const topicsResponse = await fetchTopics(
+    isSelected
+      ? [...selectedCategoryIds.value, category.id]
+      : selectedCategoryIds.value.filter((id) => id !== category.id)
+  );
   topics.value = topicsResponse?.topics;
 
   selectedTopicIds.value = [];
   currentPage.value = 1;
+
+  selectedCategoryIds.value = isSelected
+    ? [...selectedCategoryIds.value, category.id]
+    : selectedCategoryIds.value.filter((id) => id !== category.id);
 };
 
 const handleClickTopic = async (isSelected: boolean, topic: Topic) => {
@@ -183,7 +187,7 @@ onMounted(async () => {
     topics.value = responses.topicsResponse.topics;
   }
 
-  if (isAuthenticated) await fetchUserEnrollments();
+  if (isAuthenticated.value) await fetchUserEnrollments();
   await updateCourses();
 
   loading.value = false;
@@ -309,11 +313,13 @@ onMounted(async () => {
             v-if="showingCount"
             appear
             tag="div"
-            class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+            class="relative grid grid-cols-3 gap-6"
             enter-active-class="transition duration-500 ease-out"
             enter-from-class="opacity-0 translate-y-4"
             enter-to-class="opacity-100 translate-y-0"
-            move-class="transition duration-500"
+            move-class="transition duration-500 ease-in-out"
+            leave-active-class="absolute transition duration-300 ease-in opacity-0"
+            leave-to-class="opacity-0"
           >
             <CourseCard
               v-for="course in courses"
@@ -321,10 +327,11 @@ onMounted(async () => {
               v-bind="course"
               variant="secondary"
               :category-icon="getCategoryIcon(course.category.icon)"
+              class="w-full"
               @open-details="handleOpenDetails(course)"
             />
           </TransitionGroup>
-          <div v-if="showingCount" class="flex justify-center">
+          <div v-if="showingCount && lastPage > 1" class="flex justify-center">
             <Paginator v-model="currentPage" :total="lastPage" />
           </div>
         </main>

@@ -19,6 +19,11 @@ const router = useRouter();
 
 const showLogInModal = ref(false);
 const showProfileModal = ref(false);
+
+const handleClickBorwseCourses = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  router.push("/catalog");
+};
 </script>
 <template>
   <div>
@@ -54,7 +59,7 @@ const showProfileModal = ref(false);
                 variant="footer-link-gray"
                 @click="router.push({ query: { enrolled: 'true' } })"
               />
-              <Button label="Browse Courses" variant="footer-link-gray" @click="router.push('/catalog')" />
+              <Button label="Browse Courses" variant="footer-link-gray" @click="handleClickBorwseCourses" />
             </div>
           </div>
           <div class="flex flex-col gap-4">

@@ -87,9 +87,8 @@ const showAlreadyEnrolledModal = ref(false);
 const showProfileIncompleteModal = ref(false);
 const showEnrollmentCompletionModal = ref(false);
 const showNoAvailableSeatsModal = ref(false);
+const showUnauthenticatedModal = ref(false);
 const isRatingDismissed = ref(false);
-
-const loading = ref(false);
 
 const showRatingBox = computed(
   () =>
@@ -139,8 +138,9 @@ const refreshEnrollmentStatus = async () => {
 };
 
 const handleEnrollment = (force = false) => {
-  if (!isAuthenticated) {
+  if (!isAuthenticated.value) {
     showLogInModal.value = true;
+    showUnauthenticatedModal.value = true;
     return;
   }
 
@@ -354,7 +354,8 @@ watch(
           weeklySchedules.value = weeklyRes.weeklySchedules;
           selectedWeeklySchedule.value = weeklySchedules.value[0] || null;
         }
-        await refreshEnrollmentStatus();
+
+        if (isAuthenticated.value) await refreshEnrollmentStatus();
       }
     } finally {
       isLoading.value = false;
@@ -711,7 +712,7 @@ watch(
       </Modal>
 
       <Modal
-        :visible="showAlreadyEnrolledModal"
+        :visible="isAuthenticated && showAlreadyEnrolledModal"
         :icon="WarningIcon"
         title="Enrollment Denyed!"
         :content="errorMessage"
@@ -729,11 +730,19 @@ watch(
       />
 
       <Modal
-        :visible="showNoAvailableSeatsModal"
+        :visible="isAuthenticated && showNoAvailableSeatsModal"
         :icon="WarningIcon"
         title="No Seats Available"
         content="No seats available for this session type. Please select another, or try to change weekly schedule."
         @continue="showNoAvailableSeatsModal = false"
+      />
+
+      <Modal
+        :visible="showUnauthenticatedModal"
+        :icon="WarningIcon"
+        title="Please Log In"
+        content="You need to sign in before enrolling in this course."
+        @continue="showUnauthenticatedModal = false"
       />
 
       <AuthorizationModals v-model:showLogInModal="showLogInModal" v-model:show-profile-modal="showProfileModal" />

@@ -17,12 +17,22 @@ const route = useRoute();
 const showSignUp = ref(false);
 const showLogIn = ref(false);
 const showProfile = ref(false);
+
+const handleClickLogo = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  router.push(DASHBOARD_ROUTE);
+};
+
+const handleClickBrowseCourses = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  router.push(CATALOG_ROUTE);
+};
 </script>
 
 <template>
   <div class="fixed top-0 left-0 z-100 flex w-full justify-center border-b border-b-[#D1D1D1] bg-[#F5F5F5] py-6">
     <div class="flex min-w-391.5 items-center justify-between">
-      <Button :icon="LogoIcon" variant="icon" :iconSize="3.75" @click="router.push(DASHBOARD_ROUTE)" />
+      <Button :icon="LogoIcon" variant="icon" :iconSize="3.75" @click="handleClickLogo" />
       <div v-if="isAuthenticated" class="flex gap-9">
         <div class="flex gap-2">
           <Button
@@ -30,7 +40,7 @@ const showProfile = ref(false);
             :icon="StarsIcon"
             variant="nav"
             :class="{ 'text-[#4F46E5]': route.path === CATALOG_ROUTE }"
-            @click="router.push(CATALOG_ROUTE)"
+            @click="handleClickBrowseCourses"
           />
           <Button
             label="Enrolled Courses"

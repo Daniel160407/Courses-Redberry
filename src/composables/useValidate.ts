@@ -4,7 +4,7 @@ import type { LogInErrors, ProfileErrors, RegistrationErrors } from "../types/in
 export const useValidate = () => {
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const ALLOWED_AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
-  const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
+  const MAX_AVATAR_SIZE = 1024 * 1024;
 
   const validateEmail = (val: string, touched: boolean) => {
     if (!touched) return "";
@@ -52,7 +52,7 @@ export const useValidate = () => {
         return "Profile image should be .jpg, .png or .webp";
       }
       if (file.size > MAX_AVATAR_SIZE) {
-        return "Image size should not exceed 2MB";
+        return "Image size should not exceed 1MB";
       }
     }
     return "";
@@ -68,7 +68,7 @@ export const useValidate = () => {
     });
     const touched = reactive({ username: false, email: false, password: false, confirmPassword: false, avatar: false });
 
-    watchEffect(() => {
+    const validate = () => {
       const newData = toValue(formData);
 
       if (touched.username && newData.username.length === 0) errors.username = "Name is required";
@@ -81,12 +81,15 @@ export const useValidate = () => {
       errors.avatar = validateAvatar(newData.avatar, touched.avatar);
       errors.confirmPassword =
         touched.confirmPassword && newData.confirmPassword !== newData.password ? "Passwords do not match" : "";
-    });
+    };
+
+    watchEffect(validate);
 
     const touchAll = () => {
       Object.keys(touched).forEach((key) => {
         touched[key as keyof typeof touched] = true;
       });
+      validate();
     };
 
     const reset = () => {
@@ -102,16 +105,19 @@ export const useValidate = () => {
     const errors = reactive<LogInErrors>({ email: "", password: "" });
     const touched = reactive({ email: false, password: false });
 
-    watchEffect(() => {
+    const validate = () => {
       const newData = toValue(formData);
       errors.email = validateEmail(newData.email, touched.email);
       errors.password = validatePassword(newData.password, touched.password);
-    });
+    };
+
+    watchEffect(validate);
 
     const touchAll = () => {
       Object.keys(touched).forEach((key) => {
         touched[key as keyof typeof touched] = true;
       });
+      validate();
     };
 
     const reset = () => {
@@ -127,7 +133,7 @@ export const useValidate = () => {
     const errors = reactive<ProfileErrors>({ full_name: "", mobile_number: "", age: "", avatar: "" });
     const touched = reactive({ full_name: false, mobile_number: false, age: false, avatar: false });
 
-    watchEffect(() => {
+    const validate = () => {
       const newData = toValue(formData);
 
       if (touched.full_name && newData.full_name.length === 0) errors.full_name = "Name is required";
@@ -140,12 +146,15 @@ export const useValidate = () => {
       errors.mobile_number = validateMobile(newData.mobile_number, touched.mobile_number);
       errors.age = validateAge(newData.age, touched.age);
       errors.avatar = validateAvatar(newData.avatar, touched.avatar);
-    });
+    };
+
+    watchEffect(validate);
 
     const touchAll = () => {
       Object.keys(touched).forEach((key) => {
         touched[key as keyof typeof touched] = true;
       });
+      validate();
     };
 
     const reset = () => {

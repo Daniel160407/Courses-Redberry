@@ -14,7 +14,7 @@ const { visible, title, content, icon, buttonLabel } = defineProps<Props>();
 const emit = defineEmits(["continue", "cancel"]);
 </script>
 <template>
-  <div v-if="visible" class="fixed inset-0 z-200 bg-black/20" />
+  <div v-if="visible" class="fixed inset-0 z-300 bg-black/20" />
 
   <Transition
     enter-active-class="transition-all duration-300 ease-out"
@@ -24,7 +24,7 @@ const emit = defineEmits(["continue", "cancel"]);
     leave-from-class="opacity-100 scale-100"
     leave-to-class="opacity-0 scale-95"
   >
-    <div v-if="visible" class="font-inter pointer-events-none fixed inset-0 z-210 flex items-center justify-center">
+    <div v-if="visible" class="font-inter pointer-events-none fixed inset-0 z-310 flex items-center justify-center">
       <div
         class="rounded-4 pointer-events-auto relative flex max-w-119 flex-col rounded-2xl bg-[#FFFFFF] p-15 shadow-2xl"
       >

@@ -92,7 +92,7 @@ const handleOpenDetails = (course: Course) => {
 
 onMounted(async () => {
   loading.value = true;
-  if (isAuthenticated) await fetchUserEnrollments();
+  if (isAuthenticated.value) await fetchUserEnrollments();
 
   await fetchFeaturedCourses();
   loading.value = false;

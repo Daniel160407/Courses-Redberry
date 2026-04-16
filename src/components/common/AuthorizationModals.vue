@@ -139,7 +139,7 @@ const handleUpdateProfile = async () => {
       profileFormData.value.avatar = null;
     }
     const result = await updateProfile(profileFormData.value);
-    console.log(result?.status)
+
     if (result?.success) {
       showProfileModal.value = false;
       showProfileEditSuccessModal.value = true;
